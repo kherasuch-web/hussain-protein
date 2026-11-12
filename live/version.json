@@ -1,1 +1,6 @@
-{"ver":"1.26.0"}
+{
+  "ver": "1.26.1",
+  "note": "Test live update: only the footer version changes to v1.26.1",
+  "android": { "zip": "android-1.26.1.zip", "minBuild": 27 },
+  "windows": { "files": ["index.html", "app.js", "farm.html", "farm.js"], "minDesk": "1.26.0" }
+}

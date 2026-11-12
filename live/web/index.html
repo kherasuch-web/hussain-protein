@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#173f66">
+<title>Hussain Protein</title>
+<link rel="icon" href="img/logo-192.png">
+<style>
+@font-face{font-family:"Jameel Noori";src:url(fonts/jameel-noori.woff2) format("woff2");font-display:swap}
+:root{--bg:#eef3f8;--card:#fff;--fg:#0f1d2b;--mut:#34485c;--line:#c5d3e0;--accent:#1c5d93;--accent2:#173f66;--soft:#dce9f5;--err:#b42318;--errbg:#fdecea;--warn:#8a5a00;--warnbg:#fff4d6}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:"Segoe UI",Roboto,Arial,sans-serif;font-size:16px;line-height:1.45}
+.ur{font-family:"Jameel Noori","Noto Nastaliq Urdu",serif;line-height:2;direction:rtl;unicode-bidi:plaintext}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px 40px}
+header.top{position:sticky;top:0;z-index:5;background:var(--accent2);color:#fff;padding:calc(env(safe-area-inset-top) + 8px) 16px 8px;display:flex;align-items:center;gap:10px}
+header.top img{width:34px;height:34px;border-radius:9px;background:#fff}
+header.top .t{flex:1;min-width:0}
+header.top .t b{display:block;font-size:17px}
+header.top .t span{display:block;font-size:12.5px;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#umenu{width:42px;height:42px;border-radius:999px!important;padding:0!important;display:grid;place-items:center;flex:none}
+.usheet{position:fixed;inset:0;z-index:100}.usheet[hidden]{display:none}
+.usheet .sb{position:absolute;inset:0;background:rgba(10,25,40,.45)}
+.usheet .sp{position:absolute;left:0;right:0;bottom:0;margin:0 auto;max-width:520px;background:#fff;border-radius:22px 22px 0 0;padding:14px 16px calc(22px + env(safe-area-inset-bottom));box-shadow:0 -4px 20px rgba(0,0,0,.2);text-align:left}
+.usheet .sp::before{content:"";display:block;width:44px;height:5px;border-radius:9px;background:#cfd8e2;margin:0 auto 12px}
+.usheet .sh{padding:4px 4px 12px;border-bottom:1px solid #e3e9ef;margin-bottom:6px}.usheet .sh b{display:block;font-size:19px;color:#173f66}.usheet .sh small{color:#5d6b64;font-size:13px}
+.usheet .si{display:flex;align-items:center;gap:14px;width:100%;background:none!important;border:0;padding:14px 6px;font-size:17px;font-weight:600;color:#1c2a24;text-align:left;border-radius:12px}
+.usheet .si[hidden]{display:none}.usheet .si svg{width:26px;height:26px;color:#1c5d93;flex:none}.usheet .si small{display:block;font-weight:400;font-size:13px;color:#5d6b64}
+.usheet .si.out,.usheet .si.out svg{color:#b3412e}
+.usheet .sc{width:100%;margin-top:8px;padding:12px;border-radius:12px;border:2px solid #1c5d93;background:#fff;color:#1c5d93;font-size:16px;font-weight:700}
+header.top button{background:rgba(255,255,255,.16);color:#fff;border:0;border-radius:9px;padding:7px 10px;font-size:14px}
+.net{font-size:12.5px;text-align:center;padding:4px 8px}
+.net.off{background:var(--warnbg);color:var(--warn)}
+.net.on{display:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:14px}
+h1{font-size:22px;margin:0 0 4px}
+h2{font-size:18px;margin:0 0 10px}
+p.mut,.mut{color:var(--mut);font-size:14px}
+label{display:block;font-size:14px;color:var(--mut);margin:12px 0 4px}
+input[type=text],input[type=email],input[type=password]{width:100%;font-size:17px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--fg)}
+input.urin{font-family:"Jameel Noori","Noto Nastaliq Urdu",serif;font-size:19px;line-height:1.9;padding:6px 12px}
+input:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+.btn{display:block;width:100%;border:0;border-radius:11px;padding:13px;font-size:16.5px;font-weight:600;margin-top:16px;cursor:pointer}
+.btn.pri{background:var(--accent);color:#fff}
+.btn.sec{background:var(--soft);color:var(--accent2)}
+.btn.dan{background:var(--errbg);color:var(--err)}
+.btn:disabled{opacity:.55}
+.link{background:none;border:0;color:var(--accent);font-size:15px;padding:10px 0;text-decoration:underline;cursor:pointer}
+.msg{margin-top:12px;font-size:14.5px;border-radius:10px;padding:10px 12px}
+.msg:empty{display:none}
+.msg.err{background:var(--errbg);color:var(--err)}
+.msg.ok{background:var(--soft);color:var(--accent2)}
+.hero{text-align:center;padding-top:26px}
+.hero img{width:132px;height:132px;border-radius:28px;box-shadow:0 6px 20px rgba(0,0,0,.12)}
+.hero h1{margin-top:12px}
+.tabs2{display:flex;gap:8px;margin-top:18px}
+.tabs2 button{flex:1;padding:11px;border-radius:11px;border:1px solid var(--line);background:#fff;font-size:15.5px;font-weight:600;color:var(--mut)}
+.tabs2 button[aria-pressed=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.farm{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px;cursor:pointer;font:inherit;color:inherit}
+.farm .nm{flex:1;min-width:0;font-size:20px}
+.fcard{margin-top:12px}.fcard .farm{margin-top:0;border-radius:14px 14px 0 0}.fset{display:block;width:100%;border:1px solid var(--line);border-top:0;border-radius:0 0 14px 14px;background:#fafcfb;color:var(--accent2);padding:9px;font-size:14px;font-weight:600}
+.fsum{border:1px solid var(--line);border-top:0;background:#fff;padding:10px 14px 12px}
+.fsum .empty{padding:8px 0}
+.sumh{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;justify-content:space-between;font-size:15px}
+.tag{font-size:12px;padding:2px 9px;border-radius:20px;background:var(--soft);color:var(--accent2);font-weight:600}
+.tag.old{background:var(--warnbg);color:var(--warn)}
+.sumn{font-size:13px;color:var(--warn);margin-top:4px}
+.sumt{font-size:12.5px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 6px}
+.sumg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.sumg div{background:#f6f9f7;border-radius:9px;padding:7px 10px;display:flex;flex-direction:column;min-width:0}
+.sumg span{font-size:12px;color:var(--mut)}
+.sumg b{font-size:17px;font-variant-numeric:tabular-nums}
+.sumg .big{grid-column:1/-1;background:var(--soft);flex-direction:row;justify-content:space-between;align-items:center}
+.sumg .big b{font-size:20px;color:var(--accent2)}
+.sumg .big.neg b{color:var(--err)}
+.farm .chev{color:var(--mut);font-size:20px}
+.badge{display:inline-block;font-size:12px;padding:2px 8px;border-radius:20px;background:var(--soft);color:var(--accent2);margin-left:6px}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.row .k{color:var(--mut);font-size:14px}
+.row .v{font-weight:600;text-align:right}
+.sw{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:15px}
+.sw input{width:22px;height:22px;accent-color:var(--accent)}
+.dev{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:14.5px}
+.dev .d{flex:1}
+.dev button{border:0;background:var(--errbg);color:var(--err);border-radius:9px;padding:7px 10px;font-weight:600}
+.empty{color:var(--mut);text-align:center;padding:18px 0;font-size:14.5px}
+.pw{position:relative}
+.pw button{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--accent);font-size:13.5px;padding:8px}
+.soon{border:1px dashed var(--line);border-radius:12px;padding:12px;margin-top:10px;font-size:14.5px;color:var(--mut)}
+.lastin{margin-top:6px;font-size:13.5px;color:var(--mut)}.lastin b{color:var(--fg)}
+.emerg{text-align:center;margin-top:22px}.ebtn{background:none;border:1px dashed var(--line);color:var(--mut);border-radius:10px;padding:7px 14px;font-size:13px}
+.ver{text-align:center;color:var(--mut);font-size:12.5px;margin:26px 0 8px;opacity:.85}
+#backtoast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 28px);transform:translateX(-50%);background:rgba(15,29,43,.92);color:#fff;padding:10px 18px;border-radius:22px;font-family:"Jameel Noori",serif;font-size:17px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:9000;white-space:nowrap}
+#backtoast.show{opacity:1}
+.boot-wait{min-height:60vh}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div id="net" class="net on" role="status"></div>
+<style>
+#hpboot{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:"Segoe UI",Roboto,sans-serif;color:#fff;overflow:hidden;direction:ltr;transition:opacity .35s;background:radial-gradient(circle at 50% 38%,#2a6aa3 0%,#173f66 55%,#0f2c48 100%)}
+#hpboot.day{background:linear-gradient(180deg,#bfe6ff 0%,#e8f7ff 45%,#c9ecc0 70%,#7cc36a 100%);color:#173f66}
+#hpboot.out{opacity:0;pointer-events:none}
+#hpboot .hb-logo{width:150px;height:150px;border-radius:34px;background:#fff;box-shadow:0 14px 34px rgba(0,0,0,.28);animation:hbbob 1.6s ease-in-out infinite;overflow:hidden}
+#hpboot .hb-logo img{width:100%;height:100%;display:block}
+#hpboot .hb-sh{width:90px;height:12px;border-radius:50%;background:rgba(0,0,0,.18);margin-top:-10px;animation:hbsh 1.6s ease-in-out infinite}
+#hpboot .hb-ur{font-family:"Jameel Noori",serif;font-size:40px;line-height:1.6;margin-top:4px}
+#hpboot .hb-en{font-size:15px;letter-spacing:4px;font-weight:700;opacity:.9}
+#hpboot .hb-dots{display:flex;gap:9px;margin-top:4px}
+#hpboot .hb-dots i{width:11px;height:11px;border-radius:50%;background:currentColor;opacity:.3;animation:hbd 1.2s infinite}
+#hpboot .hb-dots i:nth-child(2){animation-delay:.2s}#hpboot .hb-dots i:nth-child(3){animation-delay:.4s}
+#hpboot .hb-sub{font-family:"Jameel Noori",serif;font-size:19px;opacity:.85}
+@keyframes hbbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes hbsh{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.75);opacity:.6}}
+@keyframes hbd{0%,100%{opacity:.3}50%{opacity:1}}
+</style>
+<style>/* v1.23 Windows: Main home in 2 columns (farms left, Phones right). Phones unchanged. */
+@media (min-width:1000px){
+ .wrap:has(>#farms){max-width:1180px!important;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);column-gap:24px;align-items:start;grid-auto-flow:row dense;padding-top:8px}
+ .wrap:has(>#farms)>*{grid-column:1/-1;min-width:0}
+ .wrap:has(>#farms)>#farms,.wrap:has(>#farms)>#add{grid-column:1}
+ .wrap:has(>#farms)>#phones{grid-column:2;grid-row:span 3;margin-top:0}
+ .wrap:has(>#farms)>.emerg{grid-column:1;justify-self:start}
+ #phones{max-height:calc(100vh - 110px);overflow:auto;position:sticky;top:80px}
+}
+</style>
+<div id="hpboot" aria-hidden="true"><div class="hb-logo"><img src="img/logo-1024.png" alt=""></div><div class="hb-sh"></div><div class="hb-ur">حسین پروٹین</div><div class="hb-en">HUSSAIN PROTEIN</div><div class="hb-dots"><i></i><i></i><i></i></div><div class="hb-sub">لوڈ ہو رہا ہے…</div></div>
+<script>(function(){var b=document.getElementById("hpboot"),h=new Date().getHours(),done=false;if(h>=6&&h<18)b.className="day";
+window.hpBootDone=function(){if(done)return;done=true;b.className+=" out";setTimeout(function(){b.remove()},400)};setTimeout(window.hpBootDone,10000);
+document.addEventListener("DOMContentLoaded",function(){var a=document.getElementById("app");if(!a)return;var chk=function(){if(a.children.length&&!a.querySelector(".boot-wait"))window.hpBootDone()};new MutationObserver(chk).observe(a,{childList:true,subtree:true});chk()})})()</script>
+<style>/* v1.25 Windows design A for Main home + login (same as farm pages). Phones unchanged. */
+#dkNav{display:none}
+@media (min-width:1000px){
+ html,body{background:#eef3f8}
+ body:has(#farms){padding-right:272px}
+ body:has(#farms) #dkNav{display:flex}
+ #dkNav{position:fixed;top:14px;bottom:14px;right:14px;width:244px;z-index:4;flex-direction:column;gap:4px;padding:14px;border-radius:26px;color:#fff;background:radial-gradient(130% 45% at 100% 0%,rgba(52,140,210,.55),transparent 70%),radial-gradient(90% 40% at 0% 100%,rgba(52,194,126,.22),transparent 70%),linear-gradient(180deg,#14385c,#0e2740);box-shadow:0 14px 36px rgba(14,39,64,.35)}
+ #dkNav .bt{display:flex;align-items:center;justify-content:flex-end;gap:12px;text-align:right;font-weight:700;font-size:17px;line-height:1.35;padding:6px 4px 16px;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,.12)}
+ #dkNav .bt img{width:54px;height:54px;border-radius:12px;background:#fff}
+ #dkNav button{display:flex;align-items:center;justify-content:flex-end;gap:12px;width:100%;background:none;border:0;color:rgba(255,255,255,.78);font:inherit;font-size:15.5px;padding:8px 10px;border-radius:16px;cursor:pointer;position:relative}
+ #dkNav button:hover{background:rgba(255,255,255,.07)}
+ #dkNav button svg{width:40px;height:40px;padding:9px;box-sizing:border-box;border-radius:13px;background:rgba(255,255,255,.08);flex:none}
+ #dkNav button.on{background:rgba(255,255,255,.13);color:#fff;font-weight:700}
+ #dkNav button.on svg{background:linear-gradient(135deg,#3fd08a,#1f7a4d);box-shadow:0 5px 14px rgba(52,194,126,.45)}
+ #dkNav button.on::after{content:"";position:absolute;left:12px;width:7px;height:7px;border-radius:50%;background:#3fd08a}
+ #dkNav .ft{margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px;border-radius:18px;background:rgba(255,255,255,.08)}
+ #dkNav .ft .av{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:700;font-size:18px;flex:none;background:linear-gradient(135deg,#3fd08a,#1f7a4d)}
+ #dkNav .ft div{min-width:0;flex:1;line-height:1.35;text-align:right}#dkNav .ft b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#dkNav .ft small{font-size:12px;opacity:.75}
+ #dkNav .ft .dot{width:10px;height:10px;border-radius:50%;background:#34c27e;box-shadow:0 0 0 4px rgba(52,194,126,.25);flex:none}
+ body:has(#farms) header.top{position:sticky;top:14px;margin:14px 28px 0 14px;border-radius:20px;background:#fff;color:#173f66;padding:10px 14px 10px 10px;flex-direction:row-reverse;box-shadow:0 -30px 0 10px #eef3f8,0 6px 22px rgba(23,63,102,.10);border:1px solid rgba(23,63,102,.06)}
+ body:has(#farms) header.top img{display:none}
+ body:has(#farms) header.top .t{text-align:right}
+ body:has(#farms) header.top .t b{font-size:21px;display:flex;align-items:center;justify-content:flex-end;gap:10px}
+ body:has(#farms) header.top .t b::after{content:"";width:38px;height:38px;border-radius:12px;background:#e8f1fa url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c5d93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='7' height='7' rx='2'/%3E%3Crect x='14' y='3' width='7' height='7' rx='2'/%3E%3Crect x='3' y='14' width='7' height='7' rx='2'/%3E%3Crect x='14' y='14' width='7' height='7' rx='2'/%3E%3C/svg%3E") center/22px no-repeat}
+ body:has(#farms) header.top .t span{font-size:13.5px;opacity:.75}
+ body:has(#farms) header.top .t b{font-size:0!important}
+ body:has(#farms) header.top .t b::before{content:"All farms";font-size:21px}
+ body:has(#farms) header.top #umenu{width:44px;height:44px;background:linear-gradient(135deg,#1c5d93,#173f66)!important;color:#fff}
+ body:has(#farms) .wrap{margin-left:14px;margin-right:28px;max-width:none!important}
+ body:has(#farms) .card,body:has(#farms) .fcard .farm,body:has(#farms) .fsum,body:has(#farms) .fset{border-color:rgba(23,63,102,.08)}
+ body:has(#farms) .card,body:has(#farms) .fcard{box-shadow:0 6px 22px rgba(23,63,102,.08);border-radius:20px}
+ body:has(#farms) .fcard{border-radius:20px;overflow:hidden;background:#fff}
+ body:has(#farms) .fcard .farm{border-radius:0;border:0;border-bottom:1px solid #e6edf3}
+ body:has(#farms) .fcard .fsum,body:has(#farms) .fcard .fset{border:0}
+ body:has(#farms) .fcard .fset{border-top:1px solid #e6edf3}
+ body:has(#farms) #add{border-radius:16px}
+ body:has(#farms) #phones{top:104px;max-height:calc(100vh - 124px)}
+ .usheet .sp{top:50%;bottom:auto;transform:translateY(-50%);border-radius:22px;padding-bottom:18px}
+ /* login: logo panel on the right like the sidebar, form on the left */
+ .wrap:has(>.hero){max-width:none;min-height:100vh;padding:40px calc(42vw + 40px) 40px 40px;display:flex;flex-direction:column;justify-content:center;align-items:center}
+ .wrap:has(>.hero)>*:not(.hero){width:100%;max-width:470px}
+ .wrap:has(>.hero) .card{border-radius:22px;border-color:rgba(23,63,102,.08);box-shadow:0 10px 30px rgba(23,63,102,.10);padding:24px}
+ .wrap:has(>.hero) .tabs2 button{border-radius:14px}
+ .hero{position:fixed;top:14px;bottom:14px;right:14px;width:42vw;border-radius:26px;padding:0!important;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;background:radial-gradient(130% 45% at 100% 0%,rgba(52,140,210,.55),transparent 70%),radial-gradient(90% 40% at 0% 100%,rgba(52,194,126,.22),transparent 70%),linear-gradient(180deg,#14385c,#0e2740);box-shadow:0 14px 36px rgba(14,39,64,.35)}
+ .hero img{width:170px!important;height:170px!important;border-radius:36px!important;background:#fff;box-shadow:0 14px 34px rgba(0,0,0,.3)!important}
+ .hero h1{font-size:30px;margin-top:20px!important;color:#fff}
+ .hero p.mut{color:rgba(255,255,255,.8)!important;font-size:16px}
+ .hero::after{content:"حسین پروٹین";font-family:"Jameel Noori",serif;font-size:34px;line-height:1.8;opacity:.92}
+}
+</style>
+<script>/* v1.25 Windows: sidebar on Main home */(function(){
+ const ic={farms:'<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',add:'<path d="M12 5v14M5 12h14"/>',phones:'<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>',req:'<path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/>',gd:'<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>'};
+ const sv=k=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+ic[k]+'</svg>';
+ let nav=null,last="";
+ function up(){const app=document.getElementById("app");if(!app)return;const home=!!document.getElementById("farms");
+  if(!nav){nav=document.createElement("nav");nav.id="dkNav";nav.setAttribute("aria-label","Main menu");document.body.append(nav)}
+  if(!home){last="";return}
+  const sub=((document.querySelector("header.top .t span")||{}).textContent||"").trim();
+  const items=[["farms","All farms","farms"]];
+  if(document.getElementById("add"))items.push(["add","+ Add Farm","add"]);
+  if(document.getElementById("phones"))items.push(["phones","Phones","phones"]);
+  if(document.querySelector("#reqs .card,#mvreq .card"))items.push(["req","Requests","reqs"]);
+  if(document.getElementById("gd")||document.getElementById("bkp"))items.push(["gd","Backup",document.getElementById("gd")?"gd":"bkp"]);
+  const key=sub+"|"+items.map(i=>i[0]).join(",");if(key===last)return;last=key;
+  const who=sub.split("·").map(x=>x.trim()).filter(Boolean);const nm=who.length>2?who[1]:who[0]||"Main";
+  nav.innerHTML='<div class="bt"><span>Hussain Protein<br>Broiler Farm App</span><img src="img/logo-192.png" alt=""></div>'+items.map((i,n)=>'<button type="button" data-go="'+i[2]+'"'+(n?'':' class="on"')+'><span>'+i[1]+'</span>'+sv(i[0])+'</button>').join("")+'<div class="ft"><span class="dot"></span><div><b></b><small>all farms</small></div><span class="av"></span></div>';
+  nav.querySelector(".ft b").textContent=nm;nav.querySelector(".ft .av").textContent=(nm[0]||"M").toUpperCase();
+  nav.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{nav.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));const id=b.dataset.go,el=document.getElementById(id);if(!el)return;
+   if(id==="add"){el.click();return}if(id==="farms"){scrollTo({top:0,behavior:"smooth"});return}el.scrollIntoView({behavior:"smooth",block:"start"})})}
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{up();setInterval(up,700)});else{up();setInterval(up,700)}})();</script>
+<script>/* v1.25 Windows: Enter in the login boxes = Log in */document.addEventListener("keydown",e=>{if(e.key!=="Enter"||!matchMedia("(min-width:1000px)").matches||e.defaultPrevented)return;const t=e.target;if(!t||!t.matches||!t.matches("input"))return;const c=t.closest(".card");if(!c)return;const go=c.querySelector("#go,#fgo,#fpok,#mk,#cpok,#gmok");if(!go||go.disabled)return;const f=[...c.querySelectorAll("input")].filter(x=>x.offsetParent!==null&&!x.disabled&&x.type!=="checkbox");const i=f.indexOf(t);e.preventDefault();if(i>-1&&i<f.length-1)f[i+1].focus();else go.click()});</script>
+<div id="app"></div>
+<script src="app.js"></script>
+</body>
+</html>
