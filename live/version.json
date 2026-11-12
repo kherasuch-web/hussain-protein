@@ -1,18 +1,1 @@
-{
-  "ver": "1.26.1",
-  "note": "Test live update: only the footer version changes to v1.26.1",
-  "android": {
-    "zip": "android-1.26.1.zip",
-    "minBuild": 27,
-    "sha256": "9b977eefa192eed07585e82b334ace6d91136b1bd2963285784ad060fae7943e"
-  },
-  "windows": {
-    "files": [
-      "index.html",
-      "app.js",
-      "farm.html",
-      "farm.js"
-    ],
-    "minDesk": "1.26.0"
-  }
-}
+{"ver": "1.26.2", "note": "Spendings date search, Medicine Waiting For Note, Windows entry tab", "android": {"zip": "android-1.26.2.zip", "minBuild": 27, "sha256": "d034070dc8246b92d9b548f2208ffdb8dceca79d075bb757787185234bb97daa"}, "windows": {"files": ["index.html", "app.js", "farm.html", "farm.js"], "minDesk": "1.26.0"}}

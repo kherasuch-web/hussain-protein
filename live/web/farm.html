@@ -650,7 +650,7 @@ body.supview #hpLogoBtn{display:none}
 
       <section style="display:flex;flex-direction:column;gap:8px" aria-label="Spendings record">
         <h2 class="en">General Spendings Record</h2>
-        <div class="row" style="gap:8px;align-items:center"><input id="spQ" class="txt" type="search" autocomplete="off" placeholder="Search name (e.g. Petrol, Usman Ele)" style="flex:1"><button class="ghost" id="spQPdf" type="button" hidden>Download PDF</button></div>
+        <div class="row spbar" style="gap:6px;align-items:center"><input id="spQ" class="txt" type="search" autocomplete="off" placeholder="Search name (e.g. Petrol, Usman Ele)" style="flex:1"><span id="spDR" hidden><small>From</small><input id="spD1" type="date"><small>To</small><input id="spD2" type="date"></span><button class="spcal" id="spCal" type="button" aria-pressed="false" title="Search by dates" aria-label="Search by dates">📅</button><button class="ghost" id="spQPdf" type="button" hidden>Download PDF</button></div>
         <div class="toast pdftoast" id="spQToast" role="status"></div>
         <div class="tablewrap"><table id="spTable"></table></div>
         <div class="legend">Tap a row to edit or delete it.</div>
@@ -1442,7 +1442,7 @@ function medBill(d,toast){
 }
 // v1.22: Medicine Report = one combined bill of ALL dealers (+ Previous Store), each dealer with its own total
 function medReport(toast){
-  const ds=[MB_STORE,...dealers.slice().sort((a,b)=>(a.seq||0)-(b.seq||0))], all=medbuys.slice().sort(byDate), dot=v=>v?esc(v):"...";
+  const ds=[MB_WFN,MB_STORE,...dealers.slice().sort((a,b)=>(a.seq||0)-(b.seq||0))], all=medbuys.slice().sort(byDate), dot=v=>v?esc(v):"...";
   const parts=ds.map(d=>{const isSt=d.id===MB_STORE.id,list=all.filter(x=>x.dealer===d.id);return {d,isSt,list,tot:isSt?storeTot():r2(list.reduce((a,x)=>a+(x.price||0),0))}}).filter(p=>p.list.length||p.tot);
   if(!parts.length){toast("No medicine yet.",true);return}
   let h=`<thead><tr><th>Sr</th><th>Date</th><th>Medicine Name</th><th>Traditional Name</th><th>Quantity</th><th class="r">Rate</th><th class="r">Total Price</th></tr></thead><tbody>`,n=0;
@@ -1651,15 +1651,25 @@ function supPdf(toast){
 // perfect match only: the whole Description / Counterpart, or one name of a comma list, equals the search (capitals ignored)
 const spNorm=v=>String(v||"").toLowerCase().replace(/\s+/g," ").trim();
 const spHits=q=>{q=spNorm(q);return spends.filter(x=>x.type!=="break"&&[x.desc,x.cp].some(v=>spNorm(v)===q||String(v||"").split(",").some(p=>spNorm(p)===q))).sort(byDate)};
+// v1.27: 📅 date search inside the same bar (From .. To); off = name search as before
+let spDateOn=false;
+function spFilter(){
+  if(spDateOn){const a=$("spD1").value,b=$("spD2").value;if(!a&&!b)return null;
+    const hit=spends.filter(x=>x.type!=="break"&&x.date&&(!a||x.date>=a)&&(!b||x.date<=b)).sort(byDate);
+    const lab=(a?dmy(a):"start")+" to "+(b?dmy(b):"today");return {hit,lab,file:lab.replace(/\//g,"-"),none:"No entry between these dates."}}
+  const qq=($("spQ").value||"").trim();if(!qq)return null;
+  return {hit:spHits(qq.toLowerCase()),lab:'with "'+qq+'"',q:qq,file:qq,none:"No entry with this name."};
+}
 function spSearchPdf(toast){
-  const qq=$("spQ").value.trim(),hit=spHits(qq.toLowerCase());
-  if(!hit.length){toast("No entry with this name.",true);return}
+  const f=spFilter();if(!f){toast("Write a name or pick dates first.",true);return}
+  const qq=f.q||f.lab,hit=f.hit;
+  if(!hit.length){toast(f.none,true);return}
   const dot=v=>v===null||v===undefined||v===""?"...":esc(v),tot=r2(hit.reduce((a,x)=>a+(x.amount||0),0)),ds=hit.map(x=>x.date).filter(Boolean).sort();
   let h=`<thead><tr><th>Sr</th><th>Date</th><th>Description</th><th>If Quantity</th><th>If Counterpart</th><th class="r">Spendings</th></tr></thead><tbody>`;
   h+=hit.map((x,i)=>`<tr><td>${i+1}</td><td>${dmy(x.date)}</td><td style="white-space:normal">${esc(x.desc).replace(/,(?=\S)/g,",\u200B")}</td><td>${dot(x.qty)}</td><td style="white-space:normal">${dot(x.cp)}</td><td class="r">${x.amount?F(x.amount):"..."}</td></tr>`).join("");
   h+=`<tr class="bt"><td colspan="5">Total (Rs)</td><td class="r">${F(tot)}</td></tr>`;
-  return billPdf({title:"Spendings",info:[["Search",qq],["Dates",ds.length?dmy(ds[0])+" to "+dmy(ds[ds.length-1]):"..."],["Report Date",dmy(todayISO())]],
-    table:h+"</tbody>",sum:[["Entries",F(hit.length)],["Total Amount","Rs "+F(Math.round(tot))]],file:"Spendings - "+qq},toast);
+  return billPdf({title:"Spendings",info:[[f.q?"Search":"Dates chosen",qq],["Dates",ds.length?dmy(ds[0])+" to "+dmy(ds[ds.length-1]):"..."],["Report Date",dmy(todayISO())]],
+    table:h+"</tbody>",sum:[["Entries",F(hit.length)],["Total Amount","Rs "+F(Math.round(tot))]],file:"Spendings - "+f.file},toast);
 }
 function renderSpend(){
   const list=dateOrder(spends);
@@ -1668,11 +1678,11 @@ function renderSpend(){
   $("spTotal").textContent=rs(tot);$("spMonth").textContent=rs(items.filter(x=>(x.date||"").slice(0,7)===mk).reduce((a,x)=>a+(x.amount||0),0));$("spCount").textContent=F(items.length);
   const dot=v=>v===null||v===undefined||v===""?"...":v;
   let h="<thead><tr><th>Date</th><th>Description</th><th>If Quantity</th><th>If Counterpart</th><th style='text-align:right'>Spendings</th></tr></thead><tbody>";
-  const q=($("spQ").value||"").trim().toLowerCase();$("spQPdf").hidden=!q;
-  if(q){
-    const hit=spHits(q),qt=r2(hit.reduce((a,x)=>a+(x.amount||0),0));
+  const f=spFilter();$("spQPdf").hidden=!f;
+  if(f){
+    const hit=f.hit,qt=r2(hit.reduce((a,x)=>a+(x.amount||0),0));
     h+=hit.map(x=>`<tr data-sp="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="dsc"><div>${esc(x.desc)}</div></td><td>${esc(dot(x.qty))}</td><td class="cpc">${esc(dot(x.cp))}</td><td class="num amt">${x.amount?F(x.amount):"..."}</td></tr>`).join("");
-    h+=hit.length?`<tr class="tot"><td colspan="4">Total (Rs) · ${F(hit.length)} entr${hit.length>1?"ies":"y"} with "${esc($("spQ").value.trim())}"</td><td class="num amt">${F(qt)}</td></tr>`:`<tr><td colspan="5" class="empty">No entry with this name.</td></tr>`;
+    h+=hit.length?`<tr class="tot"><td colspan="4">Total (Rs) · ${F(hit.length)} entr${hit.length>1?"ies":"y"} ${esc(f.lab)}</td><td class="num amt">${F(qt)}</td></tr>`:`<tr><td colspan="5" class="empty">${f.none}</td></tr>`;
     $("spTable").innerHTML=h+"</tbody>";
   }else{
   let run=0;
@@ -1723,7 +1733,7 @@ function renderMain(){
   const sum=(l,k)=>Math.round(l.reduce((a,x)=>a+(x[k]||0),0));
   const gen=sum(spends.filter(x=>x.type!=="break"),"amount");
   const fdIn=sum(feeds.filter(x=>x.kind==="in"),"price"), fdOut=sum(feeds.filter(x=>x.kind==="out"),"price"), fdW=flock&&flock.raw&&flock.raw.feedTotal||0, feedC=Math.round(fdW||fdIn-fdOut);
-  const mdW=flock&&flock.raw&&flock.raw.medTotal||0, med=Math.round(mdW||storeTot()+sum(medbuys.filter(x=>dealers.some(d=>d.id===x.dealer)),"price"));
+  const mdW=flock&&flock.raw&&flock.raw.medTotal||0, med=Math.round(mdW||storeTot()+sum(medbuys.filter(mbCounted),"price"));
   const adv=sum(sups.filter(x=>x.type!=="break"),"amount");
   const X=saX(), people=sals.filter(x=>x.kind==="person");
   const pay=saPayDate()||todayISO(), sal=r2(people.reduce((a,x)=>a+saTotal(x,pay),0));
@@ -1996,6 +2006,9 @@ function suFill(x){
 }
 const sugIn=(id,ph,ml,key)=>`<span class="sugw"><input id="${id}" class="txt" maxlength="${ml}" autocomplete="off" placeholder="${ph}" data-sk="${key}"><span class="sug" role="listbox" hidden></span></span>`;
 const MB_STORE={id:"prevstore",name:"Previous Store Medicine",seq:0};
+// v1.27: "Waiting For Note" = medicine whose dealer is not known yet; later each entry is moved to its dealer
+const MB_WFN={id:"wfn",name:"Waiting For Note",seq:-1};
+const mbCounted=x=>x.dealer===MB_WFN.id||dealers.some(d=>d.id===x.dealer);
 let mbOpen=null;
 // v1.23: split a dealer box into form part + record part (phone: display:contents = no change; Windows: side by side)
 function hpSplit(bd){const kids=[...bd.children],i=kids.findIndex(c=>c.tagName==="H2");if(i<1)return;const f=document.createElement("div"),r=document.createElement("div");f.className="hpform";r.className="hprec";kids.slice(0,i).forEach(c=>f.appendChild(c));kids.slice(i).forEach(c=>r.appendChild(c));bd.append(f,r)}
@@ -2021,7 +2034,9 @@ function dealerSection(d){
     <div class="row"><button class="ghost" type="button" data-act="pdf">⬇ Download PDF Bill</button></div><div class="toast pdftoast" role="status"></div>
     <div class="row" style="justify-content:space-between"><button class="ghost" type="button" data-adddealer="1">+ Add New Dealer</button><button class="danger" type="button" data-act="ddel">Delete Dealer</button></div>
     <div data-box="ddel" hidden style="display:none;flex-direction:column;gap:8px"><div class="legend" style="color:#b42318">This deletes the dealer and ALL its entries. It cannot be undone.</div><div class="row"><button class="danger" type="button" data-act="ddelyes">Yes, delete dealer</button><button class="ghost" type="button" data-act="ddelno">No</button></div></div></div>`;
-  el.querySelector('[data-act="ddel"]').remove();el.querySelector('[data-box="ddel"]').remove();hpSplit(el.querySelector(".mbbody"));
+  el.querySelector('[data-act="ddel"]').remove();el.querySelector('[data-box="ddel"]').remove();
+  if(k===MB_WFN.id){el.classList.add("wfn");el.querySelector("[data-adddealer]").remove();el.querySelector("[data-srcrow]").remove();el.querySelector("[data-tradl]").remove();el.querySelector(".legend").textContent="Tap a row to edit. Tap ↪ Move when you know the dealer.";el.querySelector('[data-f="price"]').placeholder="Optional (write if known)"}
+  hpSplit(el.querySelector(".mbbody"));
   if(k===MB_STORE.id){el.querySelector("[data-adddealer]").remove();el.querySelectorAll('[data-f="rate"],[data-f="price"]').forEach(i=>i.closest("label").remove());
     el.querySelector(".mbbody").insertAdjacentHTML("beforeend",`<div class="mbstot" style="border-top:1px solid var(--line,#ddd);padding-top:12px;display:flex;flex-direction:column;gap:10px">
       <label>Store Total (Rs) · written by user<input class="txt" inputmode="decimal" data-f="stot" placeholder="Total amount of store medicine"></label>
@@ -2031,7 +2046,7 @@ function dealerSection(d){
   el.querySelectorAll("input[data-sk]").forEach(inp=>attachSug(inp,inp.nextElementSibling,inp.dataset.sk));
   const q=sel=>el.querySelector(sel), fld=f=>({date:q('[data-f="date"]'),name:q("#mbN_"+k),trad:q("#mbT_"+k),qty:q("#mbQ_"+k),src:q("#mbS_"+k),rate:q('[data-f="rate"]'),price:q('[data-f="price"]')})[f];
   const t=(m,e)=>{const b=q(".toast");b.textContent=m;b.classList.toggle("err",!!e)};
-  const fill=x=>{fld("date").value=x?x.date:todayISO();["name","trad","qty","src"].forEach(f=>fld(f).value=x&&x[f]||"");if(fld("rate"))fld("rate").value=x&&x.rate?x.rate:"";if(fld("price"))fld("price").value=x&&x.price?x.price:"";q('[data-box="del"]').hidden=true};
+  const fill=x=>{fld("date").value=x?x.date:todayISO();["name","trad","qty","src"].forEach(f=>{if(fld(f))fld(f).value=x&&x[f]||""});if(fld("rate"))fld("rate").value=x&&x.rate?x.rate:"";if(fld("price"))fld("price").value=x&&x.price?x.price:"";q('[data-box="del"]').hidden=true};
   el._fill=fill;fill(null);
   // rate x quantity -> total price (quantity like "5 Ltr": first number is used)
   const autoTot=()=>{if(!fld("rate")||!fld("price"))return;const m=fld("qty").value.replace(/,/g,"").match(/\d+(\.\d+)?/),r=mNum(fld("rate").value);
@@ -2039,6 +2054,7 @@ function dealerSection(d){
   if(fld("rate")){fld("rate").addEventListener("input",autoTot);fld("qty").addEventListener("input",autoTot);fld("qty").addEventListener("change",autoTot)}
   el.addEventListener("click",async ev=>{
     if(ev.target.closest(".mbhead")){mbOpen=mbOpen===k?null:k;mbApplyOpen();if(mbOpen)el.scrollIntoView({behavior:"smooth",block:"start"});return}
+    const mvb=ev.target.closest("[data-mv]");if(mvb){wfnMove(mvb.dataset.mv);return}
     const b=ev.target.closest("[data-act]"), tr=ev.target.closest("tr[data-mb]");
     if(tr){const x=medbuys.find(y=>y.id===tr.dataset.mb);if(!x)return;mbEdit[k]=x.id;fill(x);t("Editing: change and Save, or Delete.");renderMed();el.scrollIntoView({behavior:"smooth"});return}
     if(!b)return;const a=b.dataset.act;
@@ -2058,7 +2074,7 @@ function dealerSection(d){
       if(!date||!name){t("Date and Medicine Name are required.",true);return}
       if(!db)return;
       const id=mbEdit[k]||("mb"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)), old=mbEdit[k]?medbuys.find(x=>x.id===mbEdit[k]):null;
-      const data={dealer:k,date,name,trad:mbNoTrad(dealers.find(x=>x.id===k))?(old&&old.trad||""):fld("trad").value.trim(),qty:fld("qty").value.trim(),src:mbSelf(dealers.find(x=>x.id===k))?(fld("src").value.trim()||null):(old&&old.src||null),rate:fld("rate")?mNum(fld("rate").value)||null:null,price:price||null,
+      const data={dealer:k,date,name,trad:mbNoTrad(dealers.find(x=>x.id===k))||!fld("trad")?(old&&old.trad||""):fld("trad").value.trim(),qty:fld("qty").value.trim(),src:mbSelf(dealers.find(x=>x.id===k))?(fld("src").value.trim()||null):(old&&old.src||null),rate:fld("rate")?mNum(fld("rate").value)||null:null,price:price||null,
         seq:old&&old.seq?old.seq:medbuys.reduce((m,x)=>Math.max(m,x.seq||0),0)+1,shed:"s1",flock:flockId,createdAt:old&&old.createdAt?old.createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
       b.disabled=true;const ok=await write(db.doc("medbuy/"+id),data);b.disabled=false;
       if(ok){t(mbEdit[k]?"Updated.":"Saved: "+name+(price?" · "+rs(price):""));mbEdit[k]=null;fill(null)}else t("Could not save. Please try again.",true);
@@ -2082,7 +2098,9 @@ async function mbSrcMove(){if(mbMoving||HPMODE!=="farm"||!db||!RAW.dealers||!RAW
 const mbNoTrad=d=>!!d&&/self|سیلف/i.test(d.name||"");
 const mbSelf=d=>!!d&&(d.src===true||(d.src==null&&/self|سیلف/i.test(d.name||"")));
 function renderMed(){
-  const wrap=$("mbDealers"), ds=[MB_STORE,...dealers.slice().sort((a,b)=>(a.seq||0)-(b.seq||0))];
+  const wrap=$("mbDealers"), ds=[MB_WFN,MB_STORE,...dealers.slice().sort((a,b)=>(a.seq||0)-(b.seq||0))];
+  {const nw=medbuys.filter(x=>x.dealer===MB_WFN.id).length;let wb=$("mbWfnWarn");if(!wb){wb=document.createElement("div");wb.id="mbWfnWarn";wb.className="wfnwarn";wb.setAttribute("role","status");wrap.before(wb);wb.addEventListener("click",()=>{mbOpen=MB_WFN.id;mbApplyOpen();wrap.querySelector(".mbsec.wfn").scrollIntoView({behavior:"smooth",block:"start"})})}
+   wb.hidden=!nw;wb.textContent="⚠ "+nw+" medicine"+(nw>1?"s":"")+" waiting for source"}
   wrap.querySelectorAll(".mbsec").forEach(el=>{if(!ds.some(d=>d.id===el.dataset.dealer))el.remove()});
   ds.forEach(d=>{let el=wrap.querySelector(`.mbsec[data-dealer="${d.id}"]`);if(!el){el=dealerSection(d)}wrap.appendChild(el)});
   const all=medbuys.slice().sort(byDate), dot=v=>v?esc(v):"...", sum=l=>r2(l.reduce((a,x)=>a+(x.price||0),0));
@@ -2091,15 +2109,16 @@ function renderMed(){
     if(isSt){const inp=el.querySelector('[data-f="stot"]');if(document.activeElement!==inp)inp.value=mbStore&&mbStore.total?F(mbStore.total):"";
       el.querySelector(".mbsum").textContent=mbStore&&mbStore.total?"":"No Store Total written yet.";el.querySelector(".mbsum").hidden=!!(mbStore&&mbStore.total);}
     el.querySelector(".mbdname").textContent=(mbEdit[d.id]?"Edit · ":"")+d.name;el.querySelector(".mbdtot").textContent=rs(tot);
-    const sf=mbSelf(d),nt=mbNoTrad(d),sl=el.querySelector("[data-srcl]"),tl=el.querySelector("[data-tradl]");if(sl){if(sf)sl.style.removeProperty("display");else sl.style.setProperty("display","none","important")}if(tl){if(nt)tl.style.setProperty("display","none","important");else tl.style.removeProperty("display")}
+    const isW=d.id===MB_WFN.id,mvOk=isW&&canWrite;
+    const sf=!isW&&mbSelf(d),nt=isW||mbNoTrad(d),sl=el.querySelector("[data-srcl]"),tl=el.querySelector("[data-tradl]");if(sl){if(sf)sl.style.removeProperty("display");else sl.style.setProperty("display","none","important")}if(tl){if(nt)tl.style.setProperty("display","none","important");else tl.style.removeProperty("display")}
     const sr=el.querySelector("[data-srcrow]");if(sr){if(isSt)sr.remove();else{const sb=sr.querySelector(".srctog");sb.textContent="Source column: "+(sf?"On ✓":"Off");sb.classList.toggle("on",sf);sb.disabled=!canWrite}}
-    let h=`<thead><tr><th>Date</th><th>Medicine Name</th>${nt?"":"<th>Traditional Name</th>"}${sf?"<th>Source</th>":""}<th>Quantity</th>${isSt?"":`<th class="amt">Rate</th><th class="amt">Total Price</th>`}</tr></thead><tbody>`;
-    h+=list.map(x=>`<tr data-mb="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="w"><div>${esc(x.name)}</div></td>${nt?"":`<td class="w"><div>${dot(x.trad)}</div></td>`}${sf?`<td class="w"><div>${dot(x.src)}</div></td>`:""}<td class="w"><div>${dot(x.qty)}</div></td>${isSt?"":`<td class="num amt">${x.rate?F(x.rate):"..."}</td><td class="num amt">${x.price?F(x.price):"..."}</td>`}</tr>`).join("");
-    h+=(list.length||(isSt&&tot))?`<tr class="tot"><td colspan="${(isSt?3:5)+(sf?1:0)-(nt?1:0)}">Total (Rs) · ${esc(d.name)}</td><td class="num amt">${isSt&&!tot?"...":F(tot)}</td></tr>`:`<tr><td colspan="${(isSt?4:6)+(sf?1:0)-(nt?1:0)}" class="empty">${d.id===MB_STORE.id?"No previous store medicine yet. Add the first one above.":"No medicine from this dealer yet. Add the first one above."}</td></tr>`;
+    let h=`<thead><tr><th>Date</th><th>Medicine Name</th>${nt?"":"<th>Traditional Name</th>"}${sf?"<th>Source</th>":""}<th>Quantity</th>${isSt?"":`<th class="amt">Rate</th><th class="amt">Total Price</th>`}${mvOk?"<th></th>":""}</tr></thead><tbody>`;
+    h+=list.map(x=>`<tr data-mb="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="w"><div>${esc(x.name)}</div></td>${nt?"":`<td class="w"><div>${dot(x.trad)}</div></td>`}${sf?`<td class="w"><div>${dot(x.src)}</div></td>`:""}<td class="w"><div>${dot(x.qty)}</div></td>${isSt?"":`<td class="num amt">${x.rate?F(x.rate):"..."}</td><td class="num amt">${x.price?F(x.price):"..."}</td>`}${mvOk?`<td><button type="button" class="wfnmv" data-mv="${esc(x.id)}">↪ Move</button></td>`:""}</tr>`).join("");
+    h+=(list.length||(isSt&&tot))?`<tr class="tot"><td colspan="${(isSt?3:5)+(sf?1:0)-(nt?1:0)}">Total (Rs) · ${esc(d.name)}</td><td class="num amt">${isSt&&!tot?"...":F(tot)}</td>${mvOk?"<td></td>":""}</tr>`:`<tr><td colspan="${(isSt?4:6)+(sf?1:0)-(nt?1:0)+(mvOk?1:0)}" class="empty">${isW?"Nothing waiting. Write medicine here when its dealer is not known yet.":d.id===MB_STORE.id?"No previous store medicine yet. Add the first one above.":"No medicine from this dealer yet. Add the first one above."}</td></tr>`;
     el.querySelector(".mbtab").innerHTML=h+"</tbody>";
     const ed=!!mbEdit[d.id];el.querySelector('[data-act="cancel"]').hidden=el.querySelector('[data-act="del"]').hidden=!ed;el.querySelector('[data-act="save"]').disabled=!canWrite;
   });
-  $("mbAll").textContent=rs(r2(storeTot()+sum(all.filter(x=>dealers.some(d=>d.id===x.dealer)))));$("mbDCount").textContent=F(dealers.length);$("mbCount").textContent=F(all.length);
+  $("mbAll").textContent=rs(r2(storeTot()+sum(all.filter(mbCounted))));$("mbDCount").textContent=F(dealers.length);$("mbCount").textContent=F(all.length);
   $("mbFirst").hidden=!$("mbNewBox").hidden;$("mbFirstNote").hidden=dealers.length>0;mbApplyOpen();
   const uniq=k=>[...new Set(all.map(x=>x[k]).filter(Boolean))].sort();
   sugData.mbName=uniq("name");sugData.mbTrad=uniq("trad");sugData.mbQty=uniq("qty");sugData.mbSrc=uniq("src");
@@ -2198,6 +2217,9 @@ $("shedSave").addEventListener("click",async()=>{
 $("navDaily").addEventListener("click",()=>setView("daily"));
 $("navMain").addEventListener("click",()=>setView("main"));
 $("spQ").addEventListener("input",()=>renderSpend());
+$("spCal").addEventListener("click",()=>{spDateOn=!spDateOn;const b=$("spCal");b.setAttribute("aria-pressed",spDateOn);b.classList.toggle("on",spDateOn);$("spQ").hidden=spDateOn;$("spDR").hidden=!spDateOn;
+  if(spDateOn&&!$("spD1").value&&!$("spD2").value){const t=todayISO();$("spD1").value=t.slice(0,8)+"01";$("spD2").value=t}renderSpend()});
+["spD1","spD2"].forEach(i=>$(i).addEventListener("change",()=>renderSpend()));
 ["gsQty","gsRate"].forEach(id=>$(id).addEventListener("input",gsAuto));
 attachSug($("gsMat"),$("gsMat").nextElementSibling,"gsMat");
 $("gsSave").addEventListener("click",async()=>{
@@ -2258,7 +2280,7 @@ function pdfItems(){
     it("j","#6b2fa0","Final FCR Poster","تصویر (JPG) واٹس ایپ کیلئے، ہر بار نیا ڈیزائن",finalPoster,{jpg:1});
   }
   if(view==="spend"){
-    const q=($("spQ").value||"").trim();if(q)it("q","#0f6b73","Spendings · "+q,"تلاش والی لسٹ کی PDF",spSearchPdf);
+    const sf=spFilter(),q=sf?(sf.q||sf.lab):"";if(q)it("q","#0f6b73","Spendings · "+q,sf.q?"تلاش والی لسٹ کی PDF":"ان تاریخوں کے اخراجات کی PDF",spSearchPdf);
     it("s","#1c5d93","Spendings","اوپر تلاش میں نام لکھیں (مثلاً Petrol)، پھر یہاں اس کی PDF",null,{hint:1,hide:!!q});
     it("u","#8a5a12","Supervisor Advance","سپروائزر کو دی گئی رقم",supPdf);
     it("u","#1f7a4d","Salary","تنخواہ کی پوری شیٹ",salaryPdf);
@@ -2897,7 +2919,7 @@ const go=()=>{lay();const m=document.getElementById("vMain");if(!m)return;new Mu
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go()})();</script>
 <script>(function(){if(new URLSearchParams(location.search).has("ro"))document.documentElement.classList.add("hpro");
 const mq=matchMedia("(min-width:1000px)");
-const strip=h=>{const b=document.createElement("button");b.type="button";b.className="hpfold"+(h?" h":"");b.innerHTML='<span class="ic">✏️</span><span class="vt">اینٹری<br>کھولیں</span>';return b};
+const strip=h=>{const b=document.createElement("button");b.type="button";b.className="hpfold"+(h?" h":"");b.title="اینٹری کھولیں";b.innerHTML='<span class="ic">✏️</span><span class="vt">اینٹری<br> کھولیں</span>';return b};
 function forms(){const L=[];const e=document.getElementById("entryCard");if(e)L.push([e,0]);
  for(const id of ["spGen","spSup","spSal"]){const f=document.querySelector("#"+id+">.card:has(label)");if(f)L.push([f,0])}
  const fd=document.querySelector('section[aria-label="Add feed entry"]');if(fd)L.push([fd,1]);
@@ -2907,10 +2929,11 @@ function setup(){for(const [f,h] of forms()){if(f.dataset.hpf)continue;f.dataset
  const s=strip(h);f.before(s);s.onclick=()=>{fold(f,false);const i=f.querySelector("input:not([type=date]),textarea");if(i)i.focus()};
  const x=document.createElement("button");x.type="button";x.className="hpfoldx";x.textContent="چھپائیں ⇥";x.onclick=()=>fold(f,true);
  const hd=f.querySelector(":scope>.dayhead");if(hd)hd.appendChild(x);else{const r=document.createElement("div");r.className="hpfxrow";r.appendChild(x);f.prepend(r)}
+ fold(f,true);
  f.querySelectorAll("button.save").forEach(sv=>sv.addEventListener("click",()=>setTimeout(()=>{const t=f.querySelector(".toast");if(t&&t.classList.contains("err"))return;fold(f,true)},700)));
  // tapping a record row to edit opens the form again
  new MutationObserver(()=>{if(f.querySelector("[id$=Cancel]:not([hidden]),[data-act=cancel]:not([hidden])")||/ترمیم/.test((f.querySelector("h2")||{}).textContent||""))fold(f,false)}).observe(f,{subtree:true,attributes:true,attributeFilter:["hidden"],childList:true,characterData:true})}}
-mq.addEventListener("change",()=>{if(!mq.matches)forms().forEach(([f])=>fold(f,false))});
+mq.addEventListener("change",()=>forms().forEach(([f])=>fold(f,mq.matches)));
 new MutationObserver(setup).observe(document.documentElement,{childList:true,subtree:true});
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",setup);else setup()})();</script>
 
@@ -3278,6 +3301,98 @@ document.addEventListener("keydown",e=>{
  if(i>-1&&i<f.length-1){f[i+1].focus();if(f[i+1].select&&f[i+1].type!=="date")try{f[i+1].select()}catch(x){}}
  else save.click();
 });})();</script>
+<style>/* v1.27: date search inside the spendings search bar */
+.spbar{flex-wrap:nowrap!important;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:3px 4px 3px 0}
+.spbar>#spQ{border:0!important;background:transparent!important;box-shadow:none!important;min-width:0}
+.spbar>#spQ[hidden],#spDR[hidden]{display:none!important}
+#spDR{display:flex;align-items:center;gap:4px;flex:1;min-width:0;padding-left:8px;direction:ltr}
+#spDR small{font:600 12px "Segoe UI",Roboto,Arial,sans-serif;color:var(--muted)}
+#spDR input{flex:1;min-width:0;font:14px "Segoe UI",Roboto,Arial,sans-serif;border:1px solid var(--line);border-radius:7px;padding:5px 3px;background:var(--surface);color:var(--fg)}
+.spcal{flex:none;width:36px;height:36px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:17px;line-height:1;padding:0;display:grid;place-items:center;cursor:pointer}
+.spcal.on{background:var(--accent);border-color:var(--accent)}
+</style>
+<style>/* v1.27 Windows: folded entry button in Spendings is a small pill on the right, never floats over the record */
+@media (min-width:1000px){
+ html body :is(#spGen,#spSup,#spSal)>.hpfold.hpfold:has(+.hpfolded){position:static;flex-direction:row;justify-content:center;width:auto;min-height:0;padding:7px 16px 7px 10px;gap:8px;justify-self:end;align-self:auto;border-radius:12px;box-shadow:0 2px 8px rgba(31,122,77,.25)}
+ html body :is(#spGen,#spSup,#spSal)>.hpfold .ic{width:28px;height:28px;border-radius:8px;font-size:15px}
+ html body :is(#spGen,#spSup,#spSal)>.hpfold .vt{font-size:14px;line-height:1.4}
+ html body :is(#spGen,#spSup,#spSal)>.hpfold .vt br{display:none}
+ html body :is(#spGen,#spSup,#spSal)>.hpfold:hover{transform:translateY(-1px)}
+}
+</style>
+<div class="wfnsheet" id="wfnSheet" hidden><div class="wb" data-wclose></div><div class="wp" role="dialog" aria-label="Move medicine to a dealer">
+<div class="wh"><b id="wfnT"></b><small id="wfnS"></small></div>
+<div class="wl" id="wfnList"></div>
+<div class="wn" id="wfnNewRow" hidden><input class="txt" id="wfnNew" maxlength="80" placeholder="New dealer name"></div>
+<div class="wr"><label>Rate (Rs)<input class="txt" id="wfnRate" inputmode="decimal" placeholder="Rate"></label><label>Total Price (Rs)<input class="txt" id="wfnPrice" inputmode="decimal" placeholder="Total"></label></div>
+<div class="toast" id="wfnToast" role="status"></div>
+<button class="save" type="button" id="wfnGo">↪ Move</button><button class="ghost" type="button" data-wclose>Cancel</button></div></div>
+<style>/* v1.27 Waiting For Note */
+.mbsec.wfn{border-left:5px solid #e0a100}.mbsec.wfn>.mbhead{background:#fff8e6}
+.mbsec.wfn .mbhead h2::after{content:" 📦"}
+.wfnwarn{background:#fff4d6;border:1px solid #f0c75e;color:#7a4f00;border-radius:10px;padding:9px 12px;font:600 14px "Segoe UI",Roboto,Arial,sans-serif;cursor:pointer;margin-bottom:10px}.wfnwarn[hidden]{display:none}
+.wfnmv{background:#e0a100;color:#fff;border:0;border-radius:8px;padding:6px 9px;font:700 12.5px "Segoe UI",Roboto,Arial,sans-serif;white-space:nowrap;cursor:pointer}
+html.hpro .wfnmv{display:none}
+.wfnsheet{position:fixed;inset:0;z-index:120;direction:ltr;font-family:"Segoe UI",Roboto,Arial,sans-serif}.wfnsheet[hidden]{display:none}
+.wfnsheet .wb{position:absolute;inset:0;background:rgba(10,25,40,.45)}
+.wfnsheet .wp{position:absolute;left:0;right:0;bottom:0;margin:0 auto;max-width:520px;max-height:88vh;overflow:auto;background:#fff;border-radius:22px 22px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;box-shadow:0 -4px 20px rgba(0,0,0,.2)}
+@media (min-width:1000px){.wfnsheet .wp{bottom:auto;top:50%;transform:translateY(-50%);border-radius:20px}}
+.wfnsheet .wh b{display:block;font-size:19px;color:#173f66}.wfnsheet .wh small{color:#5d6b64;font-size:13px}
+.wfnsheet .wl{display:flex;flex-direction:column;gap:6px}
+.wfnsheet .wl button{text-align:left;border:1px solid #c5d3e0;background:#fff;border-radius:10px;padding:11px 12px;font:600 15px "Segoe UI",Roboto,Arial,sans-serif;color:#0f1d2b;cursor:pointer}
+.wfnsheet .wl button.sel{border-color:#1c5d93;background:#dce9f5}.wfnsheet .wl button.sel::after{content:" ✓";float:right}
+.wfnsheet .wl button.nw{color:#1c5d93}
+.wfnsheet .wr{display:grid;grid-template-columns:1fr 1fr;gap:8px}.wfnsheet .wr label{font-size:12.5px;color:#34485c;display:flex;flex-direction:column;gap:3px}
+.wfnsheet #wfnGo{background:#1f7a4d}
+</style>
+<script>
+(function(){
+let cur=null,pick=null;const $=i=>document.getElementById(i),sh=$("wfnSheet");
+const close=()=>{sh.hidden=true;cur=null};
+window.wfnMove=function(id){const x=medbuys.find(y=>y.id===id);if(!x||!canWrite)return;cur=x;pick=null;
+  $("wfnT").textContent=x.name+(x.qty?" · "+x.qty:"");$("wfnS").textContent=dmy(x.date)+" · Which dealer is it from?";
+  const ds=dealers.slice().sort((a,b)=>(a.seq||0)-(b.seq||0));
+  $("wfnList").innerHTML=ds.map(d=>`<button type="button" data-d="${esc(d.id)}">${esc(d.name)}</button>`).join("")+`<button type="button" class="nw" data-d="__new">+ New Dealer</button>`;
+  $("wfnNewRow").hidden=true;$("wfnNew").value="";$("wfnRate").value=x.rate||"";$("wfnPrice").value=x.price||"";$("wfnToast").textContent="";$("wfnGo").textContent="↪ Move";sh.hidden=false};
+$("wfnList").addEventListener("click",e=>{const b=e.target.closest("[data-d]");if(!b)return;pick=b.dataset.d;$("wfnList").querySelectorAll("button").forEach(x=>x.classList.toggle("sel",x===b));
+  $("wfnNewRow").hidden=pick!=="__new";if(pick==="__new")setTimeout(()=>$("wfnNew").focus(),50);
+  $("wfnGo").textContent="↪ Move to "+(pick==="__new"?"new dealer":b.textContent)});
+const autoT=()=>{const m=String(cur&&cur.qty||"").replace(/,/g,"").match(/\d+(\.\d+)?/),r=mNum($("wfnRate").value);if(m&&r)$("wfnPrice").value=String(Math.round(parseFloat(m[0])*r*100)/100)};
+$("wfnRate").addEventListener("input",autoT);
+sh.addEventListener("click",e=>{if(e.target.closest("[data-wclose]"))close()});
+$("wfnGo").addEventListener("click",async()=>{const t=(m,er)=>{$("wfnToast").textContent=m;$("wfnToast").classList.toggle("err",!!er)};
+  if(!cur||!db)return;if(!pick){t("Please choose the dealer.",true);return}
+  const b=$("wfnGo");b.disabled=true;let did=pick;
+  try{
+    if(pick==="__new"){const name=$("wfnNew").value.trim();if(!name){t("Please write the dealer name.",true);b.disabled=false;return}
+      const same=dealers.find(d=>d.name.toLowerCase()===name.toLowerCase());
+      if(same)did=same.id;else{did="dl"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+        const ok=await write(db.doc("dealers/"+did),{name,src:false,seq:dealers.reduce((m,x)=>Math.max(m,x.seq||0),0)+1,shed:"s1",createdAt:new Date().toISOString()});if(!ok){t("Could not save. Please try again.",true);b.disabled=false;return}}}
+    const {id,...r}=cur;const rate=mNum($("wfnRate").value)||null,price=mNum($("wfnPrice").value)||null;
+    const ok=await write(db.doc("medbuy/"+id),{...r,dealer:did,rate,price,movedFrom:"wfn",updatedAt:new Date().toISOString()});
+    if(!ok){t("Could not move. Please try again.",true);b.disabled=false;return}
+    close();renderMed();
+  }finally{b.disabled=false}});
+})();
+</script>
+<style>/* v1.27 Windows: entry closed by default; short green tab (30px) beside the record, next to the sidebar */
+@media (min-width:1000px){
+ html body .wrap.wrap.wrap:has(#entryCard.hpfolded):has(#vDaily[style*="contents"]){grid-template-columns:30px minmax(0,1fr)!important}
+ html body :is(#spGen,#spSup,#spSal):is(#spGen,#spSup,#spSal):has(>.card.hpfolded){grid-template-columns:minmax(0,1fr) 30px!important}
+ html body .mbsec.open>.mbbody.mbbody:has(>.hpfolded){grid-template-columns:minmax(0,1fr) 30px!important}
+ html body :is(#vDaily,#spGen,#spSup,#spSal,.mbbody,section,div)>.hpfold.hpfold.hpfold:has(+.hpfolded){position:sticky;top:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:30px;height:140px;min-height:0;padding:0;margin:0;border-radius:10px;background:linear-gradient(180deg,#2fa36b,#1f7a4d);box-shadow:0 2px 8px rgba(31,122,77,.25);justify-self:stretch;align-self:start;transform:none}
+ html body :is(#vDaily,#spGen,#spSup,#spSal,.mbbody,section,div)>.hpfold.hpfold.hpfold:hover{filter:brightness(1.1);transform:none}
+ html body :is(#vDaily,#spGen,#spSup,#spSal,.mbbody,section,div)>.hpfold.hpfold .ic{width:auto;height:auto;background:none;font-size:13px;border-radius:0}
+ html body :is(#vDaily,#spGen,#spSup,#spSal,.mbbody,section,div)>.hpfold.hpfold .vt{writing-mode:vertical-rl;font-size:13px;line-height:1.2;font-weight:600;white-space:nowrap}
+ html body .hpfold.hpfold .vt br{display:none}
+ html body #vDaily#vDaily>.hpfold.hpfold.hpfold:has(+.hpfolded){grid-column:1!important;grid-row:span 3!important}
+ html body .wrap.wrap.wrap:has(#entryCard.hpfolded):has(#vDaily[style*="contents"]) :is(#vDaily,#main)>*:not(.hpfold):not(.flock):not(#flRow):not(#vDaily):not(nav){grid-column:2!important}
+ html body .wrap.wrap.wrap:has(#entryCard.hpfolded):has(#vDaily[style*="contents"]) :is(.flock,#flRow){grid-column:1/-1!important}
+ html body :is(#spGen,#spSup,#spSal):is(#spGen,#spSup,#spSal):has(>.card.hpfolded),html body .mbsec.open>.mbbody.mbbody:has(>.hpfolded){grid-auto-flow:row dense}
+ html body :is(#spGen,#spSup,#spSal):is(#spGen,#spSup,#spSal)>.hpfold.hpfold:has(+.hpfolded),html body .mbsec.open>.mbbody.mbbody>.hpfold.hpfold:has(+.hpfolded){grid-column:2!important;grid-row:auto!important}
+ html body :is(#spGen,#spSup,#spSal):is(#spGen,#spSup,#spSal)>.hpfolded~*,html body .mbsec.open>.mbbody.mbbody>.hpfolded~*{grid-column:1!important}
+}
+</style>
 
 </body>
 </html>
