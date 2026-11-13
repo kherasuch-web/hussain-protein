@@ -174,6 +174,7 @@ label.chk{display:flex;flex-direction:row;align-items:center;gap:10px;font-weigh
 .rptpg h3{margin:12px 0 4px!important}
 .rptpg .rfoot{margin-top:18px;font-size:11px;color:#666;text-align:center}
 .billpg .btab td.bw{white-space:normal!important;max-width:170px;word-break:normal;overflow-wrap:normal}.billpg .btab th,.billpg .btab td{padding:3px 5px!important;line-height:1.25}
+.billpg .btab.fit{width:auto;margin:0 auto}.billpg .btab.fit td.bw{max-width:300px}.billpg .btab.fit th{white-space:nowrap}
 .billpg .bfoot{margin-top:22px;font-size:12px;color:#666;text-align:center}
 .addsale{background:transparent;color:var(--accent);border:1px dashed var(--accent);font-size:14px;padding:7px}
 .sale{display:block;font-size:11px;color:var(--bad);font-weight:400}
@@ -243,6 +244,12 @@ table.fdt tr[data-fd]{cursor:pointer}
 #spTable tr.brk td.amt{font-style:normal;color:var(--fg);text-align:right;font-size:12px}
 #spTable tr.tot td{background:var(--accent-soft);font-weight:600}
 #spTable th{text-align:left}
+@media (min-width:1000px){ /* v1.26.3: Windows - Description wide, other columns close together */
+#spTable th,#spTable td{padding:4px 12px}
+#spTable tr:not(.brk):not(.tot)>:nth-child(2){width:100%}
+#spTable tr:not(.brk):not(.tot)>:not(:nth-child(2)){width:1%;white-space:nowrap}
+#spTable td.dsc>div{width:auto;max-width:none}
+}
 .rtcard{border-color:var(--accent);border-width:2px}
 .rtopen{align-self:flex-start;background:var(--accent);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-size:16px;font-weight:700;display:inline-flex;align-items:center;gap:8px}
 .rtbad{background:#fff;color:var(--bad);border-radius:10px;padding:1px 8px;font-size:13px}
@@ -1027,6 +1034,11 @@ function fillForm(r){
   const showSale=!!(r&&(r.sold||r.avgW));$("saleBox").hidden=!showSale;$("addSale").hidden=showSale;
 }
 
+/* v1.26.3 (Windows): daily record shows the last 7 days; one button shows all days */
+let histAll=false;
+function hpHistCut(){const t=$("hist");if(!t)return;const rows=[...t.querySelectorAll("tbody tr[data-day]")];rows.forEach((r,i)=>r.classList.toggle("hpold",i<rows.length-7));
+  let b=$("histMore");if(!b){b=document.createElement("button");b.id="histMore";b.type="button";b.className="ghost";t.closest(".tablewrap").after(b);b.addEventListener("click",()=>{histAll=!histAll;hpHistCut()})}
+  b.hidden=rows.length<=7;t.classList.toggle("hpall",histAll);b.textContent=histAll?"▲ صرف آخری 7 دن دکھائیں":"▼ سارے دن دکھائیں ("+rows.length+" دن)"}
 function render(){
   if(!flock){return}
   $("sub").innerHTML="فلاک شروع: <bdi dir=\"ltr\">"+dateFor(1)+"</bdi>";
@@ -1069,6 +1081,7 @@ function render(){
   if(!hist.length&&supView)h+=`<tr><td colspan="10" class="empty">سپروائزر نے ابھی کوئی ڈیٹا نہیں بھیجا۔</td></tr>`;
   else if(!hist.length)h+=`<tr><td colspan="10" class="empty">ابھی کوئی دن درج نہیں ہوا۔ اوپر پہلے دن کا اندراج کر کے "محفوظ کریں" دبائیں۔</td></tr>`;
   $("hist").innerHTML=h+"</tbody>";
+  hpHistCut();
   if(!supView)renderFCR(hist);
 }
 
@@ -1264,7 +1277,7 @@ async function billPdf(o,toast){
   box.className="billpg";box.style.cssText=`position:fixed;left:-20000px;top:0;width:${W}px;background:#fff;color:#111;padding:${PY}px ${PX}px;box-sizing:border-box`;
   box.innerHTML=`<div class="blogo"><img src="img/logo-1024.png" alt=""></div><div class="bh1">Hussain Protein</div>${shedNm?`<div class="bh2">${esc(shedNm)}</div>`:""}<div class="bh3">${esc(o.title)}</div>
     <table class="binfo"><tbody>${o.info.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("")}</tbody></table>
-    <table class="btab">${o.table}</table>${o.sum?`<table class="bsum"><tbody>${o.sum.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("")}</tbody></table>`:""}
+    <table class="btab${o.fit?" fit":""}">${o.table}</table>${o.sum?`<table class="bsum"><tbody>${o.sum.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("")}</tbody></table>`:""}
     <div class="bfoot">Hussain Protein · Bill made on ${dmy(todayISO())}</div>`;
   // text cells keep a fixed width: long name lists go to the next line after a comma, never off the page
   box.querySelectorAll(".btab td:not(.r)").forEach(td=>{if(td.textContent.length>14&&!td.hasAttribute("colspan")){td.classList.add("bw");const w=document.createTreeWalker(td,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode())n.nodeValue=n.nodeValue.replace(/,(?=\S)/g,",\u200B")}});
@@ -1665,11 +1678,15 @@ function spSearchPdf(toast){
   const qq=f.q||f.lab,hit=f.hit;
   if(!hit.length){toast(f.none,true);return}
   const dot=v=>v===null||v===undefined||v===""?"...":esc(v),tot=r2(hit.reduce((a,x)=>a+(x.amount||0),0)),ds=hit.map(x=>x.date).filter(Boolean).sort();
-  let h=`<thead><tr><th>Sr</th><th>Date</th><th>Description</th><th>If Quantity</th><th>If Counterpart</th><th class="r">Spendings</th></tr></thead><tbody>`;
-  h+=hit.map((x,i)=>`<tr><td>${i+1}</td><td>${dmy(x.date)}</td><td style="white-space:normal">${esc(x.desc).replace(/,(?=\S)/g,",\u200B")}</td><td>${dot(x.qty)}</td><td style="white-space:normal">${dot(x.cp)}</td><td class="r">${x.amount?F(x.amount):"..."}</td></tr>`).join("");
-  h+=`<tr class="bt"><td colspan="5">Total (Rs)</td><td class="r">${F(tot)}</td></tr>`;
-  return billPdf({title:"Spendings",info:[[f.q?"Search":"Dates chosen",qq],["Dates",ds.length?dmy(ds[0])+" to "+dmy(ds[ds.length-1]):"..."],["Report Date",dmy(todayISO())]],
-    table:h+"</tbody>",sum:[["Entries",F(hit.length)],["Total Amount","Rs "+F(Math.round(tot))]],file:"Spendings - "+f.file},toast);
+  /* v1.26.3: bill of one person (all rows have that Counterpart) -> no Counterpart column */
+  const cq=f.q?spNorm(f.q):"",noCp=!!cq&&hit.every(x=>spNorm(x.cp)===cq||String(x.cp||"").split(",").some(p=>spNorm(p)===cq));
+  let h=`<thead><tr><th>Sr</th><th>Date</th><th>Description</th><th>If Quantity</th>${noCp?"":"<th>If Counterpart</th>"}<th class="r">Spendings</th></tr></thead><tbody>`;
+  h+=hit.map((x,i)=>`<tr><td>${i+1}</td><td>${dmy(x.date)}</td><td style="white-space:normal">${esc(x.desc).replace(/,(?=\S)/g,",\u200B")}</td><td>${dot(x.qty)}</td>${noCp?"":`<td style="white-space:normal">${dot(x.cp)}</td>`}<td class="r">${x.amount?F(x.amount):"..."}</td></tr>`).join("");
+  h+=`<tr class="bt"><td colspan="${noCp?4:5}">Total (Rs)</td><td class="r">${F(tot)}</td></tr>`;
+  /* v1.26.3: a name bill is headed with that person's name (as saved), a date list stays "Spendings" */
+  const nm=f.q?(()=>{const q=spNorm(f.q);for(const x of hit)for(const v of [x.cp,x.desc]){const m=String(v||"").split(",").map(p=>p.trim()).find(p=>spNorm(p)===q)||(spNorm(v)===q?String(v).trim():"");if(m)return m}return f.q})():"";
+  return billPdf({title:nm||"Spendings",info:[[f.q?"Search":"Dates chosen",qq],["Dates",ds.length?dmy(ds[0])+" to "+dmy(ds[ds.length-1]):"..."],["Report Date",dmy(todayISO())]],
+    table:h+"</tbody>",sum:[["Entries",F(hit.length)],["Total Amount","Rs "+F(Math.round(tot))]],file:"Spendings - "+f.file,fit:1},toast);
 }
 function renderSpend(){
   const list=dateOrder(spends);
@@ -1723,7 +1740,7 @@ function renderMain(){
   const row=(l,v,o={})=>`<tr${o.go?` data-go="${o.go}"`:""} class="${o.c||""}"><td>${l}</td><td class="num amt${o.neg?" neg":""}">${v}</td></tr>`;
   const sold=days.reduce((a,d)=>a+(d.sold||0),0), mort=last?last.mTot:0, alive=last?last.bRem:flock.placed;
   const wk=weekRows(hist).filter(r=>r.fcr!=null).pop();
-  $("mnFlock").innerHTML="<tbody>"+row("Shed",esc($("shedName").textContent))+row("Flock Start",dateFor(1))+row("Day",last?F(last.day):dot)+row("Chicks Placed",F(flock.placed))+
+  $("mnFlock").innerHTML="<tbody>"+row("Shed",'<span class="urf">'+esc($("shedName").textContent)+"</span>")+row("Flock Start",dateFor(1))+row("Day",last?F(last.day):dot)+row("Chicks Placed",F(flock.placed))+
     row("Total Mortality",F(mort)+(flock.placed?" ("+(mort/flock.placed*100).toFixed(2)+"%)":""))+row("Birds Sold",F(sold))+row("Birds Alive",F(alive),{c:"tot"})+
     row("FCR"+(wk?" (week "+wk.w+")":""),wk?wk.fcr.toFixed(2):dot)+"</tbody>";
   const fIn=r2(flock.openFeed+days.reduce((a,d)=>a+(d.in||0),0)), fOut=r2(days.reduce((a,d)=>a+(d.out||0),0));
@@ -1778,10 +1795,10 @@ function slApplyOpen(){document.querySelectorAll(".slsec").forEach(el=>{const o=
 function saleSection(d){
   const k=d.id, el=document.createElement("section");el.className="card slsec";el.dataset.sd=k;
   el.innerHTML=`<button type="button" class="mbhead" aria-expanded="false"><h2 class="en"><span class="chev" aria-hidden="true">▶</span><span class="mbdname"></span></h2><span class="daybadge num mbdtot"></span></button><div class="mbbody" hidden>
-    <label>Date<input class="txt" type="date" data-f="date"></label>
-    <label>Vehicle No${sugIn("slV_"+k,"Vehicle number",40,"slVeh")}</label>
-    <label>Driver Name${sugIn("slD_"+k,"Name of the driver",40,"slDrv")}</label>
-    <label>Driver Mobile No${sugIn("slM_"+k,"e.g. 0300-1234567",20,"slMob")}</label>
+    <div class="slpair"><label>Date<input class="txt" type="date" data-f="date"></label>
+    <label>Vehicle No${sugIn("slV_"+k,"Vehicle number",40,"slVeh")}</label></div>
+    <div class="slpair"><label>Driver Name${sugIn("slD_"+k,"Name of the driver",40,"slDrv")}</label>
+    <label>Driver Mobile No${sugIn("slM_"+k,"e.g. 0300-1234567",20,"slMob")}</label></div>
     <div class="grid"><label>Empty Weight (kg)<input class="txt" inputmode="decimal" data-f="empty" placeholder="Before loading"></label>
     <label>Load Weight (kg)<input class="txt" inputmode="decimal" data-f="load" placeholder="After loading"></label></div>
     <div class="slcalc" data-f="calc"></div>
@@ -1887,7 +1904,7 @@ function renderSale(){
     const el=wrap.querySelector(`.slsec[data-sd="${d.id}"]`), T=slTotals(d.id);allKg+=T.kg;allRs+=T.price;allN+=T.n;
     el.querySelector(".mbdname").textContent=(slEdit[d.id]?"Edit · ":"")+d.name;el.querySelector(".mbdtot").textContent=rs(T.price);
     const C=slCash(d.id), cols=C?10:8, ex=C?"<td></td><td></td>":"";
-    el.querySelectorAll("[data-cashonly]").forEach(x=>x.hidden=!C);const cb=el.querySelector('[data-act="cash"]');cb.textContent=C?"Cash: On":"Cash: Off";cb.setAttribute("aria-pressed",C);cb.className=C?"save":"ghost";
+    el.querySelectorAll("[data-cashonly]").forEach(x=>x.hidden=!C);const cb=el.querySelector('[data-act="cash"]');cb.textContent=C?"Cash: On":"Cash: Off";cb.setAttribute("aria-pressed",C);cb.className=C?"save":"ghost";const sr=el.querySelector('[data-act="srate"]');if(sr)sr.textContent=C?"Save Rate / Received only":"Save Rate only";
     let h=`<thead><tr><th>Date</th><th>Vehicle No</th><th class="drvc">Driver</th><th class="amt">Empty (kg)</th><th class="amt">Load (kg)</th><th class="amt">Saafi (kg)</th><th class="amt">Rate</th><th class="amt">Total Price</th>${C?'<th class="amt">Received</th><th class="amt">Remaining</th>':""}</tr></thead><tbody>`;
     T.groups.forEach(g=>{
       h+=g.v.map(x=>`<tr data-sv="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="w"><div>${x.veh?esc(x.veh):"..."}</div></td><td class="w drvc"><div>${x.drv?esc(x.drv):"..."}${x.mob?`<br><small class="num">${esc(x.mob)}</small>`:""}</div></td><td class="num amt">${F(x.empty)}</td><td class="num amt">${F(x.load)}</td><td class="num amt">${F(slSaafi(x))}</td><td></td><td></td>${ex}</tr>`).join("");
@@ -2035,7 +2052,7 @@ function dealerSection(d){
     <div class="row" style="justify-content:space-between"><button class="ghost" type="button" data-adddealer="1">+ Add New Dealer</button><button class="danger" type="button" data-act="ddel">Delete Dealer</button></div>
     <div data-box="ddel" hidden style="display:none;flex-direction:column;gap:8px"><div class="legend" style="color:#b42318">This deletes the dealer and ALL its entries. It cannot be undone.</div><div class="row"><button class="danger" type="button" data-act="ddelyes">Yes, delete dealer</button><button class="ghost" type="button" data-act="ddelno">No</button></div></div></div>`;
   el.querySelector('[data-act="ddel"]').remove();el.querySelector('[data-box="ddel"]').remove();
-  if(k===MB_WFN.id){el.classList.add("wfn");el.querySelector("[data-adddealer]").remove();el.querySelector("[data-srcrow]").remove();el.querySelector("[data-tradl]").remove();el.querySelector(".legend").textContent="Tap a row to edit. Tap ↪ Move when you know the dealer.";el.querySelector('[data-f="price"]').placeholder="Optional (write if known)"}
+  if(k===MB_WFN.id){el.classList.add("wfn");el.querySelector("[data-adddealer]").remove();el.querySelector("[data-srcrow]").remove();/* v1.26.3: Traditional Name kept here too (her ask) */el.querySelector(".legend").textContent="Tap a row to edit. Tap ↪ Move when you know the dealer.";el.querySelector('[data-f="price"]').placeholder="Optional (write if known)"}
   hpSplit(el.querySelector(".mbbody"));
   if(k===MB_STORE.id){el.querySelector("[data-adddealer]").remove();el.querySelectorAll('[data-f="rate"],[data-f="price"]').forEach(i=>i.closest("label").remove());
     el.querySelector(".mbbody").insertAdjacentHTML("beforeend",`<div class="mbstot" style="border-top:1px solid var(--line,#ddd);padding-top:12px;display:flex;flex-direction:column;gap:10px">
@@ -2110,7 +2127,7 @@ function renderMed(){
       el.querySelector(".mbsum").textContent=mbStore&&mbStore.total?"":"No Store Total written yet.";el.querySelector(".mbsum").hidden=!!(mbStore&&mbStore.total);}
     el.querySelector(".mbdname").textContent=(mbEdit[d.id]?"Edit · ":"")+d.name;el.querySelector(".mbdtot").textContent=rs(tot);
     const isW=d.id===MB_WFN.id,mvOk=isW&&canWrite;
-    const sf=!isW&&mbSelf(d),nt=isW||mbNoTrad(d),sl=el.querySelector("[data-srcl]"),tl=el.querySelector("[data-tradl]");if(sl){if(sf)sl.style.removeProperty("display");else sl.style.setProperty("display","none","important")}if(tl){if(nt)tl.style.setProperty("display","none","important");else tl.style.removeProperty("display")}
+    const sf=!isW&&mbSelf(d),nt=mbNoTrad(d),sl=el.querySelector("[data-srcl]"),tl=el.querySelector("[data-tradl]");if(sl){if(sf)sl.style.removeProperty("display");else sl.style.setProperty("display","none","important")}if(tl){if(nt)tl.style.setProperty("display","none","important");else tl.style.removeProperty("display")}
     const sr=el.querySelector("[data-srcrow]");if(sr){if(isSt)sr.remove();else{const sb=sr.querySelector(".srctog");sb.textContent="Source column: "+(sf?"On ✓":"Off");sb.classList.toggle("on",sf);sb.disabled=!canWrite}}
     let h=`<thead><tr><th>Date</th><th>Medicine Name</th>${nt?"":"<th>Traditional Name</th>"}${sf?"<th>Source</th>":""}<th>Quantity</th>${isSt?"":`<th class="amt">Rate</th><th class="amt">Total Price</th>`}${mvOk?"<th></th>":""}</tr></thead><tbody>`;
     h+=list.map(x=>`<tr data-mb="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="w"><div>${esc(x.name)}</div></td>${nt?"":`<td class="w"><div>${dot(x.trad)}</div></td>`}${sf?`<td class="w"><div>${dot(x.src)}</div></td>`:""}<td class="w"><div>${dot(x.qty)}</div></td>${isSt?"":`<td class="num amt">${x.rate?F(x.rate):"..."}</td><td class="num amt">${x.price?F(x.price):"..."}</td>`}${mvOk?`<td><button type="button" class="wfnmv" data-mv="${esc(x.id)}">↪ Move</button></td>`:""}</tr>`).join("");
@@ -2832,10 +2849,11 @@ $("flBack").addEventListener("click",()=>openFlock(liveFlock));
  .spend .card:has(>label)>*{grid-column:1/-1;min-width:0}
  .spend .card:has(>label)>label{grid-column:auto}
  #vMain>#mnTiles{align-items:stretch}
+ #vMain>#hpFWMain[hidden]+#mnTiles{margin-inline:72px 0!important} /* v1.26.3: logo button no longer covers the Day tile when there is no feed warning */
  .sumrow>div{display:flex!important;align-items:center;justify-content:space-between;gap:10px;padding:0 18px!important;min-height:58px;box-sizing:border-box}
  .sumrow small{display:inline!important;font-size:14px!important}
  .sumrow b{font-size:18px!important;white-space:nowrap}
- #spGen[style*="contents"],#spSup[style*="flex"],#spSal[style*="flex"]{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(360px,420px);column-gap:22px;row-gap:16px;align-items:start;grid-auto-flow:row dense}
+ #spGen[style*="contents"],#spSup:not([style*="display: none"]):not([style*="display:none"]),#spSal:not([style*="display: none"]):not([style*="display:none"]){display:grid!important;grid-template-columns:minmax(0,1fr) minmax(360px,420px);column-gap:22px;row-gap:16px;align-items:start;grid-auto-flow:row dense}
  #spGen>*,#spSup>*,#spSal>*{grid-column:1/-1;min-width:0}
  #spGen>.card:has(label),#spSup>.card:has(label),#spSal>.card:has(label){grid-column:2;display:flex!important;flex-direction:column}
  #spGen>section[aria-label$="record"],#spSup>section[aria-label$="record"],#spSal>section[aria-label$="record"],#spSal>section[aria-label="Final salary"]{grid-column:1}
@@ -2855,8 +2873,8 @@ $("flBack").addEventListener("click",()=>openFlock(liveFlock));
 </style>
 <script>(function(){const mq=matchMedia("(min-width:1000px)");
 function place(){const q=document.getElementById("spQ"),b=document.getElementById("spBreak");if(!q||!b)return;const row=q.parentElement,t=document.getElementById("spQToast"),form=b.closest("section"),rec=document.getElementById("spTable").closest(".tablewrap");
- if(mq.matches){if(row.parentElement!==form){b.after(row);row.after(t);row.classList.add("spqdesk")}}
- else if(row.parentElement===form){rec.before(row);row.after(t);row.classList.remove("spqdesk")}}
+ /* v1.26.3: search always sits on top of the record (phone + Windows), so it shows even when the entry is closed and in Main view */
+ if(row.parentElement===form){rec.before(row);row.after(t);row.classList.remove("spqdesk")}}
 mq.addEventListener("change",place);if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",place);else place()})();</script><style>/* v1.25 Windows: entry form folds to a slim strip after Save; record takes the full width. Top bar is a clean card beside the sidebar. Main (view only) sees no entry forms. Phones unchanged. */
 .hpfold{display:none}
 .hpfoldx,.hpfxrow{display:none}
@@ -2907,11 +2925,10 @@ function lay(){const m=document.getElementById("vMain");if(!m||busy)return;busy=
  if(mq.matches){if(cols.length<2){cols=[0,1].map(()=>{const d=document.createElement("div");d.className="mncol";m.appendChild(d);return d})}
   const V=L.filter(c=>!c.hidden&&getComputedStyle(c).display!=="none");
   L.filter(c=>!V.includes(c)).forEach(c=>{if(c.parentElement!==cols[0])cols[0].appendChild(c)});
-  V.forEach((c,i)=>{let col=cols[i%2];
-   // the last card alone (odd count) goes under the shorter column, so no empty space is left
-   if(i===V.length-1&&V.length%2===1){const h=k=>V.slice(0,i).filter((x,j)=>j%2===k).reduce((a,x)=>a+x.offsetHeight,0);col=h(1)<h(0)?cols[1]:cols[0]}
-   if(c.parentElement!==col)col.appendChild(c);else col.appendChild(c)})}
- else if(cols.length){for(const c of L)m.insertBefore(c,cols[0]);cols.forEach(d=>d.remove())}
+  // v1.26.3: every card goes under the shorter column, so both sides stay level (no big empty space)
+  const ch=document.getElementById("hpChart"),hs=[0,0];if(ch){if(cols[0].firstChild!==ch)cols[0].prepend(ch);if(!ch.hidden)hs[0]=ch.offsetHeight+16}
+  V.forEach(c=>{const k=hs[1]<hs[0]?1:0;cols[k].appendChild(c);hs[k]+=c.offsetHeight+16})}
+ else if(cols.length){for(const c of L)m.insertBefore(c,cols[0]);const ch=document.getElementById("hpChart"),t=document.getElementById("mnTiles");if(ch&&t)t.after(ch);cols.forEach(d=>d.remove())}
  setTimeout(()=>{busy=false},0)}
 mq.addEventListener("change",lay);
 const go=()=>{lay();const m=document.getElementById("vMain");if(!m)return;new MutationObserver(lay).observe(m,{subtree:true,attributes:true,attributeFilter:["hidden","style"]});
@@ -2924,13 +2941,26 @@ function forms(){const L=[];const e=document.getElementById("entryCard");if(e)L.
  for(const id of ["spGen","spSup","spSal"]){const f=document.querySelector("#"+id+">.card:has(label)");if(f)L.push([f,0])}
  const fd=document.querySelector('section[aria-label="Add feed entry"]');if(fd)L.push([fd,1]);
  document.querySelectorAll(".mbbody>.hpform").forEach(f=>L.push([f,0]));return L}
-const fold=(f,on)=>f.classList.toggle("hpfolded",!!on&&mq.matches);
+const fold=(f,on)=>{f.classList.toggle("hpfolded",!!on&&mq.matches);setTimeout(sync,0)};
+// which heading opens which entry. pre(set): for Feed, In/Out heading also picks the In/Out tab
+function heads(f){const r=[];if(f.id==="entryCard"){const h=document.getElementById("histH");if(h)r.push([h])}
+ else if(f.parentElement&&/^sp(Gen|Sup|Sal)$/.test(f.parentElement.id)){const n=f.parentElement.querySelector(":scope>section:not(.card):not(.sumrow) h2");if(n)r.push([n])}
+ else if(f.matches('section[aria-label="Add feed entry"]')){document.querySelectorAll('#vFeed section[aria-label="Feed record"]>h2').forEach(h=>{const out=/Out/.test(h.textContent),tab=document.getElementById(out?"fdTabOut":"fdTabIn");
+   r.push([h,set=>{const on=tab&&tab.getAttribute("aria-selected")==="true";if(set&&tab&&!on)tab.click();return on}])})}
+ else if(f.classList.contains("hpform")){const h=f.parentElement.querySelector(":scope>.hprec>h2");if(h)r.push([h])}
+ return r}
+function sync(){for(const [f] of forms())heads(f).forEach(([h,pre])=>{let ch=h.querySelector(".hpch");if(!ch){if(!h.dataset.hphb)return;ch=document.createElement("span");ch.className="hpch";h.prepend(ch)}const open=!f.classList.contains("hpfolded")&&(!pre||pre());h.classList.toggle("on",open);ch.textContent=open?"▲ اینٹری بند کریں":"✏️ نئی اینٹری"})}
+// tables that do not fit get a scroll bar
+setInterval(()=>{if(!mq.matches)return;sync();document.querySelectorAll(".tablewrap").forEach(w=>{const t=w.querySelector("table");if(!t||!w.getClientRects().length)return;const wide=t.scrollWidth>w.clientWidth+1;if(wide!==w.classList.contains("hpwide"))w.classList.toggle("hpwide",wide)})},700);
 function setup(){for(const [f,h] of forms()){if(f.dataset.hpf)continue;f.dataset.hpf=1;
  const s=strip(h);f.before(s);s.onclick=()=>{fold(f,false);const i=f.querySelector("input:not([type=date]),textarea");if(i)i.focus()};
  const x=document.createElement("button");x.type="button";x.className="hpfoldx";x.textContent="چھپائیں ⇥";x.onclick=()=>fold(f,true);
  const hd=f.querySelector(":scope>.dayhead");if(hd)hd.appendChild(x);else{const r=document.createElement("div");r.className="hpfxrow";r.appendChild(x);f.prepend(r)}
  fold(f,true);
- f.querySelectorAll("button.save").forEach(sv=>sv.addEventListener("click",()=>setTimeout(()=>{const t=f.querySelector(".toast");if(t&&t.classList.contains("err"))return;fold(f,true)},700)));
+ heads(f).forEach(([hd,pre])=>{if(hd.dataset.hphb)return;hd.dataset.hphb=1;hd.classList.add("hphb");hd.setAttribute("role","button");hd.tabIndex=0;
+  const ch=document.createElement("span");ch.className="hpch";hd.prepend(ch);
+  const go=()=>{if(!mq.matches)return;const open=f.classList.contains("hpfolded")||(pre&&!pre());if(pre)pre(true);fold(f,!open);if(open){const i=f.querySelector("input:not([type=date]),textarea");if(i)i.focus({preventScroll:true})}sync()};
+  hd.addEventListener("click",go);hd.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}})});
  // tapping a record row to edit opens the form again
  new MutationObserver(()=>{if(f.querySelector("[id$=Cancel]:not([hidden]),[data-act=cancel]:not([hidden])")||/ترمیم/.test((f.querySelector("h2")||{}).textContent||""))fold(f,false)}).observe(f,{subtree:true,attributes:true,attributeFilter:["hidden"],childList:true,characterData:true})}}
 mq.addEventListener("change",()=>forms().forEach(([f])=>fold(f,mq.matches)));
@@ -3030,6 +3060,25 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
  html body .hpbar #hpMenu{background:linear-gradient(135deg,#1c5d93,#173f66);color:#fff}
 }
 @media (min-width:1000px){html body .tablewrap thead th{top:98px!important}}
+/* v1.26.3: old "چھپائیں" button removed - the record heading button opens/closes the entry */
+html body .hpfoldx,html body .hpfxrow{display:none!important}
+/* v1.26.3: Urdu farm name in Main table uses Jameel Noori Nastaleeq */
+.urf{font-family:"Jameel Noori","Noto Nastaliq Urdu",serif!important;font-weight:400;font-size:1.15em;unicode-bidi:plaintext}
+/* v1.26.3: "+ Add New Dealer" only once, at the bottom of the list (not inside an open dealer) */
+.slsec [data-addsdealer],.mbsec [data-adddealer]{display:none!important}
+.mbsec .row:has(>[data-adddealer]):not(:has(>:not([data-adddealer]):not([hidden]))){display:none!important}
+/* v1.26.3: Vehicle Sale form - two boxes in one line on Windows (like Kanda) */
+.slpair{display:contents}
+@media (min-width:1000px){.slpair{display:grid;grid-template-columns:1fr 1fr;gap:12px}}
+/* v1.26.3: daily record last 7 days on Windows */
+@media (min-width:1000px){#hist:not(.hpall) tr.hpold{display:none}}
+@media (max-width:999px){#histMore{display:none!important}}
+/* v1.26.3: Feed - all 6 boxes in one line on Windows */
+@media (min-width:1000px){html body #vFeed>.sumrow{grid-template-columns:repeat(6,minmax(0,1fr))!important}html body #vFeed>.sumrow>div{padding-inline:12px!important}html body #vFeed>.sumrow{margin-inline:72px 0!important}}
+/* v1.26.3: Kanda form - empty message lines take no space (less gap under Calculate Weight) */
+#kdToast:empty,#kdVToast:empty{display:none}
+/* v1.26.3: Kanda dealer list clips its content, so its table heading must not slide down over the first vehicle */
+@media (min-width:1000px){html body #kdDealers .tablewrap thead th{top:0!important}}
 @media (min-width:1000px){#dkTitle,#dkChips,#dkFoot{display:flex}}</style>
 <script>(function(){const mq=matchMedia("(min-width:1000px)");
 function init(){const bar=document.querySelector(".hpbar"),nav=document.querySelector(".topnav");if(!bar||!nav||document.getElementById("dkTitle"))return;
@@ -3375,24 +3424,43 @@ $("wfnGo").addEventListener("click",async()=>{const t=(m,er)=>{$("wfnToast").tex
   }finally{b.disabled=false}});
 })();
 </script>
-<style>/* v1.27 Windows: entry closed by default; short green tab (30px) beside the record, next to the sidebar */
+<style>/* v1.27b Windows: no separate strip. The record HEADING is the button that opens/closes its entry (her idea 13-11). */
 @media (min-width:1000px){
- html body .wrap.wrap.wrap:has(#entryCard.hpfolded):has(#vDaily[style*="contents"]){grid-template-columns:30px minmax(0,1fr)!important}
- html body :is(#spGen,#spSup,#spSal):is(#spGen,#spSup,#spSal):has(>.card.hpfolded){grid-template-columns:minmax(0,1fr) 30px!important}
- html body .mbsec.open>.mbbody.mbbody:has(>.hpfolded){grid-template-columns:minmax(0,1fr) 30px!important}
- html body :is(#vDaily,#spGen,#spSup,#spSal,.mbbody,section,div)>.hpfold.hpfold.hpfold:has(+.hpfolded){position:sticky;top:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:30px;height:140px;min-height:0;padding:0;margin:0;border-radius:10px;background:linear-gradient(180deg,#2fa36b,#1f7a4d);box-shadow:0 2px 8px rgba(31,122,77,.25);justify-self:stretch;align-self:start;transform:none}
- html body :is(#vDaily,#spGen,#spSup,#spSal,.mbbody,section,div)>.hpfold.hpfold.hpfold:hover{filter:brightness(1.1);transform:none}
- html body :is(#vDaily,#spGen,#spSup,#spSal,.mbbody,section,div)>.hpfold.hpfold .ic{width:auto;height:auto;background:none;font-size:13px;border-radius:0}
- html body :is(#vDaily,#spGen,#spSup,#spSal,.mbbody,section,div)>.hpfold.hpfold .vt{writing-mode:vertical-rl;font-size:13px;line-height:1.2;font-weight:600;white-space:nowrap}
- html body .hpfold.hpfold .vt br{display:none}
- html body #vDaily#vDaily>.hpfold.hpfold.hpfold:has(+.hpfolded){grid-column:1!important;grid-row:span 3!important}
+ html body .hpfold.hpfold.hpfold{display:none!important}
+ /* folded = record takes the full width */
+ html body .wrap.wrap.wrap:has(#entryCard.hpfolded):has(#vDaily[style*="contents"]){grid-template-columns:0 minmax(0,1fr)!important;column-gap:0!important}
  html body .wrap.wrap.wrap:has(#entryCard.hpfolded):has(#vDaily[style*="contents"]) :is(#vDaily,#main)>*:not(.hpfold):not(.flock):not(#flRow):not(#vDaily):not(nav){grid-column:2!important}
  html body .wrap.wrap.wrap:has(#entryCard.hpfolded):has(#vDaily[style*="contents"]) :is(.flock,#flRow){grid-column:1/-1!important}
- html body :is(#spGen,#spSup,#spSal):is(#spGen,#spSup,#spSal):has(>.card.hpfolded),html body .mbsec.open>.mbbody.mbbody:has(>.hpfolded){grid-auto-flow:row dense}
- html body :is(#spGen,#spSup,#spSal):is(#spGen,#spSup,#spSal)>.hpfold.hpfold:has(+.hpfolded),html body .mbsec.open>.mbbody.mbbody>.hpfold.hpfold:has(+.hpfolded){grid-column:2!important;grid-row:auto!important}
- html body :is(#spGen,#spSup,#spSal):is(#spGen,#spSup,#spSal)>.hpfolded~*,html body .mbsec.open>.mbbody.mbbody>.hpfolded~*{grid-column:1!important}
+ html body :is(#spGen,#spSup,#spSal):is(#spGen,#spSup,#spSal):has(>.card.hpfolded),html body .mbsec.open>.mbbody.mbbody:has(>.hpfolded){grid-template-columns:minmax(0,1fr)!important}
+ html body :is(#spGen,#spSup,#spSal):is(#spGen,#spSup,#spSal):has(>.card.hpfolded)>*,html body .mbsec.open>.mbbody.mbbody:has(>.hpfolded)>*{grid-column:1/-1!important}
+ /* the heading button */
+ html body .hphb{cursor:pointer;display:inline-flex!important;align-items:center;gap:10px;width:max-content;max-width:100%;padding:6px 14px 6px 8px;margin-inline-start:-8px;border-radius:12px;transition:background .15s;user-select:none}
+ html body .hphb:hover{background:#e7f5ec}
+ html body .hphb .hpch{display:inline-flex;align-items:center;gap:6px;font:600 13px "Jameel Noori","Segoe UI",sans-serif;color:#fff;background:linear-gradient(90deg,#2fa36b,#1f7a4d);border-radius:9px;padding:4px 10px;box-shadow:0 2px 6px rgba(31,122,77,.25);white-space:nowrap}
+ html body .hphb.on .hpch{background:#eef3f8;color:#173f66;box-shadow:none}
+ /* Daily: show "پچھلا ریکارڈ" again on Windows, as the heading button above the tabs */
+ html body #histSec#histSec>.histhd{display:flex!important;align-items:center;justify-content:space-between;gap:10px;grid-column:1/-1!important;grid-row:1!important}
+ html body #histSec#histSec>.histhd #histH{display:inline-flex!important}
+ html body #histSec#histSec>.tabs{grid-column:1/-1!important;grid-row:2!important}
+ html body #histSec .histhd .svbtn{height:auto;padding:8px 16px}
+ /* a table that does not fit gets its own scroll bar (mouse can drag it) */
+ html body .tablewrap.hpwide{overflow-x:auto!important;overflow-y:visible}
+ html body .tablewrap.hpwide::-webkit-scrollbar{height:12px}
+ html body .tablewrap.hpwide::-webkit-scrollbar-thumb{background:#9cb8d3;border-radius:8px}
+ html body .tablewrap.hpwide::-webkit-scrollbar-track{background:#eef3f8;border-radius:8px}
 }
+@media (max-width:999px){.hpch{display:none!important}}
 </style>
+<style>/* v1.27: a field marked hidden must stay hidden on Windows too (Received shows only when Cash is On) */
+html body label[hidden],html body [data-cashonly][hidden]{display:none!important}
+</style>
+<style>/* v1.26.3 phone: the reports logo sits in the blue top bar (no empty line for it) */
+@media (max-width:999px){.hpbar #hpLogoBtn{width:42px;height:42px;border-radius:12px;flex:none;box-shadow:none;order:0;margin:0}.hpbar #hpLogoBtn img{width:38px;height:38px;border-radius:10px}.hpbar:has(#hpLogoBtn)>img{display:none}#flRow:not(:has(#hpLogoBtn)):has(>#flBar[hidden]){display:none}}
+</style>
+<script>(function(){const mq=matchMedia("(max-width:999px)");
+function mv(){const b=document.getElementById("hpLogoBtn"),bar=document.querySelector(".hpbar"),row=document.getElementById("flRow");if(!b||!bar||!row)return;
+ if(mq.matches&&!document.body.classList.contains("nobar")){if(b.parentElement!==bar)bar.insertBefore(b,bar.firstChild)}else if(b.parentElement!==row)row.insertBefore(b,row.firstChild)}
+mq.addEventListener("change",mv);const go=()=>{mv();new MutationObserver(mv).observe(document.body,{attributes:true,attributeFilter:["class"]})};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go()})();</script>
 
 </body>
 </html>
