@@ -91,6 +91,10 @@ input:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--
 .lastin{margin-top:6px;font-size:13.5px;color:var(--mut)}.lastin b{color:var(--fg)}
 .emerg{text-align:center;margin-top:22px}.ebtn{background:none;border:1px dashed var(--line);color:var(--mut);border-radius:10px;padding:7px 14px;font-size:13px}
 .ver{text-align:center;color:var(--mut);font-size:12.5px;margin:26px 0 8px;opacity:.85}
+/* v1.26.4: version line always at the very bottom of the window (or below the content when the page is long) */
+.wrap:has(>.ver){position:relative;min-height:100vh;min-height:100dvh;box-sizing:border-box;padding-bottom:56px!important}
+.wrap>.ver{position:absolute;left:0;right:0;bottom:calc(10px + env(safe-area-inset-bottom));margin:0}
+@media (min-width:1000px){.wrap:has(>.hero)>.ver{right:42vw;width:auto!important;max-width:none!important}}
 #backtoast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 28px);transform:translateX(-50%);background:rgba(15,29,43,.92);color:#fff;padding:10px 18px;border-radius:22px;font-family:"Jameel Noori",serif;font-size:17px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:9000;white-space:nowrap}
 #backtoast.show{opacity:1}
 .boot-wait{min-height:60vh}

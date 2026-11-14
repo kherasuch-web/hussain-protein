@@ -332,7 +332,7 @@ body.supview .svbar{display:flex}
 .flold{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fff3cd;border:2px solid #b7791f;border-radius:10px;padding:8px 12px;font-weight:700;color:#7a4b00}
 body.oldview #flockEnd,body.oldview #supCard,body.oldview #entryCard{display:none!important}
 body.supview #flockEnd,body.supview #svOpen,body.supview #histSec>*:not(.histhd):not(.tabs):not(.tablewrap){display:none!important}
-body.supview header,body.supview .topnav,body.supview #status,body.supview #vDaily>*:not(#histSec):not(#svBar):not(#svFcr){display:none!important}
+body.supview header,body.supview .topnav,body.supview #status,body.supview #vDaily>*:not(#histSec):not(#svBar):not(#svFcr):not(#svMed){display:none!important}
 .msgb{background:#14532d!important;color:#fff!important;font-weight:700}
 .supbox .legend{color:#3b2a1a}
 .msgbtns{display:flex;flex-direction:column;gap:8px}
@@ -581,6 +581,11 @@ body.supview #hpLogoBtn{display:none}
     <section class="card" id="svFcr" hidden aria-label="سپروائزر کا ویکلی FCR"><h2>سپروائزر کا ویکلی FCR</h2>
       <div class="legend" id="svFcrN"></div><div class="tablewrap"><table id="svFcrT"></table></div>
       <div class="legend">"سپروائزر" والا وزن سپروائزر نے لکھا ہے۔ فارم کے FCR میں لانے کیلئے FCR سیکشن میں وہ ہفتہ چن کر "یہ وزن لگائیں" دبائیں۔</div></section>
+    <section class="card" id="svMed" dir="ltr" aria-label="Supervisor medicine"><h2 class="en">Supervisor In / Out Medicine <span class="smro">View only</span></h2>
+      <div class="smnote">یہ صرف دیکھنے کے لیے ہے۔ فارم کے ریکارڈ میں خود سیو نہیں ہوتا، فارم اپنی اینٹری خود لکھے گا۔</div>
+      <h3 class="en">In Medicine</h3><div class="tablewrap"><table id="svMedIn" class="fdt"></table></div>
+      <h3 class="en">Out Medicine</h3><div class="tablewrap"><table id="svMedOut" class="fdt"></table></div></section>
+    <div id="smBox" hidden><b></b><small dir="ltr"></small><button type="button" id="smGo">دیکھیں</button></div>
     <section class="card fcr" aria-label="FCR سیکشن">
       <h2>FCR سیکشن (ہفتہ وار)</h2>
       <div class="legend">ہر ہفتے کی ایک لائن۔ ورکر صرف تول کر آیا ایوریج وزن (گرام) بھرتا ہے، باقی سب روز کے ریکارڈ سے خود آتا ہے۔</div>
@@ -691,6 +696,9 @@ body.supview #hpLogoBtn{display:none}
       </section>
       <section style="display:flex;flex-direction:column;gap:8px" aria-label="Supervisor record">
         <h2 class="en">Supervisor Advance Record</h2>
+        <div class="row spbar" style="gap:6px;align-items:center"><input id="suQ" class="txt" type="search" autocomplete="off" placeholder="Search name (e.g. Shahid Sp, Naqad)" style="flex:1"><span id="suDR" class="spdr" hidden><small>From</small><input id="suD1" type="date"><small>To</small><input id="suD2" type="date"></span><button class="spcal" id="suCal" type="button" aria-pressed="false" title="Search by dates" aria-label="Search by dates">📅</button></div>
+        <button class="ghost" id="suQPdf" type="button" hidden style="align-self:flex-start">⬇ Download PDF</button>
+        <div class="toast" id="suQToast" role="status"></div>
         <div class="tablewrap"><table id="suTable" class="fdt"></table></div>
         <div class="legend">Tap a row to edit or delete it.</div>
       </section>
@@ -873,12 +881,66 @@ body.supview #hpLogoBtn{display:none}
       </section>
       </div>
     </div>
+    <div id="vSupMed" dir="ltr" class="spend" style="display:none">
+      <section class="sumrow" aria-label="Supervisor medicine summary">
+        <div><small>In Medicine</small><b class="num" id="smInN">0 entries</b></div>
+        <div><small>Out Medicine</small><b class="num" id="smOutN">0 entries</b></div>
+        <div><small>Last entry</small><b class="num" id="smLast">...</b></div>
+      </section>
+      <nav class="tabs" role="tablist" aria-label="Medicine parts">
+        <button type="button" role="tab" id="smTabIn" aria-selected="true" class="en">In Medicine</button>
+        <button type="button" role="tab" id="smTabOut" aria-selected="false" class="en">Out Medicine</button>
+      </nav>
+      <section class="card" id="smForm" aria-label="Add supervisor medicine">
+        <div class="dayhead"><h2 class="en" id="smTitle">In Medicine</h2></div>
+        <label for="smDate">Date<input id="smDate" type="date" class="txt"></label>
+        <label for="smName">Medicine Name<span class="sugw"><input id="smName" class="txt" maxlength="100" autocomplete="off" placeholder="Name written on the medicine" data-sk="smName"><span class="sug" role="listbox" hidden></span></span></label>
+        <label for="smTrad">Traditional Name<span class="sugw"><input id="smTrad" class="txt" maxlength="100" autocomplete="off" placeholder="Formula / common name" data-sk="smTrad"><span class="sug" role="listbox" hidden></span></span></label>
+        <label for="smQty">Quantity<span class="sugw"><input id="smQty" class="txt" maxlength="40" autocomplete="off" placeholder="e.g. 5 Ltr, 2 Kg, 10 Pcs" data-sk="smQty"><span class="sug" role="listbox" hidden></span></span></label>
+        <label for="smParty"><span id="smPartyL">From (dealer / farm)</span><span class="sugw"><input id="smParty" class="txt" maxlength="80" autocomplete="off" placeholder="e.g. Dr Umair" data-sk="smParty"><span class="sug" role="listbox" hidden></span></span></label>
+        <div class="row"><button class="save" id="smSave" type="button">Save &amp; Send to Farm</button><button class="ghost" id="smCancel" type="button" hidden>Cancel edit</button><button class="ghost" id="smDel" type="button" hidden>Delete</button></div>
+        <div id="smDelBox" class="row" hidden><button class="danger" id="smDelYes" type="button">Yes, delete</button><button class="ghost" id="smDelNo" type="button">No</button></div>
+        <div class="toast" id="smToast" role="status"></div>
+      </section>
+      <section style="display:flex;flex-direction:column;gap:8px" aria-label="Supervisor medicine record">
+        <h2 class="en">In Medicine Record</h2><div class="tablewrap"><table id="smTabIn2" class="fdt"></table></div>
+        <h2 class="en">Out Medicine Record</h2><div class="tablewrap"><table id="smTabOut2" class="fdt"></table></div>
+        <div class="legend">Tap a row to edit or delete it.</div>
+      </section>
+    </div>
     <div id="vMed" dir="ltr" class="spend" style="display:none">
       <section class="sumrow" aria-label="Medicine summary">
         <div><small>All Medicine Total</small><b class="num" id="mbAll">Rs 0</b></div>
         <div><small>Dealers</small><b class="num" id="mbDCount">0</b></div>
         <div><small>Entries</small><b class="num" id="mbCount">0</b></div>
+        <div id="moTile"><small>Out Medicine</small><b class="num" id="moAllT">Rs 0</b></div>
       </section>
+      <nav class="tabs" role="tablist" aria-label="Medicine parts">
+        <button type="button" role="tab" id="mbTabIn" aria-selected="true" class="en">In Medicine</button>
+        <button type="button" role="tab" id="mbTabOut" aria-selected="false" class="en">Out Medicine</button>
+      </nav>
+      <div id="moPart" style="display:none;flex-direction:column;gap:16px">
+      <section class="card" id="moForm" aria-label="Add out medicine">
+        <div class="dayhead"><h2 class="en" id="moTitle">Out Medicine</h2></div>
+        <label for="moDate">Date<input id="moDate" type="date" class="txt"></label>
+        <label for="moName">Medicine Name<span class="sugw"><input id="moName" class="txt" maxlength="100" autocomplete="off" placeholder="Name written on the medicine" data-sk="mbName"><span class="sug" role="listbox" hidden></span></span></label>
+        <label for="moTrad">Traditional Name<span class="sugw"><input id="moTrad" class="txt" maxlength="100" autocomplete="off" placeholder="Formula / common name" data-sk="mbTrad"><span class="sug" role="listbox" hidden></span></span></label>
+        <label for="moQty">Quantity<span class="sugw"><input id="moQty" class="txt" maxlength="40" autocomplete="off" placeholder="e.g. 5 Ltr, 2 Kg, 10 Pcs" data-sk="mbQty"><span class="sug" role="listbox" hidden></span></span></label>
+        <label for="moTo">To (which farm / person)<span class="sugw"><input id="moTo" class="txt" maxlength="80" autocomplete="off" placeholder="e.g. Kunjah Farm" data-sk="moTo"><span class="sug" role="listbox" hidden></span></span></label>
+        <label for="moRate">Rate (Rs)<input id="moRate" class="txt" inputmode="decimal" placeholder="Rate per unit"></label>
+        <label for="moPrice">Total Price (Rs)<input id="moPrice" class="txt" inputmode="decimal" placeholder="Fills itself from Rate × Quantity"></label>
+        <div class="row"><button class="save" id="moSave" type="button">Save</button><button class="ghost" id="moCancel" type="button" hidden>Cancel edit</button><button class="ghost" id="moDel" type="button" hidden>Delete</button></div>
+        <div id="moDelBox" class="row" hidden><button class="danger" id="moDelYes" type="button">Yes, delete</button><button class="ghost" id="moDelNo" type="button">No</button></div>
+        <div class="toast" id="moToast" role="status"></div>
+      </section>
+      <section style="display:flex;flex-direction:column;gap:8px" aria-label="Out medicine record">
+        <h2 class="en">Out Medicine Record</h2>
+        <div class="tablewrap"><table id="moTable" class="fdt"></table></div>
+        <div class="legend">Tap a row to edit or delete it.</div>
+        <button class="save pdfbtn" id="moPdf" type="button">⬇ Download Out Medicine PDF</button>
+        <div class="toast pdftoast" id="moPdfToast" role="status"></div>
+      </section>
+      </div>
       <div id="mbDealers" style="display:flex;flex-direction:column;gap:10px"></div>
       <section class="card" id="mbFirst" aria-label="Add first dealer" hidden>
         <div class="legend" id="mbFirstNote">No dealer yet. Add the first dealer to start.</div>
@@ -960,7 +1022,7 @@ body.supview #hpLogoBtn{display:none}
 </div>
 
 <script>
-const sugData={kdDl:[],slVeh:[],slDrv:[],slMob:[],spDesc:[],spCp:[],fdType:[],fdName:[],fdLoc:[],suCp:[],suVia:[],saName:[],mbName:[],mbTrad:[],mbQty:[],mbSrc:[]};
+const sugData={kdDl:[],slVeh:[],slDrv:[],slMob:[],spDesc:[],spCp:[],fdType:[],fdName:[],fdLoc:[],suCp:[],suVia:[],saName:[],mbName:[],mbTrad:[],mbQty:[],mbSrc:[],moTo:[],smName:[],smTrad:[],smQty:[],smParty:[]};
 const $=id=>document.getElementById(id);
 let db=null, canWrite=true, baseWrite=true;
 // v1.14: every section shows only the flock being looked at. Entries saved before v1.14 have no flock tag:
@@ -969,7 +1031,7 @@ let liveFlock=null, legacyFlock=null, oldView=false, allFlocks=[];
 const RAW={};
 const inF=x=>(x.flock||legacyFlock||liveFlock)===flockId;
 const storeId=()=>!flockId||flockId===(legacyFlock||liveFlock)?"prevstore":"prevstore_"+flockId;
-const FLOCKED=new Set(["spendings","dealers","medbuy","salary","supervisor","saledealers","salev","salerate","kandav","kandarate","gensale","feedlog"]);
+const FLOCKED=new Set(["spendings","dealers","medbuy","medout","salary","supervisor","saledealers","salev","salerate","kandav","kandarate","gensale","feedlog"]);
 let flockId=null, flock=null, days=[];   // days: raw inputs, sorted by day
 let weeks={};                            // weeks: {weekNo: {week, weight}}
 let unFlock=null, unDays=null, unWeeks=null;
@@ -978,6 +1040,7 @@ let spends=[], spEdit=null, view="daily";
 let feeds=[], fdEdit=null, fdKind="in";
 let sups=[], suEdit=null, spPart="gen";
 let sals=[], saEdit=null;
+let medouts=[], moEdit=null, mbPart="in", supmeds=[], smEdit=null, smKind="in", smOn=false;
 let dealers=[], medbuys=[], mbEdit={}, mbStore=null;
 let sdealers=[], svehs=[], srates=[], slEdit={}, slOpen=null;
 
@@ -1087,7 +1150,7 @@ function render(){
 
 // ---------- supervisor data (farm login) ----------
 let supd={}, supw={}, supInfo={}, msgLine1="", supView=false;
-function setSupView(on){supView=on;document.body.classList.toggle("supview",on);$("svTitle").textContent="سپروائزر ڈیٹا"+(supInfo.name?" · "+supInfo.name:"");render();scrollTo(0,0)}
+function setSupView(on){supView=on;setTimeout(renderSupMed,0);document.body.classList.toggle("supview",on);$("svTitle").textContent="سپروائزر ڈیٹا"+(supInfo.name?" · "+supInfo.name:"");render();scrollTo(0,0)}
 function renderSupBox(day){
   const box=$("supBox"), sd=HPMODE==="farm"&&canWrite&&flockId?supd[flockId+"_"+pad(day)]:null;
   box.hidden=!sd;if(!sd)return;
@@ -1535,7 +1598,7 @@ async function fullReport(withMoney,toast){
     <h3>Supervisor Advance</h3>${T("suTable")}
     <h3>Salary</h3>${T("saTable")}${T("saFinal")}
     <h3>Feed · In</h3>${T("fdTable")}<h3>Feed · Out</h3>${T("fdTableOut")}<h3>Feed by Type</h3>${T("fdTypeTable")}
-    <h3>Medicine · ${esc($("mbAll").textContent)}</h3>${secs("#mbDealers .mbsec")}
+    <h3>Medicine · ${esc($("mbAll").textContent)}</h3>${secs("#mbDealers .mbsec")}${medouts.length?`<h3>Out Medicine · ${esc($("moAllT").textContent)}</h3>${T("moTable")}`:""}
     ${withMoney?`<h3>Sale · ${esc($("slAll").textContent)}</h3>${secs("#slDealers .slsec")||"<p>No sale yet.</p>"}${kvehs.length?`<h3>Kanda Sale · ${esc($("kdAll").textContent)}</h3>${secs("#kdDealers .kdsec")}`:""}${gsales.length?`<h3>General Sale · ${esc($("gsAll").textContent)}</h3>${T("gsTable")}`:""}`:""}
     <div class="rfoot">Hussain Protein · Report made on ${dmy(todayISO())}</div>`;
   return rptPdf(inner,"Hussain Protein Report - "+dmy(todayISO()).replace(/\//g,"-"),dl,toast);
@@ -1750,7 +1813,7 @@ function renderMain(){
   const sum=(l,k)=>Math.round(l.reduce((a,x)=>a+(x[k]||0),0));
   const gen=sum(spends.filter(x=>x.type!=="break"),"amount");
   const fdIn=sum(feeds.filter(x=>x.kind==="in"),"price"), fdOut=sum(feeds.filter(x=>x.kind==="out"),"price"), fdW=flock&&flock.raw&&flock.raw.feedTotal||0, feedC=Math.round(fdW||fdIn-fdOut);
-  const mdW=flock&&flock.raw&&flock.raw.medTotal||0, med=Math.round(mdW||storeTot()+sum(medbuys.filter(mbCounted),"price"));
+  const mdW=flock&&flock.raw&&flock.raw.medTotal||0, med=Math.round((mdW||storeTot()+sum(medbuys.filter(mbCounted),"price"))-moTot());
   const adv=sum(sups.filter(x=>x.type!=="break"),"amount");
   const X=saX(), people=sals.filter(x=>x.kind==="person");
   const pay=saPayDate()||todayISO(), sal=r2(people.reduce((a,x)=>a+saTotal(x,pay),0));
@@ -1948,6 +2011,17 @@ function renderFeed(){
   sugData.fdType=uniq(all,"type");sugData.fdName=uniq(list,"name");sugData.fdLoc=uniq(all,"loc");
   $("fdCancel").hidden=$("fdDel").hidden=!fdEdit;$("fdSave").disabled=!canWrite;
 }
+// v1.26.4: Supervisor Advance search (name or 📅 dates), same as General Spendings
+let suDateOn=false;
+function suFilter(){const L=sups.filter(x=>x.type!=="break");
+  if(suDateOn){const a=$("suD1").value,b=$("suD2").value;if(!a&&!b)return null;const lab=(a?dmy(a):"start")+" to "+(b?dmy(b):"today");
+    return {hit:L.filter(x=>x.date&&(!a||x.date>=a)&&(!b||x.date<=b)).sort(byDate),lab,file:lab.replace(/\//g,"-"),none:"No entry between these dates."}}
+  const qq=($("suQ").value||"").trim();if(!qq)return null;const q=spNorm(qq);
+  return {hit:L.filter(x=>[x.cp,x.via].some(v=>spNorm(v)===q||String(v||"").split(",").some(p=>spNorm(p)===q))).sort(byDate),lab:'with "'+qq+'"',q:qq,file:qq,none:"No entry with this name."}}
+function suSearchPdf(){const t=(m,e)=>toast("suQToast",m,e),f=suFilter();if(!f){t("Write a name or pick dates first.",true);return}if(!f.hit.length){t(f.none,true);return}
+  const hit=f.hit,tot=r2(hit.reduce((a,x)=>a+(x.amount||0),0)),ds=hit.map(x=>x.date).filter(Boolean).sort(),dot=v=>v?esc(v):"...";
+  let h=`<thead><tr><th>Sr</th><th>Date</th><th class="r">Amount Given</th><th>Counterpart</th><th>Via</th></tr></thead><tbody>`+hit.map((x,i)=>`<tr><td>${i+1}</td><td>${dmy(x.date)}</td><td class="r">${x.amount?F(x.amount):"..."}</td><td>${dot(x.cp)}</td><td>${dot(x.via)}</td></tr>`).join("")+`<tr class="bt"><td colspan="2">Total (Rs)</td><td class="r">${F(tot)}</td><td colspan="2"></td></tr>`;
+  return billPdf({title:f.q||"Supervisor Advance",info:[[f.q?"Search":"Dates chosen",f.q||f.lab],["Dates",ds.length?dmy(ds[0])+" to "+dmy(ds[ds.length-1]):"..."],["Report Date",dmy(todayISO())]],table:h+"</tbody>",sum:[["Entries",F(hit.length)],["Total Given","Rs "+F(Math.round(tot))]],file:"Supervisor Advance - "+f.file,fit:1},t)}
 function renderSup(){
   const gen=spPart==="gen";
   $("spTabGen").setAttribute("aria-selected",gen);$("spTabSup").setAttribute("aria-selected",spPart==="sup");$("spTabSal").setAttribute("aria-selected",spPart==="sal");
@@ -1957,9 +2031,13 @@ function renderSup(){
   const items=list.filter(x=>x.type!=="break"), sum=l=>r2(l.reduce((a,x)=>a+(x.amount||0),0)), tot=sum(items), mk=todayISO().slice(0,7), dot=v=>v?esc(v):"...";
   $("suTotal").textContent=rs(tot);$("suMonth").textContent=rs(sum(items.filter(x=>(x.date||"").slice(0,7)===mk)));$("suCount").textContent=F(items.length);
   let run=0,h=`<thead><tr><th>Date</th><th class="amt">Amount Given</th><th>Counterpart</th><th>Via</th></tr></thead><tbody>`;
+  const sf=suFilter();$("suQPdf").hidden=!sf;
+  if(sf){const hit=sf.hit,qt=sum(hit);h+=hit.map(x=>`<tr data-su="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="num amt">${x.amount?F(x.amount):"..."}</td><td class="w"><div>${dot(x.cp)}</div></td><td class="w"><div>${dot(x.via)}</div></td></tr>`).join("");
+    h+=hit.length?`<tr class="tot"><td colspan="2">Total (Rs) · ${F(hit.length)} entr${hit.length>1?"ies":"y"} ${esc(sf.lab)}</td><td class="num amt" colspan="2" style="text-align:left">${F(qt)}</td></tr>`:`<tr><td colspan="4" class="empty">${sf.none}</td></tr>`;}
+  else{
   h+=list.map(x=>{if(x.type==="break")return `<tr class="brk" data-su="${esc(x.id)}"><td colspan="3">Page Break · Total so far (Rs)</td><td class="num amt">${F(r2(run))}</td></tr>`;
     run+=x.amount||0;return `<tr data-su="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="num amt">${x.amount?F(x.amount):"..."}</td><td class="w"><div>${dot(x.cp)}</div></td><td class="w"><div>${dot(x.via)}</div></td></tr>`}).join("");
-  h+=items.length?`<tr class="tot"><td>Total (Rs)</td><td class="num amt">${F(tot)}</td><td colspan="2"></td></tr>`:`<tr><td colspan="4" class="empty">No supervisor payments yet. Add the first one above.</td></tr>`;
+  h+=items.length?`<tr class="tot"><td>Total (Rs)</td><td class="num amt">${F(tot)}</td><td colspan="2"></td></tr>`:`<tr><td colspan="4" class="empty">No supervisor payments yet. Add the first one above.</td></tr>`;}
   $("suTable").innerHTML=h+"</tbody>";
   const uniq=k=>[...new Set(items.map(x=>x[k]).filter(Boolean))].sort();
   sugData.suCp=uniq("cp");sugData.suVia=uniq("via");
@@ -2114,6 +2192,51 @@ async function mbSrcMove(){if(mbMoving||HPMODE!=="farm"||!db||!RAW.dealers||!RAW
     mbMoving=false}}
 const mbNoTrad=d=>!!d&&/self|سیلف/i.test(d.name||"");
 const mbSelf=d=>!!d&&(d.src===true||(d.src==null&&/self|سیلف/i.test(d.name||"")));
+// ---------- v1.27 Out Medicine (medicine given out of this farm; value comes off the medicine total) ----------
+const moTot=()=>r2(medouts.reduce((a,x)=>a+(x.price||0),0));
+function moFill(x){$("moDate").value=x?x.date:todayISO();$("moName").value=x&&x.name||"";$("moTrad").value=x&&x.trad||"";$("moQty").value=x&&x.qty||"";$("moTo").value=x&&x.to||"";
+  $("moRate").value=x&&x.rate?x.rate:"";$("moPrice").value=x&&x.price?x.price:"";$("moCancel").hidden=$("moDel").hidden=!x;$("moDelBox").hidden=true;$("moTitle").textContent=x?"Edit Out Medicine":"Out Medicine"}
+function moAuto(){const m=$("moQty").value.replace(/,/g,"").match(/\d+(\.\d+)?/),r=mNum($("moRate").value);if(m&&r)$("moPrice").value=String(Math.round(parseFloat(m[0])*r*100)/100)}
+function mbPartSet(k){mbPart=k;renderMed()}
+function renderMedOut(){
+  const out=mbPart==="out";$("mbTabIn").setAttribute("aria-selected",!out);$("mbTabOut").setAttribute("aria-selected",out);
+  $("moPart").style.display=out?"flex":"none";["mbDealers","mbWfnWarn"].forEach(i=>{const e=$(i);if(e)e.style.display=out?"none":""});
+  if(out){$("mbFirst").style.display="none";$("mbNewBox").style.display="none"}else{$("mbFirst").style.display="";$("mbNewBox").style.display=""}
+  $("moAllT").textContent=(medouts.length?"– ":"")+rs(moTot());
+  sugData.moTo=[...new Set(medouts.map(x=>x.to).filter(Boolean))].sort();
+  const dot=v=>v?esc(v):"...",list=medouts.slice().sort(byDate);
+  let h="<thead><tr><th>Date</th><th>Medicine Name</th><th>Traditional Name</th><th>Quantity</th><th>To</th><th style='text-align:right'>Rate</th><th style='text-align:right'>Total Price</th></tr></thead><tbody>";
+  h+=list.map(x=>`<tr data-mo="${esc(x.id)}"${moEdit===x.id?' class="editing"':""}><td class="num">${dmy(x.date)}</td><td>${dot(x.name)}</td><td>${dot(x.trad)}</td><td>${dot(x.qty)}</td><td>${dot(x.to)}</td><td class="num amt">${x.rate?F(x.rate):"..."}</td><td class="num amt">${x.price?F(x.price):"..."}</td></tr>`).join("");
+  h+=list.length?`<tr class="tot"><td colspan="6">Total (Rs) · ${F(list.length)} entr${list.length>1?"ies":"y"}</td><td class="num amt">${F(moTot())}</td></tr>`:`<tr><td colspan="7" class="empty">No out medicine yet.</td></tr>`;
+  $("moTable").innerHTML=h+"</tbody>";$("moPdf").hidden=!list.length;
+}
+function moPdf(){const t=(m,e)=>toast("moPdfToast",m,e),list=medouts.slice().sort(byDate);if(!list.length){t("No out medicine yet.",true);return}
+  const dot=v=>v?esc(v):"...",ds=list.map(x=>x.date).filter(Boolean).sort();
+  let h=`<thead><tr><th>Sr</th><th>Date</th><th>Medicine Name</th><th>Traditional Name</th><th>Quantity</th><th>To</th><th class="r">Rate</th><th class="r">Total Price</th></tr></thead><tbody>`;
+  h+=list.map((x,i)=>`<tr><td>${i+1}</td><td>${dmy(x.date)}</td><td>${dot(x.name)}</td><td>${dot(x.trad)}</td><td>${dot(x.qty)}</td><td>${dot(x.to)}</td><td class="r">${x.rate?F(x.rate):"..."}</td><td class="r">${x.price?F(x.price):"..."}</td></tr>`).join("");
+  h+=`<tr class="bt"><td colspan="7">Total (Rs)</td><td class="r">${F(moTot())}</td></tr>`;
+  return billPdf({title:"Out Medicine",info:[["Dates",ds.length?dmy(ds[0])+" to "+dmy(ds[ds.length-1]):"..."],["Report Date",dmy(todayISO())]],table:h+"</tbody>",sum:[["Entries",F(list.length)],["Total","Rs "+F(Math.round(moTot()))]],file:"Out Medicine - "+dmy(todayISO()).replace(/\//g,"-"),fit:1},t)}
+// ---------- v1.26.4 supervisor In / Out Medicine (no rate, no money). Supervisor writes; farm only sees it ----------
+const smList=k=>supmeds.filter(x=>x.kind===k&&(!x.flock||x.flock===flockId)).sort(byDate);
+function smFill(x){$("smDate").value=x?x.date:todayISO();["Name","Trad","Qty","Party"].forEach(f=>$("sm"+f).value=x&&x[f.toLowerCase()]||"");$("smCancel").hidden=$("smDel").hidden=!x;$("smDelBox").hidden=true}
+function smTable(k,ed){const dot=v=>v?esc(v):"...",L=smList(k),seen=+(localStorage.getItem("hp-smseen")||0),nw=x=>HPMODE==="farm"&&Date.parse(x.createdAt||0)>seen;
+  let h=`<thead><tr><th>Date</th><th>Medicine Name</th><th>Traditional Name</th><th>Quantity</th><th>${k==="in"?"From":"To"}</th></tr></thead><tbody>`;
+  h+=L.map(x=>`<tr${ed?` data-sm="${esc(x.id)}"`:""}${nw(x)?' class="smnew"':""}><td class="num">${dmy(x.date)}${nw(x)?' <b class="smnw">New</b>':""}</td><td>${dot(x.name)}</td><td>${dot(x.trad)}</td><td>${dot(x.qty)}</td><td>${dot(x.party)}</td></tr>`).join("");
+  return h+(L.length?`<tr class="tot"><td colspan="5">${F(L.length)} entr${L.length>1?"ies":"y"}</td></tr>`:`<tr><td colspan="5" class="empty">Nothing yet.</td></tr>`)+"</tbody>"}
+function renderSupMed(){try{
+  if(HPMODE==="sup"){const i=smList("in"),o=smList("out"),all=[...i,...o].sort(byDate);
+    const en=n=>F(n)+(n===1?" entry":" entries");$("smInN").textContent=en(i.length);$("smOutN").textContent=en(o.length);$("smLast").textContent=all.length?dmy(all[all.length-1].date).slice(0,5):"...";
+    $("smTabIn").setAttribute("aria-selected",smKind==="in");$("smTabOut").setAttribute("aria-selected",smKind==="out");
+    $("smTitle").textContent=(smEdit?"Edit ":"")+(smKind==="in"?"In Medicine":"Out Medicine");$("smPartyL").textContent=smKind==="in"?"From (dealer / farm)":"To (which farm / person)";$("smParty").placeholder=smKind==="in"?"e.g. Dr Umair":"e.g. Kunjah Farm";
+    $("smTabIn2").innerHTML=smTable("in",1);$("smTabOut2").innerHTML=smTable("out",1);
+    const u=k=>[...new Set(supmeds.map(x=>x[k]).filter(Boolean))].sort();sugData.smName=u("name");sugData.smTrad=u("trad");sugData.smQty=u("qty");sugData.smParty=u("party");return}
+  if(HPMODE!=="farm")return;
+  $("svMedIn").innerHTML=smTable("in");$("svMedOut").innerHTML=smTable("out");
+  const seen=+(localStorage.getItem("hp-smseen")||0),nw=supmeds.filter(x=>(!x.flock||x.flock===flockId)&&Date.parse(x.createdAt||0)>seen),bx=$("smBox");
+  if(nw.length&&!supView){const last=nw.map(x=>x.createdAt).sort().pop(),d=new Date(last);bx.querySelector("b").textContent=(supInfo.name||"سپروائزر")+" نے میڈیسن کی "+nw.length+" نئی اینٹری"+(nw.length>1?"اں":"")+" بھیجی ہیں";
+    bx.querySelector("small").textContent=dmy(last.slice(0,10))+" · "+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});bx.hidden=false}else bx.hidden=true;
+}catch(e){}}
+function smShow(on){smOn=on;$("vSupMed").style.display=on?"flex":"none";$("vDaily").style.display=on?"none":"contents";$("smNavD").classList.toggle("on",!on);$("smNavM").classList.toggle("on",on);if(on){smFill(null);renderSupMed()}scrollTo(0,0)}
 function renderMed(){
   const wrap=$("mbDealers"), ds=[MB_WFN,MB_STORE,...dealers.slice().sort((a,b)=>(a.seq||0)-(b.seq||0))];
   {const nw=medbuys.filter(x=>x.dealer===MB_WFN.id).length;let wb=$("mbWfnWarn");if(!wb){wb=document.createElement("div");wb.id="mbWfnWarn";wb.className="wfnwarn";wb.setAttribute("role","status");wrap.before(wb);wb.addEventListener("click",()=>{mbOpen=MB_WFN.id;mbApplyOpen();wrap.querySelector(".mbsec.wfn").scrollIntoView({behavior:"smooth",block:"start"})})}
@@ -2135,7 +2258,7 @@ function renderMed(){
     el.querySelector(".mbtab").innerHTML=h+"</tbody>";
     const ed=!!mbEdit[d.id];el.querySelector('[data-act="cancel"]').hidden=el.querySelector('[data-act="del"]').hidden=!ed;el.querySelector('[data-act="save"]').disabled=!canWrite;
   });
-  $("mbAll").textContent=rs(r2(storeTot()+sum(all.filter(mbCounted))));$("mbDCount").textContent=F(dealers.length);$("mbCount").textContent=F(all.length);
+  $("mbAll").textContent=rs(r2(storeTot()+sum(all.filter(mbCounted))-moTot()));renderMedOut();$("mbDCount").textContent=F(dealers.length);$("mbCount").textContent=F(all.length);
   $("mbFirst").hidden=!$("mbNewBox").hidden;$("mbFirstNote").hidden=dealers.length>0;mbApplyOpen();
   const uniq=k=>[...new Set(all.map(x=>x[k]).filter(Boolean))].sort();
   sugData.mbName=uniq("name");sugData.mbTrad=uniq("trad");sugData.mbQty=uniq("qty");sugData.mbSrc=uniq("src");
@@ -2234,6 +2357,42 @@ $("shedSave").addEventListener("click",async()=>{
 $("navDaily").addEventListener("click",()=>setView("daily"));
 $("navMain").addEventListener("click",()=>setView("main"));
 $("spQ").addEventListener("input",()=>renderSpend());
+$("suQ").addEventListener("input",()=>renderSup());$("suQPdf").addEventListener("click",suSearchPdf);
+$("suCal").addEventListener("click",()=>{suDateOn=!suDateOn;const b=$("suCal");b.setAttribute("aria-pressed",suDateOn);b.classList.toggle("on",suDateOn);$("suQ").hidden=suDateOn;$("suDR").hidden=!suDateOn;
+  if(suDateOn&&!$("suD1").value&&!$("suD2").value){const t=todayISO();$("suD1").value=t.slice(0,8)+"01";$("suD2").value=t}renderSup()});
+["suD1","suD2"].forEach(i=>$(i).addEventListener("change",()=>renderSup()));
+if(HPMODE==="sup"){const n=document.createElement("nav");n.id="smNav";n.innerHTML='<button type="button" id="smNavD" class="on"><i>📅</i><span>روزانہ رپورٹ</span></button><button type="button" id="smNavM"><i>💊</i><span class="en">Medicine</span></button>';document.body.appendChild(n);document.body.classList.add("hpsupnav");
+  $("smNavD").addEventListener("click",()=>smShow(false));$("smNavM").addEventListener("click",()=>smShow(true));
+  $("smTabIn").addEventListener("click",()=>{smKind="in";smEdit=null;smFill(null);renderSupMed()});$("smTabOut").addEventListener("click",()=>{smKind="out";smEdit=null;smFill(null);renderSupMed()});
+  document.querySelectorAll("#smForm input[data-sk]").forEach(inp=>attachSug(inp,inp.nextElementSibling,inp.dataset.sk));
+  ["smTabIn2","smTabOut2"].forEach(t=>$(t).addEventListener("click",ev=>{const tr=ev.target.closest("tr[data-sm]");if(!tr)return;const x=supmeds.find(y=>y.id===tr.dataset.sm);if(!x)return;smEdit=x.id;smKind=x.kind;smFill(x);toast("smToast","Editing: change and Save, or Delete.");renderSupMed();$("smForm").scrollIntoView({behavior:"smooth"})}));
+  $("smCancel").addEventListener("click",()=>{smEdit=null;smFill(null);toast("smToast","");renderSupMed()});
+  $("smDel").addEventListener("click",()=>{$("smDelBox").hidden=false});$("smDelNo").addEventListener("click",()=>{$("smDelBox").hidden=true});
+  $("smDelYes").addEventListener("click",async()=>{if(!smEdit)return;try{await db.doc("supmed/"+smEdit).delete()}catch(e){toast("smToast","Could not delete. Please try again.",true);return}smEdit=null;smFill(null);toast("smToast","Deleted.");renderSupMed()});
+  $("smSave").addEventListener("click",async()=>{const date=$("smDate").value,name=$("smName").value.trim();if(!date||!name){toast("smToast","Date and Medicine Name are required.",true);return}
+    const id=smEdit||("sm"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)),old=smEdit?supmeds.find(x=>x.id===smEdit):null,now=new Date().toISOString();
+    const data={kind:smKind,date,name,trad:$("smTrad").value.trim(),qty:$("smQty").value.trim(),party:$("smParty").value.trim(),flock:flockId||null,createdAt:old&&old.createdAt?old.createdAt:now,updatedAt:now};
+    $("smSave").disabled=true;const ok=await write(db.doc("supmed/"+id),data);$("smSave").disabled=false;
+    if(ok){toast("smToast",(smEdit?"Updated: ":"Sent to farm: ")+name);smEdit=null;smFill(null)}else toast("smToast","Could not save. Please try again.",true);renderSupMed()});
+}
+if(HPMODE==="farm"){$("vDaily").prepend($("smBox"));$("smGo").addEventListener("click",()=>{setSupView(true);setTimeout(()=>$("svMed").scrollIntoView({behavior:"smooth",block:"start"}),300)});
+  setInterval(()=>{if(supView&&$("svMed").getBoundingClientRect().top<innerHeight){const m=supmeds.map(x=>Date.parse(x.createdAt||0)).reduce((a,b)=>Math.max(a,b),0);if(m>+(localStorage.getItem("hp-smseen")||0)){setTimeout(()=>{try{localStorage.setItem("hp-smseen",String(m))}catch(e){}},8000)}}},2000);
+  $("svBack").addEventListener("click",()=>setTimeout(renderSupMed,50))}
+$("mbTabIn").addEventListener("click",()=>mbPartSet("in"));$("mbTabOut").addEventListener("click",()=>mbPartSet("out"));
+["moQty","moRate"].forEach(i=>$(i).addEventListener("input",moAuto));
+document.querySelectorAll("#moForm input[data-sk]").forEach(inp=>attachSug(inp,inp.nextElementSibling,inp.dataset.sk));
+moFill(null);$("moPdf").addEventListener("click",moPdf);
+$("moTable").addEventListener("click",ev=>{const tr=ev.target.closest("tr[data-mo]");if(!tr||!canWrite)return;const x=medouts.find(y=>y.id===tr.dataset.mo);if(!x)return;moEdit=x.id;moFill(x);toast("moToast","Editing: change and Save, or Delete.");renderMedOut();$("moForm").scrollIntoView({behavior:"smooth"})});
+$("moCancel").addEventListener("click",()=>{moEdit=null;moFill(null);toast("moToast","");renderMedOut()});
+$("moDel").addEventListener("click",()=>{$("moDelBox").hidden=false});$("moDelNo").addEventListener("click",()=>{$("moDelBox").hidden=true});
+$("moDelYes").addEventListener("click",async()=>{if(!db||!moEdit)return;try{await db.doc("medout/"+moEdit).delete()}catch(e){toast("moToast","Could not delete. Please try again.",true);return}moEdit=null;moFill(null);toast("moToast","Deleted.");renderMedOut()});
+$("moSave").addEventListener("click",async()=>{
+  const date=$("moDate").value,name=$("moName").value.trim();if(!date||!name){toast("moToast","Date and Medicine Name are required.",true);return}if(!db)return;
+  const id=moEdit||("mo"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)),old=moEdit?medouts.find(x=>x.id===moEdit):null;
+  const data={date,name,trad:$("moTrad").value.trim(),qty:$("moQty").value.trim(),to:$("moTo").value.trim(),rate:mNum($("moRate").value)||null,price:mNum($("moPrice").value)||null,
+    seq:old&&old.seq?old.seq:medouts.reduce((m,x)=>Math.max(m,x.seq||0),0)+1,shed:"s1",flock:flockId,createdAt:old&&old.createdAt?old.createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+  $("moSave").disabled=true;const ok=await write(db.doc("medout/"+id),data);$("moSave").disabled=false;
+  if(ok){toast("moToast",(moEdit?"Updated: ":"Saved: ")+name);moEdit=null;moFill(null)}else toast("moToast","Could not save. Please try again.",true);renderMed()});
 $("spCal").addEventListener("click",()=>{spDateOn=!spDateOn;const b=$("spCal");b.setAttribute("aria-pressed",spDateOn);b.classList.toggle("on",spDateOn);$("spQ").hidden=spDateOn;$("spDR").hidden=!spDateOn;
   if(spDateOn&&!$("spD1").value&&!$("spD2").value){const t=todayISO();$("spD1").value=t.slice(0,8)+"01";$("spD2").value=t}renderSpend()});
 ["spD1","spD2"].forEach(i=>$(i).addEventListener("change",()=>renderSpend()));
@@ -2713,6 +2872,10 @@ spFill(null);fdFill(null);suFill(null);saFill(null);
     RAW.medbuy=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.shed==="s1");medbuys=RAW.medbuy.filter(inF);mbSrcMove();
     if(view==="med")renderMed();if(view==="main")renderMain();
   },e=>{});
+  db.collection("medout").onSnapshot(s=>{
+    RAW.medout=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.shed==="s1");medouts=RAW.medout.filter(inF);
+    if(view==="med")renderMed();if(view==="main")renderMain();
+  },e=>{});
   db.collection("salary").onSnapshot(s=>{
     RAW.salary=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.shed==="s1");sals=RAW.salary.filter(inF);
     if(view==="spend")renderSal();if(view==="main")renderMain();
@@ -2737,6 +2900,7 @@ spFill(null);fdFill(null);suFill(null);saFill(null);
     shedNm=s.exists&&s.data().name?s.data().name:"";{const m=!!(s.exists&&s.data().money);if(m!==farmMoney){farmMoney=m;if(view==="main"&&flock)renderMain()}}$("shedName").textContent=n; if(document.activeElement!==$("shedInput"))$("shedInput").value=s.exists&&s.data().name?n:"";
   },e=>{});
   db.doc("config/msg").onSnapshot(s=>{msgLine1=s.exists?(s.data().line1||""):""},e=>{});
+  if(HPMODE==="farm"||HPMODE==="sup")db.collection("supmed").onSnapshot(s=>{supmeds=s.docs.map(d=>({id:d.id,...d.data()}));renderSupMed()},e=>{});
   if(HPMODE==="farm"){
     db.collection("supdays").onSnapshot(s=>{supd={};s.docs.forEach(d=>supd[d.id]=d.data());if(flock)render()},e=>{});
     db.collection("supweeks").onSnapshot(s=>{supw={};s.docs.forEach(d=>supw[d.id]=d.data());if(flock)render()},e=>{});
@@ -2755,7 +2919,7 @@ spFill(null);fdFill(null);suFill(null);saFill(null);
 // ---------- v1.14: old flocks (view only) ----------
 function derive(){
   const g=k=>(RAW[k]||[]).filter(inF);
-  spends=g("spendings");medbuys=g("medbuy");sals=g("salary");sups=g("supervisor");sdealers=g("saledealers");svehs=g("salev");
+  spends=g("spendings");medbuys=g("medbuy");medouts=g("medout");sals=g("salary");sups=g("supervisor");sdealers=g("saledealers");svehs=g("salev");
   kvehs=g("kandav");krates=g("kandarate");gsales=g("gensale");srates=g("salerate");feeds=g("feedlog");
   const all=RAW.dealers||[];mbStore=all.find(x=>x.id===storeId())||null;dealers=all.filter(x=>x.shed==="s1"&&!/^prevstore/.test(x.id)&&inF(x));
 }
@@ -2900,7 +3064,7 @@ mq.addEventListener("change",place);if(document.readyState==="loading")document.
  .mbsec.open>.mbbody:has(>.hpfolded){grid-template-columns:minmax(0,1fr) 64px!important}
  .mbbody>.hpfold.hpfold{grid-column:2;grid-row:1}
  /* Main (view only): no entry forms at all, record full width (Sale rates stay) */
- html.hpro .hpfold,html.hpro #entryCard,html.hpro :is(#spGen,#spSup,#spSal)>.card:has(label),html.hpro .mbbody>.hpform,html.hpro section[aria-label="Add feed entry"]{display:none!important}
+ html.hpro .hpfold,html.hpro #entryCard,html.hpro :is(#spGen,#spSup,#spSal)>.card:has(label),html.hpro .mbbody>.hpform,html.hpro section[aria-label="Add feed entry"],html.hpro #moForm{display:none!important}
  html.hpro html body .wrap.wrap:has(#vDaily[style*="contents"]){grid-template-columns:minmax(0,1fr)!important}
  html body .wrap:has(#entryCard.hpfolded):has(#vDaily[style*="contents"]){grid-template-columns:minmax(0,1fr)!important}
  html.hpro .wrap:has(#vDaily[style*="contents"]) #histSec,html.hpro .wrap:has(#vDaily[style*="contents"]) :is(.card.fcr,section[aria-label="Final FCR"]){grid-column:1/-1!important}
@@ -3218,7 +3382,7 @@ new MutationObserver(()=>{clearTimeout(up.t);up.t=setTimeout(up,60)}).observe(do
 #hpDay .ln.go{cursor:pointer;align-items:center}#hpDay .ln.go:hover{box-shadow:0 2px 10px rgba(23,63,102,.16)}#hpDay .ln .ar{font-style:normal;color:#9aa9b8;font-size:22px;align-self:center}
 #hpDay li.go{cursor:pointer;border-radius:8px;padding-inline:6px;margin-inline:-6px}#hpDay li.go:hover,#hpDay li.go:active{background:#eef5f0}
 #hpDay li.go em{font-style:normal;color:#9aa9b8;font-size:16px}
-@keyframes hpFlash{0%,60%{background:#fff3c4}100%{background:transparent}}tr.hpflash td{animation:hpFlash 2.6s ease}
+@keyframes hpFlash{0%,60%{background:#fff3c4}100%{background:transparent}}tr.hpflash td{animation:hpFlash 2.6s ease}tr.hpkeep td{background:#fff3c4!important}
 </style>
 <div id="hpDay" hidden><div class="sb" data-x="1"></div><div class="sp" role="dialog" aria-label="دن کا خلاصہ"><div class="hd"><button type="button" id="hpDayPrev" aria-label="پچھلا دن">›</button><div class="t"><b id="hpDayT"></b><small id="hpDayD"></small></div><button type="button" id="hpDayNext" aria-label="اگلا دن">‹</button></div><div id="hpDayM" role="group" aria-label="دن یا ہفتہ"><button type="button" data-m="d" aria-pressed="true">دن</button><button type="button" data-m="w" aria-pressed="false">ہفتہ</button></div><div id="hpDayL"></div><button type="button" class="cl" data-x="1">بند کریں</button></div></div>
 <script>(function(){
@@ -3262,7 +3426,7 @@ $("hpDay").addEventListener("click",e=>{if(e.target.dataset.x){close();return}
   setTimeout(()=>{try{renderFeed()}catch(err){}flash(sel(document,"data-fd",feeds.filter(x=>x.kind!=="out"&&ds.has(x.date)).map(x=>x.id)))},250);return}
  if(ln.dataset.go==="spend"){const g=spends.filter(x=>x.type!=="break"&&ds.has(x.date)),u=sups.filter(x=>x.type!=="break"&&ds.has(x.date));
   try{spPart=u.length>g.length?"sup":"gen"}catch(err){}const nav=$("navSpend");if(nav)nav.click();
-  setTimeout(()=>{flash([...sel(document,"data-sp",g.map(x=>x.id)),...sel(document,"data-su",u.map(x=>x.id))])},250)}
+  setTimeout(()=>{hpKeepSet(g.map(x=>"sp:"+x.id).concat(u.map(x=>"su:"+x.id)));flash([...sel(document,"data-sp",g.map(x=>x.id)),...sel(document,"data-su",u.map(x=>x.id))])},250)}
 });
 $("hpDayPrev").addEventListener("click",()=>{if(cur>1){cur--;draw()}});$("hpDayNext").addEventListener("click",()=>{if(cur<(wk?maxWk():maxDay())){cur++;draw()}});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")close()});
@@ -3328,7 +3492,7 @@ function chartHTML(h){if(h.length<2)return "";
 function up(){try{
  if(typeof flock==="undefined"||!flock||!Array.isArray(days))return;
  const h=rows(),k=[flockId,oldView,h.length,h.length?h[h.length-1].fRem+"|"+h[h.length-1].m24+"|"+h[h.length-1].f24:""].join("~");if(k===key)return;key=k;
- const tiles=$("mnTiles");if(tiles){const keep=$("hpChartInfo")&&!$("hpChartInfo").hidden?$("hpChartInfo").innerHTML:"";let c=$("hpChart");if(!c){c=document.createElement("section");c.id="hpChart";c.className="hpchart";tiles.after(c)}const x=chartHTML(h);c.innerHTML=x;c.hidden=!x;if(keep&&$("hpChartInfo")){$("hpChartInfo").innerHTML=keep;$("hpChartInfo").hidden=false}}
+ const tiles=HPMODE==="sup"?document.querySelector("#vDaily>.flock"):$("mnTiles");if(tiles){const keep=$("hpChartInfo")&&!$("hpChartInfo").hidden?$("hpChartInfo").innerHTML:"";let c=$("hpChart");if(!c){c=document.createElement("section");c.id="hpChart";c.className="hpchart";tiles.after(c)}const x=chartHTML(h);c.innerHTML=x;c.hidden=!x;if(keep&&$("hpChartInfo")){$("hpChartInfo").innerHTML=keep;$("hpChartInfo").hidden=false}}
  const w=(oldView||flock.end||HPMODE==="sup")?"":warnHTML(h);
  [["hpFWMain",tiles,"before"],["hpFWDaily",document.querySelector("#vDaily>.flock"),"after"]].forEach(([id,ref,how])=>{let e=$(id);if(!ref)return;if(!e){e=document.createElement("div");e.id=id;ref[how](e)}e.innerHTML=w;e.hidden=!w;e.style.display=w?"":"none"});
 }catch(e){}}
@@ -3353,10 +3517,10 @@ document.addEventListener("keydown",e=>{
 <style>/* v1.27: date search inside the spendings search bar */
 .spbar{flex-wrap:nowrap!important;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:3px 4px 3px 0}
 .spbar>#spQ{border:0!important;background:transparent!important;box-shadow:none!important;min-width:0}
-.spbar>#spQ[hidden],#spDR[hidden]{display:none!important}
-#spDR{display:flex;align-items:center;gap:4px;flex:1;min-width:0;padding-left:8px;direction:ltr}
-#spDR small{font:600 12px "Segoe UI",Roboto,Arial,sans-serif;color:var(--muted)}
-#spDR input{flex:1;min-width:0;font:14px "Segoe UI",Roboto,Arial,sans-serif;border:1px solid var(--line);border-radius:7px;padding:5px 3px;background:var(--surface);color:var(--fg)}
+.spbar>#spQ[hidden],#spDR[hidden],.spbar>#suQ[hidden],#suDR[hidden]{display:none!important}.spbar>#suQ{border:0!important;background:transparent!important;box-shadow:none!important;min-width:0}
+#spDR,#suDR{display:flex;align-items:center;gap:4px;flex:1;min-width:0;padding-left:8px;direction:ltr}
+#spDR small,#suDR small{font:600 12px "Segoe UI",Roboto,Arial,sans-serif;color:var(--muted)}
+#spDR input,#suDR input{flex:1;min-width:0;font:14px "Segoe UI",Roboto,Arial,sans-serif;border:1px solid var(--line);border-radius:7px;padding:5px 3px;background:var(--surface);color:var(--fg)}
 .spcal{flex:none;width:36px;height:36px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:17px;line-height:1;padding:0;display:grid;place-items:center;cursor:pointer}
 .spcal.on{background:var(--accent);border-color:var(--accent)}
 </style>
@@ -3461,6 +3625,33 @@ html body label[hidden],html body [data-cashonly][hidden]{display:none!important
 function mv(){const b=document.getElementById("hpLogoBtn"),bar=document.querySelector(".hpbar"),row=document.getElementById("flRow");if(!b||!bar||!row)return;
  if(mq.matches&&!document.body.classList.contains("nobar")){if(b.parentElement!==bar)bar.insertBefore(b,bar.firstChild)}else if(b.parentElement!==row)row.insertBefore(b,row.firstChild)}
 mq.addEventListener("change",mv);const go=()=>{mv();new MutationObserver(mv).observe(document.body,{attributes:true,attributeFilter:["class"]})};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go()})();</script>
+<style>/* v1.27 Out Medicine */
+#moAllT{white-space:nowrap}
+@media (min-width:1000px){#moForm{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}#moForm>.dayhead,#moForm>.row,#moForm>.toast{grid-column:1/-1}}
+</style>
+<script>/* v1.26.4: spendings lines opened from the day summary stay yellow until you leave Spendings */
+(function(){let keep=new Set();
+const apply=()=>{document.querySelectorAll("#vSpend tr[data-sp],#vSpend tr[data-su]").forEach(r=>{const k=(r.dataset.sp!=null?"sp:"+r.dataset.sp:"su:"+r.dataset.su);r.classList.toggle("hpkeep",keep.has(k))})};
+window.hpKeepSet=ids=>{keep=new Set(ids);apply()};
+const v=document.getElementById("vSpend");if(v)new MutationObserver(()=>{if(keep.size)apply()}).observe(v,{subtree:true,childList:true});
+setInterval(()=>{if(keep.size&&v&&v.style.display==="none"){keep.clear();apply()}},500);
+})();</script>
+<style>/* v1.26.4 supervisor medicine */
+body:not(.supview) #svMed{display:none}
+#svMed .smnote{font-family:"Jameel Noori","Segoe UI",serif;direction:rtl;text-align:right;background:#fff4d6;border:1px solid #f0c75e;color:#7a4f00;border-radius:10px;padding:6px 10px;font-size:16px;line-height:1.8;margin:6px 0 10px}
+#svMed h3{font-size:15px;margin:10px 0 6px}.smro{display:inline-block;background:#e6ecf2;color:#34485c;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;vertical-align:middle;margin-left:6px}
+tr.smnew td{background:#fff8e6}.smnw{color:#b5520b}
+#smBox{direction:rtl;text-align:right;background:#fff;border:2px solid #b5520b;border-radius:14px;padding:10px 12px;margin:0 0 12px;font-family:"Jameel Noori","Segoe UI",serif}
+#smBox[hidden]{display:none}#smBox b{display:block;font-size:18px;font-weight:400}#smBox small{display:block;color:#5d6b64;font:13px "Segoe UI",Roboto,sans-serif;text-align:right}
+#smBox button{margin-top:6px;background:#b5520b;color:#fff;border:0;border-radius:9px;padding:4px 16px;font:17px "Jameel Noori","Segoe UI",serif}
+#smNav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;background:#fff;border-top:1px solid #d6e0ea;padding:6px 0 calc(8px + env(safe-area-inset-bottom));box-shadow:0 -2px 10px rgba(23,63,102,.08)}
+#smNav button{flex:1;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;color:#5b6b7b;font:600 13px "Segoe UI",Roboto,sans-serif}
+#smNav button span{font-family:"Jameel Noori","Segoe UI",serif;font-size:15px;font-weight:400}#smNav button span.en{font-family:"Segoe UI",Roboto,sans-serif;font-size:13px;font-weight:600}
+#smNav i{font-style:normal;font-size:17px;width:56px;height:28px;line-height:28px;border-radius:999px;text-align:center}
+#smNav .on{color:#1c5d93}#smNav .on i{background:#1c5d93}
+body.hpsupnav{padding-bottom:76px!important}
+@media (min-width:1000px){#smForm{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}#smForm>.dayhead,#smForm>.row,#smForm>.toast{grid-column:1/-1}#smNav{max-width:520px;margin:0 auto;border-radius:16px 16px 0 0}}
+</style>
 
 </body>
 </html>
