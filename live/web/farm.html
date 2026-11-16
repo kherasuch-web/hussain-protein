@@ -420,8 +420,8 @@ body.supview #hpLogoBtn{display:none}
 #pdfSheet .dmsg{flex-basis:100%;font-size:13px;color:#5d6b64;min-height:0}#pdfSheet .dmsg.ok{color:#1f7a4d;font-weight:700;background:none}#pdfSheet .dmsg.bad{color:#b42318}
 #pdfSheet .none{background:#fff;border-radius:18px;padding:22px 14px;text-align:center;color:#5d6b64;font-size:15px}
 /* in-page PDF buttons now live in the logo sheet */
-#dlyPdf,#dlyPdfToast,#bsPdf,#bsPdfToast,#fcrPdf,#fcrPdfToast,.card.fcr .chk2,#ffPdf,#ffPdfToast,#ffJpg,#ffJpgToast,#ffJpg+.legend,#spQPdf,#suPdf,#suPdfToast,#saPdf,#saPdfToast,#gsPdf,#gsPdfToast,#kdVBill,#kdVRate,#rpCard,
-.mbsec [data-act="pdf"],.mbsec .pdftoast,.slsec [data-act="pdf"],.slsec [data-box="pdf"],.kdsec [data-act="pdf"],.kdsec [data-box="pdf"]{display:none!important}
+#dlyPdf,#dlyPdfToast,#bsPdf,#bsPdfToast,#fcrPdf,#fcrPdfToast,.card.fcr .chk2,#ffPdf,#ffPdfToast,#ffJpg,#ffJpgToast,#ffJpg+.legend,#suPdf,#suPdfToast,#saPdf,#saPdfToast,#gsPdf,#gsPdfToast,#kdVBill,#kdVRate,#rpCard,
+#moPdf,#moPdfToast,.mbsec [data-act="pdf"],.mbsec .pdftoast,.slsec [data-act="pdf"],.slsec [data-box="pdf"],.kdsec [data-act="pdf"],.kdsec [data-box="pdf"]{display:none!important}
 
 /* v1.23: flock button = small round button (same size as the logo), above the first tile; logo opposite */
 #flRow{align-items:center}
@@ -662,9 +662,10 @@ body.supview #hpLogoBtn{display:none}
 
       <section style="display:flex;flex-direction:column;gap:8px" aria-label="Spendings record">
         <h2 class="en">General Spendings Record</h2>
-        <div class="row spbar" style="gap:6px;align-items:center"><input id="spQ" class="txt" type="search" autocomplete="off" placeholder="Search name (e.g. Petrol, Usman Ele)" style="flex:1"><span id="spDR" hidden><small>From</small><input id="spD1" type="date"><small>To</small><input id="spD2" type="date"></span><button class="spcal" id="spCal" type="button" aria-pressed="false" title="Search by dates" aria-label="Search by dates">📅</button><button class="ghost" id="spQPdf" type="button" hidden>Download PDF</button></div>
-        <div class="toast pdftoast" id="spQToast" role="status"></div>
+        <div class="row spbar" style="gap:6px;align-items:center"><input id="spQ" class="txt" type="search" autocomplete="off" placeholder="Search name (e.g. Petrol, Usman Ele)" style="flex:1"><span id="spDR" hidden><small>From</small><input id="spD1" type="date"><small>To</small><input id="spD2" type="date"></span><button class="spcal" id="spCal" type="button" aria-pressed="false" title="Search by dates" aria-label="Search by dates">📅</button></div>
         <div class="tablewrap"><table id="spTable"></table></div>
+        <button class="save pdfbtn" id="spQPdf" type="button" hidden>⬇ Download Search PDF</button>
+        <div class="toast pdftoast" id="spQToast" role="status"></div>
         <div class="legend">Tap a row to edit or delete it.</div>
       </section>
       </div>
@@ -697,9 +698,9 @@ body.supview #hpLogoBtn{display:none}
       <section style="display:flex;flex-direction:column;gap:8px" aria-label="Supervisor record">
         <h2 class="en">Supervisor Advance Record</h2>
         <div class="row spbar" style="gap:6px;align-items:center"><input id="suQ" class="txt" type="search" autocomplete="off" placeholder="Search name (e.g. Shahid Sp, Naqad)" style="flex:1"><span id="suDR" class="spdr" hidden><small>From</small><input id="suD1" type="date"><small>To</small><input id="suD2" type="date"></span><button class="spcal" id="suCal" type="button" aria-pressed="false" title="Search by dates" aria-label="Search by dates">📅</button></div>
-        <button class="ghost" id="suQPdf" type="button" hidden style="align-self:flex-start">⬇ Download PDF</button>
-        <div class="toast" id="suQToast" role="status"></div>
         <div class="tablewrap"><table id="suTable" class="fdt"></table></div>
+        <button class="save pdfbtn" id="suQPdf" type="button" hidden>⬇ Download Search PDF</button>
+        <div class="toast pdftoast" id="suQToast" role="status"></div>
         <div class="legend">Tap a row to edit or delete it.</div>
       </section>
       </div>
@@ -919,6 +920,16 @@ body.supview #hpLogoBtn{display:none}
         <button type="button" role="tab" id="mbTabIn" aria-selected="true" class="en">In Medicine</button>
         <button type="button" role="tab" id="mbTabOut" aria-selected="false" class="en">Out Medicine</button>
       </nav>
+      <div class="row spbar mqbar" style="gap:6px;align-items:center"><input id="mqQ" class="txt" type="search" autocomplete="off" placeholder="Search medicine (e.g. Amoxy, Vitamin)" style="flex:1"><span id="mqDR" hidden><small>From</small><input id="mqD1" type="date"><small>To</small><input id="mqD2" type="date"></span><button class="spcal" id="mqCal" type="button" aria-pressed="false" title="Search by dates" aria-label="Search by dates">📅</button></div>
+      <section id="mqRes" style="display:none;flex-direction:column;gap:8px" aria-label="Medicine search result">
+        <h2 class="en" id="mqInH">In Medicine</h2>
+        <div class="tablewrap hpwide"><table id="mqIn" class="fdt"></table></div>
+        <h2 class="en" id="mqOutH">Out Medicine</h2>
+        <div class="tablewrap hpwide"><table id="mqOut" class="fdt"></table></div>
+        <div class="legend">Tap an In Medicine row to open its dealer.</div>
+        <button class="save pdfbtn" id="mqPdf" type="button">⬇ Download Search PDF</button>
+        <div class="toast pdftoast" id="mqToast" role="status"></div>
+      </section>
       <div id="moPart" style="display:none;flex-direction:column;gap:16px">
       <section class="card" id="moForm" aria-label="Add out medicine">
         <div class="dayhead"><h2 class="en" id="moTitle">Out Medicine</h2></div>
@@ -2198,6 +2209,33 @@ function moFill(x){$("moDate").value=x?x.date:todayISO();$("moName").value=x&&x.
   $("moRate").value=x&&x.rate?x.rate:"";$("moPrice").value=x&&x.price?x.price:"";$("moCancel").hidden=$("moDel").hidden=!x;$("moDelBox").hidden=true;$("moTitle").textContent=x?"Edit Out Medicine":"Out Medicine"}
 function moAuto(){const m=$("moQty").value.replace(/,/g,"").match(/\d+(\.\d+)?/),r=mNum($("moRate").value);if(m&&r)$("moPrice").value=String(Math.round(parseFloat(m[0])*r*100)/100)}
 function mbPartSet(k){mbPart=k;renderMed()}
+// ---------- v1.27 one Medicine search: all dealers (In) + Out Medicine shown separately ----------
+let mqDateOn=false;
+function mqFilter(){
+  if(mqDateOn){const a=$("mqD1").value,b=$("mqD2").value;if(!a&&!b)return null;const ok=x=>x.date&&(!a||x.date>=a)&&(!b||x.date<=b),lab=(a?dmy(a):"start")+" to "+(b?dmy(b):"today");
+    return {inn:medbuys.filter(ok).sort(byDate),out:medouts.filter(ok).sort(byDate),lab,file:lab.replace(/\//g,"-")}}
+  const q=spNorm($("mqQ").value);if(!q)return null;const ok=x=>[x.name,x.trad].some(v=>spNorm(v).includes(q));
+  return {inn:medbuys.filter(ok).sort(byDate),out:medouts.filter(ok).sort(byDate),lab:'"'+$("mqQ").value.trim()+'"',q:$("mqQ").value.trim(),file:$("mqQ").value.trim()}}
+const mqDName=id=>id===MB_STORE.id?"Previous Store":id===MB_WFN.id?"Waiting For Note":((dealers.find(d=>d.id===id)||{}).name||"...");
+function mqTables(f,pdf){const dot=v=>v?esc(v):"...",sum=l=>r2(l.reduce((a,x)=>a+(x.price||0),0)),R=pdf?' class="r"':' class="num amt"',n=l=>F(l.length)+(l.length===1?" entry":" entries");
+  let a=`<thead><tr>${pdf?"<th>Sr</th>":""}<th>Date</th><th>Dealer</th><th>Medicine Name</th><th>Traditional Name</th><th>Quantity</th><th${R}>Rate</th><th${R}>Total Price</th></tr></thead><tbody>`;
+  a+=f.inn.map((x,i)=>`<tr${pdf?"":` data-mq="${esc(x.dealer)}"`}>${pdf?`<td>${i+1}</td>`:""}<td${pdf?"":' class="num"'}>${dmy(x.date)}</td><td>${esc(mqDName(x.dealer))}</td><td>${dot(x.name)}</td><td>${dot(x.trad)}</td><td>${dot(x.qty)}</td><td${R}>${x.rate&&x.dealer!==MB_STORE.id?F(x.rate):"..."}</td><td${R}>${x.price&&x.dealer!==MB_STORE.id?F(x.price):"..."}</td></tr>`).join("");
+  const inT=sum(f.inn.filter(x=>x.dealer!==MB_STORE.id));
+  a+=f.inn.length?`<tr class="${pdf?"bt":"tot"}"><td colspan="${pdf?7:6}">Total (Rs) · ${n(f.inn)}</td><td${R}>${F(inT)}</td></tr>`:`<tr><td colspan="${pdf?8:7}" class="empty">Nothing found in In Medicine.</td></tr>`;
+  let b=`<thead><tr>${pdf?"<th>Sr</th>":""}<th>Date</th><th>To</th><th>Medicine Name</th><th>Traditional Name</th><th>Quantity</th><th${R}>Rate</th><th${R}>Total Price</th></tr></thead><tbody>`;
+  b+=f.out.map((x,i)=>`<tr>${pdf?`<td>${i+1}</td>`:""}<td${pdf?"":' class="num"'}>${dmy(x.date)}</td><td>${dot(x.to)}</td><td>${dot(x.name)}</td><td>${dot(x.trad)}</td><td>${dot(x.qty)}</td><td${R}>${x.rate?F(x.rate):"..."}</td><td${R}>${x.price?F(x.price):"..."}</td></tr>`).join("");
+  const outT=sum(f.out);
+  b+=f.out.length?`<tr class="${pdf?"bt":"tot"}"><td colspan="${pdf?7:6}">Total (Rs) · ${n(f.out)}</td><td${R}>${F(outT)}</td></tr>`:`<tr><td colspan="${pdf?8:7}" class="empty">Nothing found in Out Medicine.</td></tr>`;
+  return {a:a+"</tbody>",b:b+"</tbody>",inT,outT}}
+function renderMq(){const f=mqFilter(),on=!!f;$("mqRes").style.display=on?"flex":"none";
+  if(on){["moPart","mbDealers","mbWfnWarn","mbFirst","mbNewBox"].forEach(i=>{const e=$(i);if(e)e.style.setProperty("display","none","important")});$("vMed").querySelector("nav.tabs").style.display="none";
+    const t=mqTables(f);$("mqIn").innerHTML=t.a;$("mqOut").innerHTML=t.b;$("mqInH").textContent="In Medicine · "+f.lab;$("mqOutH").textContent="Out Medicine · "+f.lab;$("mqPdf").hidden=!f.inn.length&&!f.out.length}
+  else{["moPart","mbDealers","mbWfnWarn","mbFirst","mbNewBox"].forEach(i=>{const e=$(i);if(e)e.style.removeProperty("display")});$("vMed").querySelector("nav.tabs").style.display=""}}
+function mqPdf(tt){const t=typeof tt==="function"?tt:(m,e)=>toast("mqToast",m,e),f=mqFilter();if(!f){t("Write a name or pick dates first.",true);return}if(!f.inn.length&&!f.out.length){t("Nothing found.",true);return}
+  const x=mqTables(f,1),ds=[...f.inn,...f.out].map(x=>x.date).filter(Boolean).sort();
+  const tb=(f.inn.length?`<thead><tr><th colspan="8" style="text-align:left">In Medicine</th></tr></thead>`+x.a:"")+(f.out.length?(f.inn.length?"<tr><td colspan=\"8\" style=\"border:0;height:10px\"></td></tr>":"")+`<thead><tr><th colspan="8" style="text-align:left">Out Medicine</th></tr></thead>`+x.b:"");
+  return billPdf({title:f.q?"Medicine - "+f.q:"Medicine",info:[[f.q?"Search":"Dates chosen",f.q||f.lab],["Dates",ds.length?dmy(ds[0])+" to "+dmy(ds[ds.length-1]):"..."],["Report Date",dmy(todayISO())]],
+    table:tb.replace(/<\/?tbody>/g,""),sum:[["In Medicine","Rs "+F(Math.round(x.inT))+" · "+F(f.inn.length)],["Out Medicine","Rs "+F(Math.round(x.outT))+" · "+F(f.out.length)]],file:"Medicine - "+f.file,fit:1},t)}
 function renderMedOut(){
   const out=mbPart==="out";$("mbTabIn").setAttribute("aria-selected",!out);$("mbTabOut").setAttribute("aria-selected",out);
   $("moPart").style.display=out?"flex":"none";["mbDealers","mbWfnWarn"].forEach(i=>{const e=$(i);if(e)e.style.display=out?"none":""});
@@ -2209,8 +2247,9 @@ function renderMedOut(){
   h+=list.map(x=>`<tr data-mo="${esc(x.id)}"${moEdit===x.id?' class="editing"':""}><td class="num">${dmy(x.date)}</td><td>${dot(x.name)}</td><td>${dot(x.trad)}</td><td>${dot(x.qty)}</td><td>${dot(x.to)}</td><td class="num amt">${x.rate?F(x.rate):"..."}</td><td class="num amt">${x.price?F(x.price):"..."}</td></tr>`).join("");
   h+=list.length?`<tr class="tot"><td colspan="6">Total (Rs) · ${F(list.length)} entr${list.length>1?"ies":"y"}</td><td class="num amt">${F(moTot())}</td></tr>`:`<tr><td colspan="7" class="empty">No out medicine yet.</td></tr>`;
   $("moTable").innerHTML=h+"</tbody>";$("moPdf").hidden=!list.length;
+  renderMq();
 }
-function moPdf(){const t=(m,e)=>toast("moPdfToast",m,e),list=medouts.slice().sort(byDate);if(!list.length){t("No out medicine yet.",true);return}
+function moPdf(tt){const t=typeof tt==="function"?tt:(m,e)=>toast("moPdfToast",m,e),list=medouts.slice().sort(byDate);if(!list.length){t("No out medicine yet.",true);return}
   const dot=v=>v?esc(v):"...",ds=list.map(x=>x.date).filter(Boolean).sort();
   let h=`<thead><tr><th>Sr</th><th>Date</th><th>Medicine Name</th><th>Traditional Name</th><th>Quantity</th><th>To</th><th class="r">Rate</th><th class="r">Total Price</th></tr></thead><tbody>`;
   h+=list.map((x,i)=>`<tr><td>${i+1}</td><td>${dmy(x.date)}</td><td>${dot(x.name)}</td><td>${dot(x.trad)}</td><td>${dot(x.qty)}</td><td>${dot(x.to)}</td><td class="r">${x.rate?F(x.rate):"..."}</td><td class="r">${x.price?F(x.price):"..."}</td></tr>`).join("");
@@ -2396,6 +2435,10 @@ $("moSave").addEventListener("click",async()=>{
 $("spCal").addEventListener("click",()=>{spDateOn=!spDateOn;const b=$("spCal");b.setAttribute("aria-pressed",spDateOn);b.classList.toggle("on",spDateOn);$("spQ").hidden=spDateOn;$("spDR").hidden=!spDateOn;
   if(spDateOn&&!$("spD1").value&&!$("spD2").value){const t=todayISO();$("spD1").value=t.slice(0,8)+"01";$("spD2").value=t}renderSpend()});
 ["spD1","spD2"].forEach(i=>$(i).addEventListener("change",()=>renderSpend()));
+$("mqQ").addEventListener("input",renderMq);["mqD1","mqD2"].forEach(i=>$(i).addEventListener("change",renderMq));$("mqPdf").addEventListener("click",()=>mqPdf());
+$("mqCal").addEventListener("click",()=>{mqDateOn=!mqDateOn;const b=$("mqCal");b.setAttribute("aria-pressed",mqDateOn);b.classList.toggle("on",mqDateOn);$("mqQ").hidden=mqDateOn;$("mqDR").hidden=!mqDateOn;
+  if(mqDateOn&&!$("mqD1").value&&!$("mqD2").value){const t=todayISO();$("mqD1").value=t.slice(0,8)+"01";$("mqD2").value=t}renderMq()});
+$("mqIn").addEventListener("click",e=>{const r=e.target.closest("tr[data-mq]");if(!r)return;const id=r.dataset.mq;$("mqQ").value="";if(mqDateOn)$("mqCal").click();mbPart="in";renderMed();mbOpen=id;mbApplyOpen();const el=document.querySelector(`.mbsec[data-dealer="${id}"]`);if(el)el.scrollIntoView({behavior:"smooth",block:"start"})});
 ["gsQty","gsRate"].forEach(id=>$(id).addEventListener("input",gsAuto));
 attachSug($("gsMat"),$("gsMat").nextElementSibling,"gsMat");
 $("gsSave").addEventListener("click",async()=>{
@@ -2462,7 +2505,9 @@ function pdfItems(){
     it("u","#1f7a4d","Salary","تنخواہ کی پوری شیٹ",salaryPdf);
   }
   if(view==="med"){
+    const mf=mqFilter(),mq=mf?(mf.q||mf.lab):"";if(mq)it("q","#0f6b73","Medicine · "+mq,mf.q?"تلاش والی میڈیسن کی PDF (اِن + آؤٹ)":"ان تاریخوں کی میڈیسن کی PDF (اِن + آؤٹ)",mqPdf);
     it("m","#b3412e","Medicine Report ⭐","سب ڈیلرز کا ایک مشترکہ بل",medReport,{star:1});
+    if(medouts.length)it("o","#8a5a12","Out Medicine","باہر دی گئی میڈیسن کی لسٹ",moPdf);
     const ds=[...document.querySelectorAll("#mbDealers .mbsec")].filter(e=>{const t=txt(e,".mbdtot");return e.querySelector(".mbtab tr[data-mb]")||(t&&t!=="Rs 0")});
     if(ds.length)L.push({g:"ڈیلر بل"});
     ds.forEach(e=>it("","#1c5d93",txt(e,".mbdname").replace(/^Edit · /,""),txt(e,".mbdtot"),viaBtn(e.querySelector('[data-act="pdf"]'),e.querySelector(".pdftoast")),{av:1}));
@@ -3517,6 +3562,7 @@ document.addEventListener("keydown",e=>{
 <style>/* v1.27: date search inside the spendings search bar */
 .spbar{flex-wrap:nowrap!important;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:3px 4px 3px 0}
 .spbar>#spQ{border:0!important;background:transparent!important;box-shadow:none!important;min-width:0}
+.spbar>#mqQ{border:0!important;background:transparent!important;box-shadow:none!important;min-width:0}.spbar>#mqQ[hidden],#mqDR[hidden]{display:none!important}#mqDR{display:flex;align-items:center;gap:4px;flex:1;min-width:0;padding-left:8px;direction:ltr}#mqDR small{font:600 12px "Segoe UI",Roboto,Arial,sans-serif;color:var(--muted)}#mqDR input{flex:1;min-width:0;font:14px "Segoe UI",Roboto,Arial,sans-serif;border:1px solid var(--line);border-radius:7px;padding:5px 3px;background:var(--surface);color:var(--fg)}#mqIn tr[data-mq]{cursor:pointer}
 .spbar>#spQ[hidden],#spDR[hidden],.spbar>#suQ[hidden],#suDR[hidden]{display:none!important}.spbar>#suQ{border:0!important;background:transparent!important;box-shadow:none!important;min-width:0}
 #spDR,#suDR{display:flex;align-items:center;gap:4px;flex:1;min-width:0;padding-left:8px;direction:ltr}
 #spDR small,#suDR small{font:600 12px "Segoe UI",Roboto,Arial,sans-serif;color:var(--muted)}
@@ -3652,6 +3698,8 @@ tr.smnew td{background:#fff8e6}.smnw{color:#b5520b}
 body.hpsupnav{padding-bottom:76px!important}
 @media (min-width:1000px){#smForm{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}#smForm>.dayhead,#smForm>.row,#smForm>.toast{grid-column:1/-1}#smNav{max-width:520px;margin:0 auto;border-radius:16px 16px 0 0}}
 </style>
+
+<style>#spQPdf[hidden],#suQPdf[hidden]{display:none!important}</style>
 
 </body>
 </html>
