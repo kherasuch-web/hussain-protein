@@ -1390,7 +1390,9 @@ async function billPdf(o,toast){
     while(pos<total-1){const lim=pos+(pos?ph:H-PY);if(total<=lim){pages.push([pos,total]);break}
       const c=cuts.filter(y=>y>pos+40&&y<=lim);const end=c.length?Math.max(...c):lim;pages.push([pos,end]);pos=end}
     const cv=await html2canvas(box,{scale:2,backgroundColor:"#ffffff",logging:false,windowWidth:W});
-    const k=cv.width/W, pdf=new jspdf.jsPDF({unit:"pt",format:"a4"}), pw=pdf.internal.pageSize.getWidth(), pk=pw/W;
+    // v1.26.7: a one-page bill gets a page only as tall as the bill (no empty half page); longer bills stay A4
+    const A4W=595.28,pk0=A4W/W,one=pages.length===1?Math.max(320,Math.round((pages[0][1]-pages[0][0]+PY)*pk0+26)):0;
+    const k=cv.width/W, pdf=new jspdf.jsPDF({unit:"pt",format:one?[A4W,one]:"a4",orientation:one&&one<A4W?"l":"p"}), pw=pdf.internal.pageSize.getWidth(), pk=pw/W;
     pages.forEach(([a,b],i)=>{if(i)pdf.addPage();const c=document.createElement("canvas");c.width=cv.width;c.height=Math.round((b-a)*k);
       const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(cv,0,Math.round(a*k),cv.width,c.height,0,0,c.width,c.height);
       pdf.addImage(c.toDataURL("image/jpeg",0.92),"JPEG",0,i?PY*pk:0,pw,(b-a)*pk);
@@ -1655,7 +1657,9 @@ async function rptPdf(inner,file,dl,toast){
     while(pos<total-1){const lim=pos+(pos?ph:H-PY);if(total<=lim){pages.push([pos,total]);break}
       const c=cuts.filter(y=>y>pos+40&&y<=lim);const end=c.length?Math.max(...c):lim;pages.push([pos,end]);pos=end}
     const cv=await html2canvas(box,{scale:2,backgroundColor:"#ffffff",logging:false,windowWidth:W});
-    const k=cv.width/W, pdf=new jspdf.jsPDF({unit:"pt",format:"a4"}), pw=pdf.internal.pageSize.getWidth(), pk=pw/W;
+    // v1.26.7: a one-page report also gets a page only as tall as the content
+    const A4W=595.28,pk0=A4W/W,one=pages.length===1?Math.max(320,Math.round((pages[0][1]-pages[0][0]+PY)*pk0+26)):0;
+    const k=cv.width/W, pdf=new jspdf.jsPDF({unit:"pt",format:one?[A4W,one]:"a4",orientation:one&&one<A4W?"l":"p"}), pw=pdf.internal.pageSize.getWidth(), pk=pw/W;
     pages.forEach(([a,b],i)=>{if(i)pdf.addPage();const c=document.createElement("canvas");c.width=cv.width;c.height=Math.round((b-a)*k);
       const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(cv,0,Math.round(a*k),cv.width,c.height,0,0,c.width,c.height);
       pdf.addImage(c.toDataURL("image/jpeg",0.9),"JPEG",0,i?PY*pk:0,pw,(b-a)*pk);
