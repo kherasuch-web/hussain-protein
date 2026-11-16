@@ -820,6 +820,37 @@ body.supview #hpLogoBtn{display:none}
         <div><small>Saafi Weight (kg)</small><b class="num" id="slKg">0</b></div>
         <div><small>Vehicles</small><b class="num" id="slCount">0</b></div>
       </section>
+      <section class="card dvcard" id="dvCard" aria-label="Dealer vehicles">
+        <h2 class="en" id="dvH">🚚 Dealer Vehicles <span class="dvcnt" id="dvCnt" hidden></span></h2>
+        <div id="dvForm" class="dvform">
+          <label>Date<input class="txt" type="date" id="dvDate"></label>
+          <label>Dealer<select class="txt" id="dvDl"></select></label>
+          <label>Vehicle No<input class="txt" id="dvVeh" maxlength="40" autocomplete="off" placeholder="Number sent by the dealer"></label>
+          <div class="row"><button class="save" type="button" id="dvSave">Add Vehicle</button><button class="ghost" type="button" id="dvCancel" hidden>Cancel</button><button class="danger" type="button" id="dvDel" hidden>Delete</button></div>
+          <div class="toast" id="dvToast" role="status"></div>
+        </div>
+        <div class="tablewrap"><table class="fdt" id="dvTable"></table></div>
+        <div class="legend">Numbers the dealers send. ⚖ Load pending = empty weight done. ⏳ Not arrived = not weighed yet. ✅ In Sale = moved to the dealer's sale.</div>
+      </section>
+      <section class="card dvcard" id="wvCard" aria-label="Waiting vehicles">
+        <h2 class="en" id="wvH">⚖ Waiting Vehicles <span class="dvcnt" id="wvCnt" hidden></span></h2>
+        <div id="wvForm" class="dvform">
+          <div class="wvsel" id="wvSel" hidden></div>
+          <label data-wv="e">Date<input class="txt" type="date" id="wvDate"></label>
+          <label data-wv="e">Vehicle No<span class="sugw"><input class="txt" id="wvVeh" maxlength="40" autocomplete="off" placeholder="Vehicle number" data-sk="dvVeh"><span class="sug" role="listbox" hidden></span></span></label>
+          <div class="wvchk" id="wvChk" hidden></div>
+          <label data-wv="e">Dealer<select class="txt" id="wvDl"></select></label>
+          <label data-wv="e">Driver Name<span class="sugw"><input class="txt" id="wvDrv" maxlength="40" autocomplete="off" placeholder="Name of the driver" data-sk="slDrv"><span class="sug" role="listbox" hidden></span></span></label>
+          <label data-wv="e">Driver Mobile No<span class="sugw"><input class="txt" id="wvMob" maxlength="20" inputmode="tel" autocomplete="off" placeholder="e.g. 0300-1234567" data-sk="slMob"><span class="sug" role="listbox" hidden></span></span></label>
+          <label data-wv="e">Empty Weight (kg)<input class="txt" id="wvEmpty" inputmode="decimal" placeholder="Empty vehicle weight"></label>
+          <label data-wv="l" hidden>Load Weight (kg)<input class="txt" id="wvLoad" inputmode="decimal" placeholder="After loading"></label>
+          <div class="slcalc" id="wvCalc" hidden></div>
+          <div class="row"><button class="save" type="button" id="wvSave">Save Empty Weight</button><button class="ghost" type="button" id="wvCancel" hidden>Cancel</button><button class="danger" type="button" id="wvDel" hidden>Delete</button></div>
+          <div class="toast" id="wvToast" role="status"></div>
+        </div>
+        <div class="tablewrap"><table class="fdt" id="wvTable"></table></div>
+        <div class="legend">Tap a vehicle to write its Load Weight. It then moves to the dealer's sale by itself.</div>
+      </section>
       <div id="slDealers" style="display:flex;flex-direction:column;gap:10px"></div>
       <section class="card" id="slFirst" aria-label="Add dealer">
         <div class="legend" id="slFirstNote">No dealer yet. Add the first dealer to start.</div>
@@ -841,11 +872,24 @@ body.supview #hpLogoBtn{display:none}
         <div><small>Weight (kg)</small><b class="num" id="kdKg">0</b></div>
         <div><small>Vehicles</small><b class="num" id="kdCount">0</b></div>
       </section>
+      <section class="card dvcard" id="kvCard" aria-label="Kanda dealer vehicles">
+        <h2 class="en" id="kvH">🚚 Kanda Dealer Vehicles <span class="dvcnt" id="kvCnt" hidden></span></h2>
+        <div id="kvForm" class="dvform">
+          <label>Date<input class="txt" type="date" id="kvDate"></label>
+          <label>Dealer Name<span class="sugw"><input class="txt" id="kvDl" maxlength="80" autocomplete="off" placeholder="Dealer name" data-sk="kdDl"><span class="sug" role="listbox" hidden></span></span></label>
+          <label>Vehicle No<input class="txt" id="kvVeh" maxlength="40" autocomplete="off" placeholder="Number sent by the dealer"></label>
+          <div class="row"><button class="save" type="button" id="kvSave">Add Vehicle</button><button class="ghost" type="button" id="kvCancel" hidden>Cancel</button><button class="danger" type="button" id="kvDel" hidden>Delete</button></div>
+          <div class="toast" id="kvToast" role="status"></div>
+        </div>
+        <div class="tablewrap"><table class="fdt" id="kvTable"></table></div>
+        <div class="legend">Numbers the dealers send. ⏳ Not arrived = not weighed yet. ✅ In Sale = weighed in Kanda Sale.</div>
+      </section>
       <section class="card" id="kdForm" aria-label="Kanda vehicle">
         <div class="dayhead"><h2 class="en" id="kdTitle">Kanda Sale · New Vehicle</h2></div>
         <label>Date<input class="txt" type="date" id="kdDate"></label>
         <label>Dealer Name<span class="sugw"><input id="kdDl" class="txt" maxlength="80" autocomplete="off" placeholder="Dealer name" data-sk="kdDl"><span class="sug" role="listbox" hidden></span></span></label>
         <label>Vehicle No<span class="sugw"><input id="kdV" class="txt" maxlength="40" autocomplete="off" placeholder="Vehicle number" data-sk="slVeh"><span class="sug" role="listbox" hidden></span></span></label>
+        <div class="wvchk" id="kdChk" hidden></div>
         <label>Driver Name<span class="sugw"><input id="kdD" class="txt" maxlength="40" autocomplete="off" placeholder="Name of the driver" data-sk="slDrv"><span class="sug" role="listbox" hidden></span></span></label>
         <label>Driver Mobile No<span class="sugw"><input id="kdM" class="txt" maxlength="20" autocomplete="off" inputmode="tel" placeholder="e.g. 0300-1234567" data-sk="slMob"><span class="sug" role="listbox" hidden></span></span></label>
         <label>Rate (Rs per kg) · for this dealer and date<input id="kdRate" class="txt" inputmode="decimal" placeholder="Rate of this dealer on this date"></label>
@@ -861,6 +905,7 @@ body.supview #hpLogoBtn{display:none}
         <div class="legend">Write − before a weight (e.g. −12) to take it away from the total. Add Weight opens the next line. Calculate Weight totals the weights and saves this vehicle in the dealer's record.</div>
       </section>
       <section class="card" id="kdUndoBar" hidden style="border:2px solid #f5a623"><div class="legend" id="kdUndoTxt"></div><div class="row"><button class="save" type="button" id="kdUndo">↶ Undo (bring it back)</button><button class="ghost" type="button" id="kdUndoX">Close</button></div></section>
+      <h2 class="en" id="kdRecH">Kanda Sale Record</h2>
       <div id="kdDealers" style="display:flex;flex-direction:column;gap:10px"></div>
       <div class="legend" id="kdEmpty">No Kanda sale yet. Write the first vehicle above.</div>
       </div>
@@ -3262,30 +3307,37 @@ const strip=h=>{const b=document.createElement("button");b.type="button";b.class
 function forms(){const L=[];const e=document.getElementById("entryCard");if(e)L.push([e,0]);
  for(const id of ["spGen","spSup","spSal"]){const f=document.querySelector("#"+id+">.card:has(label)");if(f)L.push([f,0])}
  const fd=document.querySelector('section[aria-label="Add feed entry"]');if(fd)L.push([fd,1]);
- document.querySelectorAll(".mbbody>.hpform").forEach(f=>L.push([f,0]));return L}
-const fold=(f,on)=>{f.classList.toggle("hpfolded",!!on&&mq.matches);setTimeout(sync,0)};
+ document.querySelectorAll(".mbbody>.hpform").forEach(f=>L.push([f,0]));const mo=document.getElementById("moForm");if(mo)L.push([mo,0]);
+ for(const q of ["#dvForm","#wvForm","#kvForm","#kdForm",'section[aria-label="Add general sale"]',"#smForm"]){const x=document.querySelector(q);if(x)L.push([x,0])}return L}
+const fold=(f,on)=>{f.classList.toggle("hpfolded",!!on);setTimeout(sync,0)};
 // which heading opens which entry. pre(set): for Feed, In/Out heading also picks the In/Out tab
 function heads(f){const r=[];if(f.id==="entryCard"){const h=document.getElementById("histH");if(h)r.push([h])}
  else if(f.parentElement&&/^sp(Gen|Sup|Sal)$/.test(f.parentElement.id)){const n=f.parentElement.querySelector(":scope>section:not(.card):not(.sumrow) h2");if(n)r.push([n])}
  else if(f.matches('section[aria-label="Add feed entry"]')){document.querySelectorAll('#vFeed section[aria-label="Feed record"]>h2').forEach(h=>{const out=/Out/.test(h.textContent),tab=document.getElementById(out?"fdTabOut":"fdTabIn");
    r.push([h,set=>{const on=tab&&tab.getAttribute("aria-selected")==="true";if(set&&tab&&!on)tab.click();return on}])})}
+ else if(f.id==="moForm"){const h=document.querySelector('#moPart section[aria-label="Out medicine record"]>h2');if(h)r.push([h])}
+ else if(f.id==="dvForm"||f.id==="wvForm"||f.id==="kvForm"){const h=document.getElementById(f.id==="dvForm"?"dvH":f.id==="kvForm"?"kvH":"wvH");if(h)r.push([h])}
+ else if(f.id==="kdForm"){const h=document.getElementById("kdRecH");if(h)r.push([h])}
+ else if(f.matches('section[aria-label="Add general sale"]')){const h=document.querySelector('section[aria-label="General sale record"]>h2');if(h)r.push([h])}
+ else if(f.id==="smForm"){document.querySelectorAll('section[aria-label="Supervisor medicine record"]>h2').forEach(h=>{const out=/Out/.test(h.textContent),tab=document.getElementById(out?"smTabOut":"smTabIn");
+   r.push([h,set=>{const on=tab&&tab.getAttribute("aria-selected")==="true";if(set&&tab&&!on)tab.click();return on}])})}
  else if(f.classList.contains("hpform")){const h=f.parentElement.querySelector(":scope>.hprec>h2");if(h)r.push([h])}
  return r}
 function sync(){for(const [f] of forms())heads(f).forEach(([h,pre])=>{let ch=h.querySelector(".hpch");if(!ch){if(!h.dataset.hphb)return;ch=document.createElement("span");ch.className="hpch";h.prepend(ch)}const open=!f.classList.contains("hpfolded")&&(!pre||pre());h.classList.toggle("on",open);ch.textContent=open?"▲ اینٹری بند کریں":"✏️ نئی اینٹری"})}
 // tables that do not fit get a scroll bar
-setInterval(()=>{if(!mq.matches)return;sync();document.querySelectorAll(".tablewrap").forEach(w=>{const t=w.querySelector("table");if(!t||!w.getClientRects().length)return;const wide=t.scrollWidth>w.clientWidth+1;if(wide!==w.classList.contains("hpwide"))w.classList.toggle("hpwide",wide)})},700);
+setInterval(()=>{sync();if(!mq.matches)return;document.querySelectorAll(".tablewrap").forEach(w=>{const t=w.querySelector("table");if(!t||!w.getClientRects().length)return;const wide=t.scrollWidth>w.clientWidth+1;if(wide!==w.classList.contains("hpwide"))w.classList.toggle("hpwide",wide)})},700);
 function setup(){for(const [f,h] of forms()){if(f.dataset.hpf)continue;f.dataset.hpf=1;
  const s=strip(h);f.before(s);s.onclick=()=>{fold(f,false);const i=f.querySelector("input:not([type=date]),textarea");if(i)i.focus()};
  const x=document.createElement("button");x.type="button";x.className="hpfoldx";x.textContent="چھپائیں ⇥";x.onclick=()=>fold(f,true);
  const hd=f.querySelector(":scope>.dayhead");if(hd)hd.appendChild(x);else{const r=document.createElement("div");r.className="hpfxrow";r.appendChild(x);f.prepend(r)}
- fold(f,true);
+ fold(f,mq.matches||f.id!=="entryCard");
  heads(f).forEach(([hd,pre])=>{if(hd.dataset.hphb)return;hd.dataset.hphb=1;hd.classList.add("hphb");hd.setAttribute("role","button");hd.tabIndex=0;
   const ch=document.createElement("span");ch.className="hpch";hd.prepend(ch);
-  const go=()=>{if(!mq.matches)return;const open=f.classList.contains("hpfolded")||(pre&&!pre());if(pre)pre(true);fold(f,!open);if(open){const i=f.querySelector("input:not([type=date]),textarea");if(i)i.focus({preventScroll:true})}sync()};
+  const go=()=>{const open=f.classList.contains("hpfolded")||(pre&&!pre());if(pre)pre(true);fold(f,!open);if(open){const i=f.querySelector("input:not([type=date]),textarea");if(i)i.focus({preventScroll:true})}sync()};
   hd.addEventListener("click",go);hd.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}})});
  // tapping a record row to edit opens the form again
- new MutationObserver(()=>{if(f.querySelector("[id$=Cancel]:not([hidden]),[data-act=cancel]:not([hidden])")||/ترمیم/.test((f.querySelector("h2")||{}).textContent||""))fold(f,false)}).observe(f,{subtree:true,attributes:true,attributeFilter:["hidden"],childList:true,characterData:true})}}
-mq.addEventListener("change",()=>forms().forEach(([f])=>fold(f,mq.matches)));
+ new MutationObserver(()=>{if([...f.querySelectorAll("[id$=Cancel],[data-act=cancel]")].some(b=>!b.closest("[hidden]"))||/ترمیم/.test((f.querySelector("h2")||{}).textContent||""))fold(f,false)}).observe(f,{subtree:true,attributes:true,attributeFilter:["hidden"],childList:true,characterData:true})}}
+mq.addEventListener("change",()=>forms().forEach(([f])=>fold(f,mq.matches||f.id!=="entryCard")));
 new MutationObserver(setup).observe(document.documentElement,{childList:true,subtree:true});
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",setup);else setup()})();</script>
 
@@ -3786,7 +3838,13 @@ $("wfnGo").addEventListener("click",async()=>{const t=(m,er)=>{$("wfnToast").tex
  html body .tablewrap.hpwide::-webkit-scrollbar-thumb{background:#9cb8d3;border-radius:8px}
  html body .tablewrap.hpwide::-webkit-scrollbar-track{background:#eef3f8;border-radius:8px}
 }
-@media (max-width:999px){.hpch{display:none!important}}
+html body .hpfolded.hpfolded{display:none!important}
+@media (max-width:999px){
+ html body .hphb{cursor:pointer;display:inline-flex!important;align-items:center;gap:10px;flex-wrap:wrap;max-width:100%;padding:4px 10px 4px 4px;margin-inline-start:-4px;border-radius:12px;user-select:none;-webkit-tap-highlight-color:transparent}
+ html body .hphb .hpch{display:inline-flex;align-items:center;gap:6px;font:400 17px/1.5 "Jameel Noori","Segoe UI",sans-serif;color:#fff;background:linear-gradient(90deg,#2fa36b,#1f7a4d);border-radius:10px;padding:3px 12px;box-shadow:0 2px 6px rgba(31,122,77,.25);white-space:nowrap}
+ html body .hphb.on .hpch{background:#eef3f8;color:#173f66;box-shadow:none}
+}
+html.hpro .hpch,body.supview #histH .hpch{display:none!important}
 </style>
 <style>/* v1.27: a field marked hidden must stay hidden on Windows too (Received shows only when Cash is On) */
 html body label[hidden],html body [data-cashonly][hidden]{display:none!important}
@@ -3840,6 +3898,163 @@ body.hpsupnav{padding-bottom:76px!important}
 </style>
 
 <style>#spQPdf[hidden],#suQPdf[hidden],#fqPdf[hidden]{display:none!important}</style>
+<style>/* v1.26.8 Sale: dealer vehicles + waiting vehicles */
+.dvcard{display:flex;flex-direction:column;gap:10px}
+.dvcard>h2{margin:0}
+.dvform{display:flex;flex-direction:column;gap:10px}
+.dvform [hidden],.dvform[hidden]{display:none!important}
+.dvcnt{display:inline-block;background:#c26a00;color:#fff;border-radius:999px;padding:1px 9px;font-size:12.5px;font-weight:700;vertical-align:middle}.dvcnt[hidden]{display:none}
+.wvchk{border-radius:10px;padding:8px 10px;font-size:14px;font-weight:600}.wvchk[hidden]{display:none}
+.wvchk.ok{background:#e3f5ea;border:2px solid #2e7d4f;color:#1f5e3a}.wvchk.bad{background:#fde8e8;border:2px solid #c62828;color:#8e1b1b}
+.wvsel{background:#fff6d6;border:1px solid #e8b400;border-radius:10px;padding:8px 10px;font-weight:600}.wvsel[hidden]{display:none}
+#dvTable .st{font-weight:700;white-space:nowrap}.st.p{color:#1c5d93}.st.n{color:#b5520b}.st.s{color:#1f7a4d}
+#dvTable tr.dim td{opacity:.45}
+@media (max-width:999px){#dvTable,#wvTable{font-size:12.5px}#dvTable td,#wvTable td,#dvTable th,#wvTable th{padding-left:4px;padding-right:4px}}
+#wvTable tr.sel td{background:#fff6d6}
+#wvTable td.lp{color:#b5520b;font-weight:700}
+#dvTable tr[data-dv],#wvTable tr[data-wv]{cursor:pointer}
+html.hpro .dvform,html.hpro .dvcard .hpch{display:none!important}
+html.hpro #dvTable tr,html.hpro #wvTable tr{cursor:default}
+</style>
+<script>
+(function(){
+const $=i=>document.getElementById(i);let DV=[],WV=[],dvEd=null,wvSel=null,wvSure="";
+const nv=v=>String(v||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+const nowI=()=>new Date().toISOString();
+const sd=d=>d?d.slice(8,10)+"/"+d.slice(5,7):"...";
+const dn=id=>{const d=sdealers.find(x=>x.id===id);return d?d.name:"..."};
+const dvL=()=>DV.filter(inF),wvL=()=>WV.filter(inF);
+const st=x=>{const n=nv(x.veh);if(wvL().some(w=>nv(w.veh)===n&&w.dealer===x.dealer))return"p";if(svehs.some(v=>nv(v.veh)===n&&v.dealer===x.dealer&&v.date>=x.date))return"s";return"n"};
+const tt=(id,m,e)=>{const b=$(id);b.textContent=m||"";b.classList.toggle("err",!!e)};
+function opts(sel,keep){const v=keep!=null?keep:sel.value;sel.innerHTML='<option value="">Choose dealer</option>'+sdealers.slice().sort((a,b)=>(a.seq||0)-(b.seq||0)).map(d=>`<option value="${esc(d.id)}">${esc(d.name)}</option>`).join("");sel.value=v}
+// which dealer list line matches this number (not yet in sale)
+function look(veh){const n=nv(veh);if(!n)return null;const L=dvL().filter(x=>nv(x.veh)===n);return L.find(x=>st(x)==="n")||L.find(x=>st(x)!=="s")||null}
+function check(){const c=$("wvChk");wvSure="";$("wvSave").textContent=wvSel?"Save Load & Move to Sale":"Save Empty Weight";
+  if(wvSel){c.hidden=true;return}
+  const v=$("wvVeh").value.trim();if(!v){c.hidden=true;return}
+  const m=look(v),dl=$("wvDl").value;
+  if(m&&(!dl||dl===m.dealer)){c.className="wvchk ok";c.textContent="✅ This vehicle is from "+dn(m.dealer);c.hidden=false}
+  else if(m){c.className="wvchk bad";c.textContent="🔴 "+v+" belongs to "+dn(m.dealer)+", not "+dn(dl)+".";c.hidden=false}
+  else{c.className="wvchk bad";c.textContent="🔴 This number was NOT sent by any dealer. Add it in Dealer Vehicles first.";c.hidden=false}}
+function render(){
+  if(!$("dvTable"))return;
+  opts($("dvDl"));opts($("wvDl"));
+  const ord={p:0,n:1,s:2},L=dvL().map(x=>({...x,_s:st(x)})).sort((a,b)=>ord[a._s]-ord[b._s]||(b.date>a.date?1:b.date<a.date?-1:0));
+  const lab={p:"⚖ Load pending",n:"⏳ Not arrived",s:"✅ In Sale"};
+  $("dvTable").innerHTML='<thead><tr><th>Date</th><th>Vehicle No</th><th>Dealer</th><th>Status</th></tr></thead><tbody>'+(L.length?L.map(x=>`<tr data-dv="${esc(x.id)}" class="${x._s==="s"?"dim":""}"><td class="num">${sd(x.date)}</td><td>${esc(x.veh)}</td><td>${esc(dn(x.dealer))}</td><td class="st ${x._s}">${lab[x._s]}</td></tr>`).join(""):'<tr><td colspan="4" class="empty">No vehicle numbers yet. Add the numbers the dealers send.</td></tr>')+"</tbody>";
+  const nOpen=L.filter(x=>x._s!=="s").length;$("dvCnt").textContent=nOpen+" waiting";$("dvCnt").hidden=!nOpen;
+  const W=wvL().slice().sort((a,b)=>(a.createdAt||"")<(b.createdAt||"")?-1:1);
+  $("wvTable").innerHTML='<thead><tr><th>Date</th><th>Vehicle No</th><th>Dealer</th><th class="amt">Empty (kg)</th><th class="amt">Load</th></tr></thead><tbody>'+(W.length?W.map(x=>`<tr data-wv="${esc(x.id)}" class="${wvSel===x.id?"sel":""}"><td class="num">${sd(x.date)}</td><td>${esc(x.veh)}</td><td>${esc(dn(x.dealer))}</td><td class="num amt">${F(x.empty)}</td><td class="lp">${wvSel===x.id?"writing...":canWrite&&!document.documentElement.classList.contains("hpro")?"tap to add":"pending"}</td></tr>`).join(""):'<tr><td colspan="5" class="empty">No vehicle waiting. Write the empty weight when a vehicle comes.</td></tr>')+"</tbody>";
+  $("wvCnt").textContent=W.length;$("wvCnt").hidden=!W.length;
+  sugData.dvVeh=[...new Set(L.filter(x=>x._s==="n").map(x=>x.veh))];
+}
+window.wvRender=render;
+const _rs=renderSale;renderSale=function(){_rs.apply(this,arguments);try{render()}catch(e){}};
+// dealer vehicle list
+function dvFill(x){dvEd=x?x.id:null;$("dvDate").value=x?x.date:($("dvDate").value||todayISO());if(x)$("dvDl").value=x.dealer;$("dvVeh").value=x?x.veh:"";$("dvCancel").hidden=$("dvDel").hidden=!x;$("dvDel").textContent="Delete";$("dvSave").textContent=x?"Save Change":"Add Vehicle"}
+$("dvSave").addEventListener("click",async()=>{if(!db||!canWrite)return;const date=$("dvDate").value,dl=$("dvDl").value,veh=$("dvVeh").value.trim();
+  if(!date){tt("dvToast","Please choose the date.",1);return}if(!dl){tt("dvToast","Please choose the dealer.",1);return}if(!veh){tt("dvToast","Please write the vehicle number.",1);return}
+  if(!dvEd&&dvL().some(x=>nv(x.veh)===nv(veh)&&x.dealer===dl&&st(x)!=="s")){tt("dvToast","This number is already in the list.",1);return}
+  const old=dvEd&&DV.find(x=>x.id===dvEd),id=dvEd||("dv"+Date.now().toString(36)+Math.random().toString(36).slice(2,6));
+  const b=$("dvSave");b.disabled=true;const ok=await write(db.doc("saledv/"+id),{date,dealer:dl,veh,shed:"s1",flock:flockId,createdAt:old&&old.createdAt||nowI(),updatedAt:nowI()});b.disabled=false;
+  if(!ok){tt("dvToast","Could not save. Please try again.",1);return}
+  tt("dvToast",(dvEd?"Changed: ":"Added: ")+veh+" · "+dn(dl)+". Write the next number.");dvFill(null);$("dvDl").value=dl;render();setTimeout(()=>$("dvVeh").focus(),50)});
+$("dvCancel").addEventListener("click",()=>{tt("dvToast","");dvFill(null);render()});
+$("dvDel").addEventListener("click",async()=>{if(!dvEd||!db)return;const b=$("dvDel");if(b.textContent!=="Yes, delete"){b.textContent="Yes, delete";return}
+  try{await db.doc("saledv/"+dvEd).delete();DV=DV.filter(x=>x.id!==dvEd);tt("dvToast","Deleted.")}catch(e){tt("dvToast","Could not delete.",1)}dvFill(null);render()});
+$("dvTable").addEventListener("click",e=>{const tr=e.target.closest("tr[data-dv]");if(!tr||!canWrite||document.documentElement.classList.contains("hpro"))return;const x=DV.find(y=>y.id===tr.dataset.dv);if(!x)return;dvFill(x);tt("dvToast","Editing "+x.veh+": change and Save, or Delete.")});
+// waiting vehicles
+function wvMode(x){wvSel=x?x.id:null;document.querySelectorAll('#wvForm [data-wv="e"]').forEach(l=>l.hidden=!!x);document.querySelectorAll('#wvForm [data-wv="l"]').forEach(l=>l.hidden=!x);
+  $("wvSel").hidden=!x;if(x)$("wvSel").textContent=x.veh+" · "+dn(x.dealer)+" · Empty "+F(x.empty)+" kg"+(x.drv?" · "+x.drv:"");
+  $("wvLoad").value="";$("wvCalc").hidden=true;$("wvCancel").hidden=$("wvDel").hidden=!x;$("wvDel").textContent="Delete";check();render()}
+function wvClear(){$("wvVeh").value="";$("wvDrv").value="";$("wvMob").value="";$("wvEmpty").value="";$("wvDl").value="";if(!$("wvDate").value)$("wvDate").value=todayISO()}
+$("wvVeh").addEventListener("input",()=>{const m=look($("wvVeh").value);if(m)$("wvDl").value=m.dealer;check()});
+$("wvVeh").addEventListener("change",()=>{const m=look($("wvVeh").value);if(m)$("wvDl").value=m.dealer;check()});
+$("wvDl").addEventListener("change",check);
+const drvMob=()=>{const nm=$("wvDrv").value.trim().toLowerCase();if(!nm||$("wvMob").value.trim())return;const o=svehs.concat(WV).slice().reverse().find(x=>(x.drv||"").toLowerCase()===nm&&x.mob);if(o)$("wvMob").value=o.mob};
+$("wvDrv").addEventListener("change",drvMob);$("wvDrv").addEventListener("blur",()=>setTimeout(drvMob,200));
+$("wvLoad").addEventListener("input",()=>{const x=WV.find(y=>y.id===wvSel),l=mNum($("wvLoad").value);$("wvCalc").hidden=!(x&&l);if(x&&l)$("wvCalc").innerHTML=`Saafi Weight = ${F(l)} − ${F(x.empty)} = <b>${F(r2(l-x.empty))} kg</b>`});
+$("wvSave").addEventListener("click",async()=>{if(!db||!canWrite)return;const b=$("wvSave");
+  if(wvSel){const x=WV.find(y=>y.id===wvSel);if(!x)return;const l=mNum($("wvLoad").value);
+    if(!l){tt("wvToast","Write the Load Weight.",1);return}if(l<=x.empty){tt("wvToast","Load Weight must be more than Empty Weight.",1);return}
+    if(!sdealers.some(d=>d.id===x.dealer)){tt("wvToast","This dealer is not in Sale any more.",1);return}
+    b.disabled=true;const sid="sv"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    let ok=await write(db.doc("salev/"+sid),{dealer:x.dealer,date:x.date,veh:x.veh,drv:x.drv||"",mob:x.mob||"",empty:x.empty,load:l,seq:svehs.reduce((m,y)=>Math.max(m,y.seq||0),0)+1,shed:"s1",flock:x.flock||flockId,createdAt:nowI(),updatedAt:nowI(),fromWait:1});
+    if(ok){try{await db.doc("salewait/"+x.id).delete()}catch(e){}WV=WV.filter(y=>y.id!==x.id)}
+    b.disabled=false;if(!ok){tt("wvToast","Could not save. Please try again.",1);return}
+    tt("wvToast","✅ "+x.veh+" moved to "+dn(x.dealer)+" sale · Saafi "+F(r2(l-x.empty))+" kg");wvMode(null);renderSale();return}
+  const date=$("wvDate").value,veh=$("wvVeh").value.trim(),dl=$("wvDl").value,e=mNum($("wvEmpty").value);
+  if(!date){tt("wvToast","Please choose the date.",1);return}if(!veh){tt("wvToast","Please write the vehicle number.",1);return}
+  if(!dl){tt("wvToast","Please choose the dealer.",1);return}if(!e){tt("wvToast","Write the Empty Weight.",1);return}
+  if(wvL().some(x=>nv(x.veh)===nv(veh))){tt("wvToast","This vehicle is already waiting.",1);return}
+  const m=look(veh),key=nv(veh)+"|"+dl;
+  if(!m){tt("wvToast","This number is not in Dealer Vehicles. Add it there first, then write the weight.",1);return}
+  if(m.dealer!==dl&&wvSure!==key){wvSure=key;b.textContent="Save anyway? (Are you sure?)";tt("wvToast",m?"This vehicle belongs to "+dn(m.dealer)+". Check the dealer.":"This number was not sent by any dealer. Check it.",1);return}
+  b.disabled=true;const id="wv"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  const ok=await write(db.doc("salewait/"+id),{date,dealer:dl,veh,drv:$("wvDrv").value.trim(),mob:$("wvMob").value.trim(),empty:e,listed:!!(m&&m.dealer===dl),shed:"s1",flock:flockId,createdAt:nowI()});
+  b.disabled=false;if(!ok){tt("wvToast","Could not save. Please try again.",1);return}
+  tt("wvToast","Saved: "+veh+" · Empty "+F(e)+" kg. Write the next vehicle.");wvClear();check();render();setTimeout(()=>$("wvVeh").focus(),50)});
+$("wvCancel").addEventListener("click",()=>{tt("wvToast","");wvMode(null)});
+$("wvDel").addEventListener("click",async()=>{if(!wvSel||!db)return;const b=$("wvDel");if(b.textContent!=="Yes, delete"){b.textContent="Yes, delete";return}
+  try{await db.doc("salewait/"+wvSel).delete();WV=WV.filter(x=>x.id!==wvSel);tt("wvToast","Deleted.")}catch(e){tt("wvToast","Could not delete.",1)}wvMode(null)});
+$("wvTable").addEventListener("click",e=>{const tr=e.target.closest("tr[data-wv]");if(!tr||!canWrite||document.documentElement.classList.contains("hpro"))return;const x=WV.find(y=>y.id===tr.dataset.wv);if(!x)return;tt("wvToast","Write the Load Weight of "+x.veh+".");wvMode(x);setTimeout(()=>$("wvLoad").focus(),80)});
+[["wvVeh"],["wvDrv"],["wvMob"]].forEach(([i])=>{const inp=$(i);if(!sugData[inp.dataset.sk])sugData[inp.dataset.sk]=[];attachSug(inp,inp.nextElementSibling,inp.dataset.sk)});
+$("dvDate").value=todayISO();$("wvDate").value=todayISO();
+// live data
+const sub=()=>{if(!db){setTimeout(sub,400);return}
+  db.collection("saledv").onSnapshot(q=>{DV=q.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.shed==="s1");if(view==="sale")render()},e=>{});
+  db.collection("salewait").onSnapshot(q=>{WV=q.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.shed==="s1");if(wvSel&&!WV.some(x=>x.id===wvSel))wvMode(null);if(view==="sale")render()},e=>{})};
+sub();
+})();
+</script>
+<style>html.hpro #kvForm{display:none!important}#kvTable tr[data-kv]{cursor:pointer}html.hpro #kvTable tr{cursor:default}
+#kvTable .st{font-weight:700;white-space:nowrap}#kvTable tr.dim td{opacity:.45}
+@media (max-width:999px){#kvTable{font-size:12.5px}#kvTable td,#kvTable th{padding-left:4px;padding-right:4px}}</style>
+<script>
+(function(){
+const $=i=>document.getElementById(i);let KV=[],kvEd=null,sure="";
+const nv=v=>String(v||"").toUpperCase().replace(/[^A-Z0-9]/g,"");const nowI=()=>new Date().toISOString();const sd=d=>d?d.slice(8,10)+"/"+d.slice(5,7):"...";
+const L=()=>KV.filter(inF);const ro=()=>!canWrite||document.documentElement.classList.contains("hpro");
+const st=x=>kvehs.some(v=>nv(v.veh)===nv(x.veh)&&(v.dk||kdKey(v.dealer))===x.dk&&v.date>=x.date)?"s":"n";
+const tt=(m,e)=>{const b=$("kvToast");b.textContent=m||"";b.classList.toggle("err",!!e)};
+function look(veh){const n=nv(veh);if(!n)return null;const A=L().filter(x=>nv(x.veh)===n);return A.find(x=>st(x)==="n")||null}
+function check(){const c=$("kdChk");sure="";if(kdEdit){c.hidden=true;return}const v=$("kdV").value.trim();if(!v){c.hidden=true;return}
+  const m=look(v),dl=$("kdDl").value.trim();
+  if(m&&(!dl||kdKey(dl)===m.dk)){c.className="wvchk ok";c.textContent="✅ This vehicle is from "+m.dealer;c.hidden=false}
+  else if(m){c.className="wvchk bad";c.textContent="🔴 "+v+" belongs to "+m.dealer+", not "+dl+".";c.hidden=false}
+  else{c.className="wvchk bad";c.textContent="🔴 This number was NOT sent by any dealer. Add it in Kanda Dealer Vehicles first.";c.hidden=false}
+  $("kdCalc").textContent="Calculate Weight"}
+function render(){if(!$("kvTable"))return;const A=L().map(x=>({...x,_s:st(x)})).sort((a,b)=>(a._s==="s")-(b._s==="s")||(b.date>a.date?1:b.date<a.date?-1:0));
+  $("kvTable").innerHTML='<thead><tr><th>Date</th><th>Vehicle No</th><th>Dealer</th><th>Status</th></tr></thead><tbody>'+(A.length?A.map(x=>`<tr data-kv="${esc(x.id)}" class="${x._s==="s"?"dim":""}"><td class="num">${sd(x.date)}</td><td>${esc(x.veh)}</td><td>${esc(x.dealer)}</td><td class="st ${x._s==="s"?"ok":"wait"}" style="color:${x._s==="s"?"#1f7a4d":"#b5520b"}">${x._s==="s"?"✅ In Sale":"⏳ Not arrived"}</td></tr>`).join(""):'<tr><td colspan="4" class="empty">No vehicle numbers yet. Add the numbers the Kanda dealers send.</td></tr>')+"</tbody>";
+  const n=A.filter(x=>x._s==="n").length;$("kvCnt").textContent=n+" waiting";$("kvCnt").hidden=!n}
+window.kvRender=render;
+const _rk=renderKanda;renderKanda=function(){_rk.apply(this,arguments);try{render();check()}catch(e){}};
+function fill(x){kvEd=x?x.id:null;$("kvDate").value=x?x.date:($("kvDate").value||todayISO());if(x)$("kvDl").value=x.dealer;$("kvVeh").value=x?x.veh:"";$("kvCancel").hidden=$("kvDel").hidden=!x;$("kvDel").textContent="Delete";$("kvSave").textContent=x?"Save Change":"Add Vehicle"}
+$("kvSave").addEventListener("click",async()=>{if(!db||ro())return;const date=$("kvDate").value,dealer=$("kvDl").value.trim(),veh=$("kvVeh").value.trim();
+  if(!date){tt("Please choose the date.",1);return}if(!dealer){tt("Please write the dealer name.",1);return}if(!veh){tt("Please write the vehicle number.",1);return}
+  const dk=kdKey(dealer);if(!kvEd&&L().some(x=>nv(x.veh)===nv(veh)&&x.dk===dk&&st(x)==="n")){tt("This number is already in the list.",1);return}
+  const old=kvEd&&KV.find(x=>x.id===kvEd),id=kvEd||("kq"+Date.now().toString(36)+Math.random().toString(36).slice(2,6));
+  const b=$("kvSave");b.disabled=true;const ok=await write(db.doc("kandadv/"+id),{date,dealer,dk,veh,shed:"s1",flock:flockId,createdAt:old&&old.createdAt||nowI(),updatedAt:nowI()});b.disabled=false;
+  if(!ok){tt("Could not save. Please try again.",1);return}
+  tt((kvEd?"Changed: ":"Added: ")+veh+" · "+dealer+". Write the next number.");fill(null);$("kvDl").value=dealer;render();setTimeout(()=>$("kvVeh").focus(),50)});
+$("kvCancel").addEventListener("click",()=>{tt("");fill(null);render()});
+$("kvDel").addEventListener("click",async()=>{if(!kvEd||!db)return;const b=$("kvDel");if(b.textContent!=="Yes, delete"){b.textContent="Yes, delete";return}
+  try{await db.doc("kandadv/"+kvEd).delete();KV=KV.filter(x=>x.id!==kvEd);tt("Deleted.")}catch(e){tt("Could not delete.",1)}fill(null);render()});
+$("kvTable").addEventListener("click",e=>{const tr=e.target.closest("tr[data-kv]");if(!tr||ro())return;const x=KV.find(y=>y.id===tr.dataset.kv);if(!x)return;fill(x);tt("Editing "+x.veh+": change and Save, or Delete.")});
+attachSug($("kvDl"),$("kvDl").nextElementSibling,"kdDl");
+// Kanda form: vehicle number is checked against the list
+const auto=()=>{if(kdEdit)return;const m=look($("kdV").value);if(m&&!$("kdDl").value.trim()){$("kdDl").value=m.dealer;$("kdDl").dispatchEvent(new Event("input",{bubbles:true}))}check()};
+$("kdV").addEventListener("input",auto);$("kdV").addEventListener("change",auto);$("kdDl").addEventListener("input",check);$("kdDl").addEventListener("change",check);
+$("kdForm").addEventListener("click",e=>{if(e.target.id!=="kdCalc"||kdEdit||!$("kdV").value.trim())return;
+  const m=look($("kdV").value),dl=$("kdDl").value.trim(),key=nv($("kdV").value)+"|"+kdKey(dl);
+  if(m&&kdKey(dl)===m.dk)return;
+  if(!m){e.stopPropagation();e.preventDefault();kdT("This number is not in Kanda Dealer Vehicles. Add it there first.",true);return}
+  if(sure===key){sure="";$("kdCalc").textContent="Calculate Weight";return}
+  e.stopPropagation();e.preventDefault();sure=key;$("kdCalc").textContent="Calculate anyway? (Are you sure?)";kdT(m?"This vehicle belongs to "+m.dealer+". Check the dealer.":"This number was not sent by any dealer. Check it.",true)},true);
+$("kvDate").value=todayISO();
+const sub=()=>{if(!db){setTimeout(sub,400);return}db.collection("kandadv").onSnapshot(q=>{KV=q.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.shed==="s1");if(view==="sale")render()},e=>{})};sub();
+})();
+</script>
 
 </body>
 </html>
