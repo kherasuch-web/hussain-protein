@@ -286,7 +286,7 @@ label{font-size:14.5px;color:var(--fg)}
 th{background:var(--head);color:var(--head-fg);font-size:12.5px;font-weight:700}
 table.fdt th{font-size:12px}
 table.fdt,#spTable{font-size:13px}
-tr.tot td,table.fdt tr.tot td,#spTable tr.tot td{background:var(--accent-soft);font-weight:700}
+tr.tot td,table.fdt tr.tot td,#spTable tr.tot td{background:var(--accent-soft);font-weight:700;vertical-align:middle}
 .ghost{color:var(--fg);border-color:var(--muted)}
 .brand{color:var(--accent);font-weight:700}
 /* PDF bills and report */
@@ -332,7 +332,7 @@ body.supview .svbar{display:flex}
 .flold{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fff3cd;border:2px solid #b7791f;border-radius:10px;padding:8px 12px;font-weight:700;color:#7a4b00}
 body.oldview #flockEnd,body.oldview #supCard,body.oldview #entryCard{display:none!important}
 body.supview #flockEnd,body.supview #svOpen,body.supview #histSec>*:not(.histhd):not(.tabs):not(.tablewrap){display:none!important}
-body.supview header,body.supview .topnav,body.supview #status,body.supview #vDaily>*:not(#histSec):not(#svBar):not(#svFcr):not(#svMed){display:none!important}
+body.supview header,body.supview .topnav,body.supview #status,body.supview #vDaily>*:not(#histSec):not(#svBar):not(#svFcr):not(#svMed):not(#svRem){display:none!important}
 .msgb{background:#14532d!important;color:#fff!important;font-weight:700}
 .supbox .legend{color:#3b2a1a}
 .msgbtns{display:flex;flex-direction:column;gap:8px}
@@ -581,6 +581,21 @@ body.supview #hpLogoBtn{display:none}
     <section class="card" id="svFcr" hidden aria-label="سپروائزر کا ویکلی FCR"><h2>سپروائزر کا ویکلی FCR</h2>
       <div class="legend" id="svFcrN"></div><div class="tablewrap"><table id="svFcrT"></table></div>
       <div class="legend">"سپروائزر" والا وزن سپروائزر نے لکھا ہے۔ فارم کے FCR میں لانے کیلئے FCR سیکشن میں وہ ہفتہ چن کر "یہ وزن لگائیں" دبائیں۔</div></section>
+    <section class="card" id="svRem" dir="ltr" aria-label="Remind supervisor">
+      <button type="button" id="srOpen" class="srbig">🔔 سپروائزر کو یاد دلائیں</button>
+      <div id="srForm" hidden>
+        <div class="srq">کیا رہ گیا ہے؟</div>
+        <div class="srchips" id="srKinds"><button type="button" data-k="Daily data" class="ur">روزانہ ڈیٹا</button><button type="button" data-k="In Feed">In Feed</button><button type="button" data-k="Out Feed">Out Feed</button><button type="button" data-k="In Medicine">In Medicine</button><button type="button" data-k="Out Medicine">Out Medicine</button></div>
+        <label for="srDate">Date<input id="srDate" type="date" class="txt"></label>
+        <label for="srNote">Note (optional)<input id="srNote" class="txt" maxlength="120" autocomplete="off" placeholder="e.g. Star feed 200 bags aaye thay"></label>
+        <button class="save" id="srSend" type="button">🔔 Send Reminder</button>
+        <button class="srwa" id="srWa" type="button">WhatsApp par bhi bhejein</button>
+        <div class="toast" id="srToast" role="status"></div>
+      </div>
+      <h3 class="en" id="srListH">Reminders</h3>
+      <div class="tablewrap"><table id="srList" class="fdt"></table></div>
+    </section>
+    <div id="srBox" hidden></div>
     <section class="card" id="svMed" dir="ltr" aria-label="Supervisor medicine"><h2 class="en">Supervisor In / Out Medicine <span class="smro">View only</span></h2>
       <div class="smnote">یہ صرف دیکھنے کے لیے ہے۔ فارم کے ریکارڈ میں خود سیو نہیں ہوتا، فارم اپنی اینٹری خود لکھے گا۔</div>
       <h3 class="en">In Medicine</h3><div class="tablewrap"><table id="svMedIn" class="fdt"></table></div>
@@ -982,6 +997,15 @@ body.supview #hpLogoBtn{display:none}
         <button type="button" role="tab" id="fdTabIn" aria-selected="true" class="en">In Feed</button>
         <button type="button" role="tab" id="fdTabOut" aria-selected="false" class="en">Out Feed</button>
       </nav>
+      <div class="row spbar fqbar" style="gap:6px;align-items:center"><input id="fqQ" class="txt" type="search" autocomplete="off" placeholder="Search feed (farm / company name, location, type)" style="flex:1"><span id="fqDR" hidden><small>From</small><input id="fqD1" type="date"><small>To</small><input id="fqD2" type="date"></span><button class="spcal" id="fqCal" type="button" aria-pressed="false" title="Search by dates" aria-label="Search by dates">📅</button></div>
+      <section id="fqRes" style="display:none;flex-direction:column;gap:8px" aria-label="Feed search result">
+        <h2 class="en" id="fqInH">In Feed</h2>
+        <div class="tablewrap hpwide"><table id="fqIn" class="fdt"></table></div>
+        <h2 class="en" id="fqOutH">Out Feed</h2>
+        <div class="tablewrap hpwide"><table id="fqOut" class="fdt"></table></div>
+        <button class="save pdfbtn" id="fqPdf" type="button" hidden>⬇ Download Search PDF</button>
+        <div class="toast pdftoast" id="fqToast" role="status"></div>
+      </section>
       <section class="card" aria-label="Add feed entry">
         <div class="dayhead"><h2 class="en" id="fdTitle">In Feed</h2></div>
         <label for="fdDate">Date<input id="fdDate" type="date" class="txt"></label>
@@ -2021,7 +2045,47 @@ function renderFeed(){
   const uniq=(l,k)=>[...new Set(l.map(x=>x[k]).filter(Boolean))].sort();
   sugData.fdType=uniq(all,"type");sugData.fdName=uniq(list,"name");sugData.fdLoc=uniq(all,"loc");
   $("fdCancel").hidden=$("fdDel").hidden=!fdEdit;$("fdSave").disabled=!canWrite;
+  renderFq();
 }
+// v1.26.6: Feed search (contains: name, location, type) or 📅 dates; In + Out shown separately; PDF below + in logo sheet
+let fqDateOn=false;
+const fdSorted=()=>feeds.slice().sort((a,b)=>(a.date||"").localeCompare(b.date||"")||(a.seq||0)-(b.seq||0));
+function fqFilter(){const all=fdSorted();
+  if(fqDateOn){const a=$("fqD1").value,b=$("fqD2").value;if(!a&&!b)return null;const ok=x=>x.date&&(!a||x.date>=a)&&(!b||x.date<=b),lab=(a?dmy(a):"start")+" to "+(b?dmy(b):"today"),h=all.filter(ok);
+    return {inn:h.filter(x=>x.kind==="in"),out:h.filter(x=>x.kind==="out"),lab,file:lab.replace(/\//g,"-")}}
+  const qq=($("fqQ").value||"").trim(),q=spNorm(qq);if(!q)return null;const h=all.filter(x=>[x.name,x.loc,x.type].some(v=>spNorm(v).includes(q)));
+  return {inn:h.filter(x=>x.kind==="in"),out:h.filter(x=>x.kind==="out"),lab:'"'+qq+'"',q:qq,file:qq}}
+const fdBags=l=>r2(l.reduce((a,x)=>a+(x.bags||0),0)),fdRs=l=>r2(l.reduce((a,x)=>a+(x.price||0),0));
+function fdTab(list,isIn,pdf,empty){const dot=v=>v?esc(v):"...",R=pdf?' class="r"':' class="num amt"',n=l=>F(l.length)+(l.length===1?" entry":" entries");
+  let h=`<thead><tr>${pdf?"<th>Sr</th>":""}<th>Date</th><th${R}>${isIn?"In Feed":"Out Feed"}</th><th>Type</th><th>${isIn?"C/S Name":"Name"}</th><th>${isIn?"C/S Location":"Location"}</th><th${R}>Rate</th><th${R}>TPrice</th></tr></thead><tbody>`;
+  h+=list.map((x,i)=>`<tr${pdf?"":` data-fq="${esc(x.id)}"`}>${pdf?`<td>${i+1}</td>`:""}<td${pdf?"":' class="num"'}>${dmy(x.date)}</td><td${R}>${F(x.bags)}</td><td>${dot(x.type)}</td><td>${dot(x.name)}</td><td>${dot(x.loc)}</td><td${R}>${x.rate?F(x.rate):"..."}</td><td${R}>${x.price?F(x.price):"..."}</td></tr>`).join("");
+  h+=list.length?`<tr class="${pdf?"bt":"tot"}"><td${pdf?' colspan="2"':""}>Total · ${n(list)}</td><td${R}>${F(fdBags(list))}</td><td colspan="4">bags</td><td${R}>${F(fdRs(list))}</td></tr>`:`<tr><td colspan="${pdf?8:7}" class="empty">${empty||"Nothing found."}</td></tr>`;
+  return h+"</tbody>"}
+function renderFq(){const f=fqFilter(),on=!!f;$("fqRes").style.display=on?"flex":"none";
+  document.querySelectorAll('#vFeed>section.card[aria-label="Add feed entry"],#vFeed>section[aria-label="Feed record"],#vFeed>section[aria-label="Feed by type"],#vFeed>nav.tabs').forEach(e=>on?e.style.setProperty("display","none","important"):e.style.removeProperty("display"));
+  if(on){$("fqIn").innerHTML=fdTab(f.inn,true,0,"Nothing found in In Feed.");$("fqOut").innerHTML=fdTab(f.out,false,0,"Nothing found in Out Feed.");
+    $("fqInH").textContent="In Feed · "+f.lab;$("fqOutH").textContent="Out Feed · "+f.lab;$("fqPdf").hidden=!f.inn.length&&!f.out.length}}
+const fdGap='<tr><td colspan="8" style="border:0;height:10px"></td></tr>',fdHd=t=>`<thead><tr><th colspan="8" style="text-align:left">${t}</th></tr></thead>`;
+const fdDates=l=>{const d=l.map(x=>x.date).filter(Boolean).sort();return d.length?dmy(d[0])+" to "+dmy(d[d.length-1]):"..."};
+function fdTypeRows(ins,outs){const all=ins.concat(outs),types=[...new Set(all.map(x=>x.type||""))].sort((a,b)=>!a?1:!b?-1:a.localeCompare(b));
+  let t=`<thead><tr><th colspan="3">Type</th><th class="r">In</th><th class="r">Out</th><th class="r">Balance</th><th class="r">In Rs</th><th class="r">Out Rs</th></tr></thead><tbody>`;
+  t+=types.map(ty=>{const fi=ins.filter(x=>(x.type||"")===ty),fo=outs.filter(x=>(x.type||"")===ty),i=fdBags(fi),o=fdBags(fo);return `<tr><td colspan="3">${ty?esc(ty):"..."}</td><td class="r">${F(i)}</td><td class="r">${F(o)}</td><td class="r">${F(r2(i-o))}</td><td class="r">${F(fdRs(fi))}</td><td class="r">${F(fdRs(fo))}</td></tr>`}).join("");
+  t+=`<tr class="bt"><td colspan="3">Total</td><td class="r">${F(fdBags(ins))}</td><td class="r">${F(fdBags(outs))}</td><td class="r">${F(r2(fdBags(ins)-fdBags(outs)))}</td><td class="r">${F(fdRs(ins))}</td><td class="r">${F(fdRs(outs))}</td></tr>`;
+  return t+"</tbody>"}
+function fdPdf(kind,tt,f){const t=typeof tt==="function"?tt:(m,e)=>toast(kind==="q"?"fqToast":"fdToast",m,e),all=fdSorted();
+  if(kind==="q"){f=f||fqFilter();if(!f){t("Write a name or pick dates first.",true);return}if(!f.inn.length&&!f.out.length){t("Nothing found.",true);return}}
+  const ins=kind==="q"?f.inn:all.filter(x=>x.kind==="in"),outs=kind==="q"?f.out:all.filter(x=>x.kind==="out");
+  if(kind==="in"&&!ins.length){t("No In Feed entries yet.",true);return}if(kind==="out"&&!outs.length){t("No Out Feed entries yet.",true);return}if(!ins.length&&!outs.length){t("No feed entries yet.",true);return}
+  const useIn=kind!=="out"&&ins.length,useOut=kind!=="in"&&outs.length,parts=[];
+  if(useIn)parts.push((kind==="in"?"":fdHd("In Feed"))+fdTab(ins,true,1));
+  if(useOut)parts.push((kind==="out"?"":fdHd("Out Feed"))+fdTab(outs,false,1));
+  if(kind==="all")parts.push(fdHd("Feed by Type")+fdTypeRows(ins,outs));
+  const tb=parts.join(fdGap).replace(/<\/?tbody>/g,""),used=(useIn?ins:[]).concat(useOut?outs:[]);
+  const title=kind==="q"?(f.q?"Feed - "+f.q:"Feed"):kind==="in"?"In Feed":kind==="out"?"Out Feed":"Feed Report";
+  const sum=[];if(useIn)sum.push(["In Feed",F(fdBags(ins))+" bags · Rs "+F(Math.round(fdRs(ins)))]);if(useOut)sum.push(["Out Feed",F(fdBags(outs))+" bags · Rs "+F(Math.round(fdRs(outs)))]);
+  if(kind==="all")sum.push(["Balance",F(r2(fdBags(ins)-fdBags(outs)))+" bags"]);
+  const info=(kind==="q"?[[f.q?"Search":"Dates chosen",f.q||f.lab]]:[]).concat([["Dates",fdDates(used)],["Report Date",dmy(todayISO())]]);
+  return billPdf({title,info,table:tb,sum,file:(kind==="q"?"Feed - "+f.file:title+" - "+dmy(todayISO()).replace(/\//g,"-")),fit:1},t)}
 // v1.26.4: Supervisor Advance search (name or 📅 dates), same as General Spendings
 let suDateOn=false;
 function suFilter(){const L=sups.filter(x=>x.type!=="break");
@@ -2230,7 +2294,9 @@ function mqTables(f,pdf){const dot=v=>v?esc(v):"...",sum=l=>r2(l.reduce((a,x)=>a
 function renderMq(){const f=mqFilter(),on=!!f;$("mqRes").style.display=on?"flex":"none";
   if(on){["moPart","mbDealers","mbWfnWarn","mbFirst","mbNewBox"].forEach(i=>{const e=$(i);if(e)e.style.setProperty("display","none","important")});$("vMed").querySelector("nav.tabs").style.display="none";
     const t=mqTables(f);$("mqIn").innerHTML=t.a;$("mqOut").innerHTML=t.b;$("mqInH").textContent="In Medicine · "+f.lab;$("mqOutH").textContent="Out Medicine · "+f.lab;$("mqPdf").hidden=!f.inn.length&&!f.out.length}
-  else{["moPart","mbDealers","mbWfnWarn","mbFirst","mbNewBox"].forEach(i=>{const e=$(i);if(e)e.style.removeProperty("display")});$("vMed").querySelector("nav.tabs").style.display=""}}
+  else if(mqWasOn){["moPart","mbDealers","mbWfnWarn","mbFirst","mbNewBox"].forEach(i=>{const e=$(i);if(e)e.style.removeProperty("display")});$("vMed").querySelector("nav.tabs").style.display="";mqWasOn=false;renderMedOut()}
+  if(on)mqWasOn=true}
+let mqWasOn=false; // v1.26.6 fix: only undo the search hiding once, then put back the In / Out tab view (before, Out Medicine and dealers both showed)
 function mqPdf(tt){const t=typeof tt==="function"?tt:(m,e)=>toast("mqToast",m,e),f=mqFilter();if(!f){t("Write a name or pick dates first.",true);return}if(!f.inn.length&&!f.out.length){t("Nothing found.",true);return}
   const x=mqTables(f,1),ds=[...f.inn,...f.out].map(x=>x.date).filter(Boolean).sort();
   const tb=(f.inn.length?`<thead><tr><th colspan="8" style="text-align:left">In Medicine</th></tr></thead>`+x.a:"")+(f.out.length?(f.inn.length?"<tr><td colspan=\"8\" style=\"border:0;height:10px\"></td></tr>":"")+`<thead><tr><th colspan="8" style="text-align:left">Out Medicine</th></tr></thead>`+x.b:"");
@@ -2238,7 +2304,7 @@ function mqPdf(tt){const t=typeof tt==="function"?tt:(m,e)=>toast("mqToast",m,e)
     table:tb.replace(/<\/?tbody>/g,""),sum:[["In Medicine","Rs "+F(Math.round(x.inT))+" · "+F(f.inn.length)],["Out Medicine","Rs "+F(Math.round(x.outT))+" · "+F(f.out.length)]],file:"Medicine - "+f.file,fit:1},t)}
 function renderMedOut(){
   const out=mbPart==="out";$("mbTabIn").setAttribute("aria-selected",!out);$("mbTabOut").setAttribute("aria-selected",out);
-  $("moPart").style.display=out?"flex":"none";["mbDealers","mbWfnWarn"].forEach(i=>{const e=$(i);if(e)e.style.display=out?"none":""});
+  $("moPart").style.display=out?"flex":"none";["mbDealers","mbWfnWarn"].forEach(i=>{const e=$(i);if(e){if(out)e.style.setProperty("display","none","important");else e.style.removeProperty("display")}});
   if(out){$("mbFirst").style.display="none";$("mbNewBox").style.display="none"}else{$("mbFirst").style.display="";$("mbNewBox").style.display=""}
   $("moAllT").textContent=(medouts.length?"– ":"")+rs(moTot());
   sugData.moTo=[...new Set(medouts.map(x=>x.to).filter(Boolean))].sort();
@@ -2262,7 +2328,23 @@ function smTable(k,ed){const dot=v=>v?esc(v):"...",L=smList(k),seen=+(localStora
   let h=`<thead><tr><th>Date</th><th>Medicine Name</th><th>Traditional Name</th><th>Quantity</th><th>${k==="in"?"From":"To"}</th></tr></thead><tbody>`;
   h+=L.map(x=>`<tr${ed?` data-sm="${esc(x.id)}"`:""}${nw(x)?' class="smnew"':""}><td class="num">${dmy(x.date)}${nw(x)?' <b class="smnw">New</b>':""}</td><td>${dot(x.name)}</td><td>${dot(x.trad)}</td><td>${dot(x.qty)}</td><td>${dot(x.party)}</td></tr>`).join("");
   return h+(L.length?`<tr class="tot"><td colspan="5">${F(L.length)} entr${L.length>1?"ies":"y"}</td></tr>`:`<tr><td colspan="5" class="empty">Nothing yet.</td></tr>`)+"</tbody>"}
-function renderSupMed(){try{
+// v1.26.6: farm reminds the supervisor of a missed entry; supervisor sees a yellow box and taps "ہو گیا"
+let supnotes=[],srKind="";
+const srUr=k=>k==="Daily data"?"روزانہ ڈیٹا":k;
+const srMsg=x=>dmy(x.date)+" کی "+srUr(x.kind)+" کی اینٹری کریں";
+const srTime=t=>{if(!t)return "";const d=new Date(t);return dmy(t.slice(0,10)).slice(0,5)+" "+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})};
+function renderSupRem(){try{
+  const mine=supnotes.filter(x=>!flockId||!x.flock||x.flock===flockId).sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
+  if(HPMODE==="sup"){let box=$("srBox");if(!box){box=document.createElement("div");box.id="srBox";box.hidden=true;box.addEventListener("click",srDone)}const open=mine.filter(x=>!x.done);const bn=document.querySelector(".hpsupb");if(bn){if(bn.nextElementSibling!==box)bn.after(box)}else if(box.parentElement!==$("vDaily"))$("vDaily").prepend(box);
+    box.innerHTML=open.map(x=>`<div class="sritem"><div class="h">🔔 فارم نے یاد دلایا</div><div class="m">${esc(srMsg(x))}</div>${x.note||x.createdAt?`<div class="d" dir="ltr">${x.note?"Note: "+esc(x.note)+" · ":""}sent ${esc(srTime(x.createdAt))}</div>`:""}<button type="button" data-srdone="${esc(x.id)}">✓ ہو گیا</button></div>`).join("");box.hidden=!open.length;return}
+  if(HPMODE!=="farm")return;
+  let h=`<thead><tr><th>Sent</th><th>What</th><th>Date</th><th>Note</th><th>Status</th></tr></thead><tbody>`;
+  h+=mine.length?mine.map(x=>`<tr><td class="num">${esc(srTime(x.createdAt))}</td><td>${esc(x.kind)}</td><td class="num">${dmy(x.date)}</td><td>${x.note?esc(x.note):"..."}</td><td>${x.done?`<b class="srok">✓ Done ${esc(srTime(x.doneAt))}</b>`:`<b class="srwait">⏳ Waiting</b>`}${canWrite?` <button type="button" class="srdel" data-srdel="${esc(x.id)}" title="Delete">✕</button>`:""}</td></tr>`).join(""):`<tr><td colspan="5" class="empty">No reminders yet.</td></tr>`;
+  $("srList").innerHTML=h+"</tbody>";$("srOpen").hidden=!canWrite;
+}catch(e){}}
+function srPick(k){srKind=k;document.querySelectorAll("#srKinds button").forEach(b=>b.classList.toggle("on",b.dataset.k===k))}
+function srText(){const d=$("srDate").value,n=$("srNote").value.trim();return "🔔 یاد دہانی: "+(d?dmy(d):"")+" کی "+srUr(srKind)+" کی اینٹری ایپ میں کریں"+(n?"\n"+n:"")}
+function renderSupMed(){renderSupRem();try{
   if(HPMODE==="sup"){const i=smList("in"),o=smList("out"),all=[...i,...o].sort(byDate);
     const en=n=>F(n)+(n===1?" entry":" entries");$("smInN").textContent=en(i.length);$("smOutN").textContent=en(o.length);$("smLast").textContent=all.length?dmy(all[all.length-1].date).slice(0,5):"...";
     $("smTabIn").setAttribute("aria-selected",smKind==="in");$("smTabOut").setAttribute("aria-selected",smKind==="out");
@@ -2275,7 +2357,7 @@ function renderSupMed(){try{
   if(nw.length&&!supView){const last=nw.map(x=>x.createdAt).sort().pop(),d=new Date(last);bx.querySelector("b").textContent=(supInfo.name||"سپروائزر")+" نے میڈیسن کی "+nw.length+" نئی اینٹری"+(nw.length>1?"اں":"")+" بھیجی ہیں";
     bx.querySelector("small").textContent=dmy(last.slice(0,10))+" · "+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});bx.hidden=false}else bx.hidden=true;
 }catch(e){}}
-function smShow(on){smOn=on;$("vSupMed").style.display=on?"flex":"none";$("vDaily").style.display=on?"none":"contents";$("smNavD").classList.toggle("on",!on);$("smNavM").classList.toggle("on",on);if(on){smFill(null);renderSupMed()}scrollTo(0,0)}
+function smShow(on){smOn=on;setTimeout(renderSupRem,0);$("vSupMed").style.display=on?"flex":"none";$("vDaily").style.display=on?"none":"contents";$("smNavD").classList.toggle("on",!on);$("smNavM").classList.toggle("on",on);if(on){smFill(null);renderSupMed()}scrollTo(0,0)}
 function renderMed(){
   const wrap=$("mbDealers"), ds=[MB_WFN,MB_STORE,...dealers.slice().sort((a,b)=>(a.seq||0)-(b.seq||0))];
   {const nw=medbuys.filter(x=>x.dealer===MB_WFN.id).length;let wb=$("mbWfnWarn");if(!wb){wb=document.createElement("div");wb.id="mbWfnWarn";wb.className="wfnwarn";wb.setAttribute("role","status");wrap.before(wb);wb.addEventListener("click",()=>{mbOpen=MB_WFN.id;mbApplyOpen();wrap.querySelector(".mbsec.wfn").scrollIntoView({behavior:"smooth",block:"start"})})}
@@ -2417,6 +2499,20 @@ if(HPMODE==="sup"){const n=document.createElement("nav");n.id="smNav";n.innerHTM
 if(HPMODE==="farm"){$("vDaily").prepend($("smBox"));$("smGo").addEventListener("click",()=>{setSupView(true);setTimeout(()=>$("svMed").scrollIntoView({behavior:"smooth",block:"start"}),300)});
   setInterval(()=>{if(supView&&$("svMed").getBoundingClientRect().top<innerHeight){const m=supmeds.map(x=>Date.parse(x.createdAt||0)).reduce((a,b)=>Math.max(a,b),0);if(m>+(localStorage.getItem("hp-smseen")||0)){setTimeout(()=>{try{localStorage.setItem("hp-smseen",String(m))}catch(e){}},8000)}}},2000);
   $("svBack").addEventListener("click",()=>setTimeout(renderSupMed,50))}
+if(HPMODE==="farm"){
+  $("svBar").after($("svRem"));
+  $("srOpen").addEventListener("click",()=>{const f=$("srForm");f.hidden=!f.hidden;if(!f.hidden&&!$("srDate").value){const d=new Date();d.setDate(d.getDate()-1);$("srDate").value=d.toISOString().slice(0,10)}});
+  $("srKinds").addEventListener("click",e=>{const b=e.target.closest("button[data-k]");if(b)srPick(b.dataset.k)});
+  $("srSend").addEventListener("click",async()=>{if(!srKind){toast("srToast","Please choose what is missing.",true);return}const date=$("srDate").value;if(!date){toast("srToast","Please choose the date.",true);return}
+    const id="sr"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),data={kind:srKind,date,note:$("srNote").value.trim(),flock:flockId||null,createdAt:new Date().toISOString(),done:false};
+    $("srSend").disabled=true;const ok=await write(db.doc("supnote/"+id),data);$("srSend").disabled=false;
+    if(ok){toast("srToast","Reminder sent ✓ The supervisor will see it when he opens the app.");$("srNote").value="";srPick("")}else toast("srToast","Could not send. Please try again.",true)});
+  $("srWa").addEventListener("click",()=>{if(!srKind||!$("srDate").value){toast("srToast","Choose what is missing and the date first.",true);return}if(window.hpOpenWhatsApp)window.hpOpenWhatsApp(srText())});
+  $("srList").addEventListener("click",async e=>{const b=e.target.closest("[data-srdel]");if(!b||!canWrite)return;try{await db.doc("supnote/"+b.dataset.srdel).delete()}catch(er){}});
+}
+async function srDone(e){const b=e.target.closest("[data-srdone]");if(!b)return;b.disabled=true;
+  const {id,...old}=supnotes.find(x=>x.id===b.dataset.srdone)||{};if(!id){b.disabled=false;return}const ok=await write(db.doc("supnote/"+id),{...old,done:true,doneAt:new Date().toISOString()});if(!ok)b.disabled=false}
+if(HPMODE==="sup"&&$("srBox"))$("srBox").addEventListener("click",srDone);
 $("mbTabIn").addEventListener("click",()=>mbPartSet("in"));$("mbTabOut").addEventListener("click",()=>mbPartSet("out"));
 ["moQty","moRate"].forEach(i=>$(i).addEventListener("input",moAuto));
 document.querySelectorAll("#moForm input[data-sk]").forEach(inp=>attachSug(inp,inp.nextElementSibling,inp.dataset.sk));
@@ -2435,6 +2531,12 @@ $("moSave").addEventListener("click",async()=>{
 $("spCal").addEventListener("click",()=>{spDateOn=!spDateOn;const b=$("spCal");b.setAttribute("aria-pressed",spDateOn);b.classList.toggle("on",spDateOn);$("spQ").hidden=spDateOn;$("spDR").hidden=!spDateOn;
   if(spDateOn&&!$("spD1").value&&!$("spD2").value){const t=todayISO();$("spD1").value=t.slice(0,8)+"01";$("spD2").value=t}renderSpend()});
 ["spD1","spD2"].forEach(i=>$(i).addEventListener("change",()=>renderSpend()));
+$("fqQ").addEventListener("input",renderFq);["fqD1","fqD2"].forEach(i=>$(i).addEventListener("change",renderFq));$("fqPdf").addEventListener("click",()=>fdPdf("q"));
+$("fqCal").addEventListener("click",()=>{fqDateOn=!fqDateOn;const b=$("fqCal");b.setAttribute("aria-pressed",fqDateOn);b.classList.toggle("on",fqDateOn);$("fqQ").hidden=fqDateOn;$("fqDR").hidden=!fqDateOn;
+  if(fqDateOn&&!$("fqD1").value&&!$("fqD2").value){const t=todayISO();$("fqD1").value=t.slice(0,8)+"01";$("fqD2").value=t}renderFq()});
+$("fqIn").addEventListener("click",fqOpen);$("fqOut").addEventListener("click",fqOpen);
+function fqOpen(e){const r=e.target.closest("tr[data-fq]");if(!r)return;const x=feeds.find(y=>y.id===r.dataset.fq);if(!x)return;$("fqQ").value="";if(fqDateOn)$("fqCal").click();renderFq();
+  const row=document.querySelector(`#vFeed tr[data-fd="${x.id}"]`);if(row){row.scrollIntoView({block:"center"});if(canWrite)row.click()}}
 $("mqQ").addEventListener("input",renderMq);["mqD1","mqD2"].forEach(i=>$(i).addEventListener("change",renderMq));$("mqPdf").addEventListener("click",()=>mqPdf());
 $("mqCal").addEventListener("click",()=>{mqDateOn=!mqDateOn;const b=$("mqCal");b.setAttribute("aria-pressed",mqDateOn);b.classList.toggle("on",mqDateOn);$("mqQ").hidden=mqDateOn;$("mqDR").hidden=!mqDateOn;
   if(mqDateOn&&!$("mqD1").value&&!$("mqD2").value){const t=todayISO();$("mqD1").value=t.slice(0,8)+"01";$("mqD2").value=t}renderMq()});
@@ -2511,6 +2613,12 @@ function pdfItems(){
     const ds=[...document.querySelectorAll("#mbDealers .mbsec")].filter(e=>{const t=txt(e,".mbdtot");return e.querySelector(".mbtab tr[data-mb]")||(t&&t!=="Rs 0")});
     if(ds.length)L.push({g:"ڈیلر بل"});
     ds.forEach(e=>it("","#1c5d93",txt(e,".mbdname").replace(/^Edit · /,""),txt(e,".mbdtot"),viaBtn(e.querySelector('[data-act="pdf"]'),e.querySelector(".pdftoast")),{av:1}));
+  }
+  if(view==="feed"){
+    const ff=fqFilter(),fq=ff?(ff.q||ff.lab):"";if(fq)it("q","#0f6b73","Feed · "+fq,ff.q?"تلاش والی فیڈ کی PDF (اِن + آؤٹ)":"ان تاریخوں کی فیڈ کی PDF (اِن + آؤٹ)",pt=>fdPdf("q",pt));
+    it("r","#b3412e","Feed Report ⭐","In Feed + Out Feed + Feed by Type، ایک PDF میں",pt=>fdPdf("all",pt),{star:1});
+    if(feeds.some(x=>x.kind==="in"))it("i","#1f7a4d","In Feed","آنے والی فیڈ کی لسٹ",pt=>fdPdf("in",pt));
+    if(feeds.some(x=>x.kind==="out"))it("o","#8a5a12","Out Feed","باہر جانے والی فیڈ کی لسٹ",pt=>fdPdf("out",pt));
   }
   if(view==="sale"){
     it("g","#0f6b73","General Sale PDF","جنرل سیل کی پوری لسٹ",gsPdf);
@@ -2945,6 +3053,7 @@ spFill(null);fdFill(null);suFill(null);saFill(null);
     shedNm=s.exists&&s.data().name?s.data().name:"";{const m=!!(s.exists&&s.data().money);if(m!==farmMoney){farmMoney=m;if(view==="main"&&flock)renderMain()}}$("shedName").textContent=n; if(document.activeElement!==$("shedInput"))$("shedInput").value=s.exists&&s.data().name?n:"";
   },e=>{});
   db.doc("config/msg").onSnapshot(s=>{msgLine1=s.exists?(s.data().line1||""):""},e=>{});
+  if(HPMODE==="farm"||HPMODE==="sup")db.collection("supnote").onSnapshot(s=>{supnotes=s.docs.map(d=>({id:d.id,...d.data()}));renderSupRem()},e=>{});
   if(HPMODE==="farm"||HPMODE==="sup")db.collection("supmed").onSnapshot(s=>{supmeds=s.docs.map(d=>({id:d.id,...d.data()}));renderSupMed()},e=>{});
   if(HPMODE==="farm"){
     db.collection("supdays").onSnapshot(s=>{supd={};s.docs.forEach(d=>supd[d.id]=d.data());if(flock)render()},e=>{});
@@ -2956,7 +3065,7 @@ spFill(null);fdFill(null);suFill(null);saFill(null);
     liveFlock=id;legacyFlock=s.exists?(s.data().legacyFlock||null):null;
     if(id&&!legacyFlock&&HPMODE==="farm"&&canWrite&&!s.metadata?.fromCache){legacyFlock=id;db.doc("config/app").set({...s.data(),legacyFlock:id}).catch(()=>{})}
     if(!id){if(canWrite&&HPMODE!=="sup"){setStatus("");showSetup(false)}else setStatus("ابھی کوئی فلاک شروع نہیں ہوا۔");return}
-    if(!oldView&&id!==flockId){watchFlock(id);derive();try{renderSpend();renderSal();renderSup();renderMed();renderSale();renderFeed()}catch(e){}}
+    if(!oldView&&id!==flockId){watchFlock(id);derive();try{renderSupRem();renderSpend();renderSal();renderSup();renderMed();renderSale();renderFeed()}catch(e){}}
     drawFlBar();
   },e=>setStatus("ریکارڈ لوڈ نہیں ہو سکا۔ صفحہ دوبارہ کھولیں۔",true));
 })();
@@ -3334,7 +3443,7 @@ html.hprw #spSal .frow:has(>#saFMan){display:none!important}
  html body .sumrow small::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c,#1c5d93);flex:none}
  html body .sumrow b{display:block;margin-top:3px;font-size:21px!important;line-height:1.25;white-space:nowrap;color:var(--fg)}
  /* dealer lists (Medicine, Sale, Kanda): one clean list, not big coloured boxes */
- html body :is(#mbDealers,#slDealers,#kdDealers){display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;background:var(--surface);border-radius:16px;box-shadow:0 2px 10px rgba(23,63,102,.10);overflow:hidden;border:1px solid rgba(23,63,102,.06)}
+ html body :is(#mbDealers,#slDealers,#kdDealers):not([style*="display: none"]){display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;background:var(--surface);border-radius:16px;box-shadow:0 2px 10px rgba(23,63,102,.10);overflow:hidden;border:1px solid rgba(23,63,102,.06)}
  html body :is(#mbDealers,#slDealers,#kdDealers):empty{display:none!important}
  html body :is(.mbsec,.slsec,.kdsec){border-radius:0!important;box-shadow:none!important;border:0!important;border-top:1px solid var(--line)!important;margin:0!important;padding:0!important;background:none!important}
  html body :is(.mbsec,.slsec,.kdsec):first-child{border-top:0!important}
@@ -3448,12 +3557,20 @@ function draw(){
  const fin=(typeof feeds!=="undefined"?feeds:[]).filter(x=>x.kind!=="out"&&ds.has(x.date));
  const sp=[...(typeof spends!=="undefined"?spends:[]),...(typeof sups!=="undefined"?sups:[])].filter(x=>x.type!=="break"&&ds.has(x.date));
  const md=(typeof medbuys!=="undefined"?medbuys:[]).filter(x=>ds.has(x.date)).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
+ const fout=(typeof feeds!=="undefined"?feeds:[]).filter(x=>x.kind==="out"&&ds.has(x.date));
+ const mo=(typeof medouts!=="undefined"?medouts:[]).filter(x=>ds.has(x.date)).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
+ const dd=(typeof days!=="undefined"?days:[]).filter(x=>r.includes(x.day)),sm=(k)=>dd.reduce((a,x)=>a+(+x[k]||0),0);
+ const vs=[...(typeof svehs!=="undefined"?svehs:[]),...(typeof kvehs!=="undefined"?kvehs:[])].filter(x=>ds.has(x.date)),gs=(typeof gsales!=="undefined"?gsales:[]).filter(x=>ds.has(x.date));
  const per=wk?` <span class="cnt">(${"{n}"})</span>`:"";
  let h="",k=0;
+ if(dd.length){const mort=sm("md")+sm("mn"),fe=sm("fd")+sm("fn"),sold=sm("sold");h+=`<div class="ln go" data-go="daily" style="animation-delay:${k++*60}ms"><i class="d">📋</i><div><small>روزانہ رپورٹ${wk?` <span class="cnt">${dd.length} دن</span>`:""}</small><b>موت ${N(mort)} · فیڈ ${N(fe)} بیگ${sold?` · بکے ${N(sold)}`:""}</b></div><em class="ar">›</em></div>`}
  if(fin.length){const b=fin.reduce((a,x)=>a+(+x.bags||0),0);h+=`<div class="ln go" data-go="feed" style="animation-delay:${k++*60}ms"><i class="f">🌾</i><div><small>فیڈ آئی${wk?` <span class="cnt">${fin.length} بار</span>`:""}</small><b>${N(b)} بیگ</b></div><em class="ar">›</em></div>`}
+ if(fout.length){const b=fout.reduce((a,x)=>a+(+x.bags||0),0);h+=`<div class="ln go" data-go="feedout" style="animation-delay:${k++*60}ms"><i class="f">🚚</i><div><small>فیڈ گئی${wk?` <span class="cnt">${fout.length} بار</span>`:""}</small><b>${N(b)} بیگ</b><ul>${fout.map(x=>`<li><span>${E(x.name||"—")}</span><span>${E(x.loc||"")}</span></li>`).join("")}</ul></div><em class="ar">›</em></div>`}
+ if(vs.length||gs.length){h+=`<div class="ln go" data-go="sale" style="animation-delay:${k++*60}ms"><i class="s">🚛</i><div><small>سیل</small><b>${vs.length?N(vs.length)+" گاڑی":""}${vs.length&&gs.length?" · ":""}${gs.length?N(gs.length)+" جنرل سیل":""}</b></div><em class="ar">›</em></div>`}
  if(sp.length){const t=sp.reduce((a,x)=>a+(+x.amount||0),0);h+=`<div class="ln go" data-go="spend" style="animation-delay:${k++*60}ms"><i class="s">💵</i><div><small>خرچ${wk?` <span class="cnt">${sp.length} لائنیں</span>`:""}</small><b>Rs ${N(t)}</b></div><em class="ar">›</em></div>`}
  if(md.length)h+=`<div class="ln" style="animation-delay:${k++*60}ms"><i class="m">💊</i><div><small>میڈیسن آئی${wk?` <span class="cnt">${md.length} آئٹم</span>`:""}</small><ul>${md.map(x=>`<li class="go" data-dl="${E(x.dealer)}" data-id="${E(x.id)}" title="ڈیلر کا سیکشن کھولیں"><span>${wk?`<small class="dd">${E(x.date.slice(8))}/${E(x.date.slice(5,7))}</small> `:""}${E(x.name||"—")} <em>›</em></span><span>${E(x.qty||"")}</span></li>`).join("")}</ul></div></div>`;
- $("hpDayL").innerHTML=h||`<div class="none">${wk?"اس ہفتے":"اس دن"} نہ فیڈ آئی، نہ میڈیسن، نہ کوئی خرچ ہوا۔</div>`;
+ if(mo.length)h+=`<div class="ln go" data-go="medout" style="animation-delay:${k++*60}ms"><i class="m">💊</i><div><small>میڈیسن گئی${wk?` <span class="cnt">${mo.length} آئٹم</span>`:""}</small><ul>${mo.map(x=>`<li><span>${wk?`<small class="dd">${E(x.date.slice(8))}/${E(x.date.slice(5,7))}</small> `:""}${E(x.name||"—")}</span><span>${E(x.qty||"")}${x.to?" → "+E(x.to):""}</span></li>`).join("")}</ul></div><em class="ar">›</em></div>`;
+ $("hpDayL").innerHTML=h||`<div class="none">${wk?"اس ہفتے":"اس دن"} کا کوئی ریکارڈ نہیں۔</div>`;
 }
 window.hpDayOpen=function(d,w){if(typeof flock==="undefined"||!flock||!flock.start)return;wk=!!w;const day=Math.max(1,Math.min(+d||maxDay(),maxDay()));cur=wk?Math.ceil(day/7):day;draw();$("hpDay").hidden=false};
 const close=()=>{$("hpDay").hidden=true};window.hpDayClose=()=>{if($("hpDay").hidden)return false;close();return true};
@@ -3467,6 +3584,12 @@ $("hpDay").addEventListener("click",e=>{if(e.target.dataset.x){close();return}
    const sec=document.querySelector(`.mbsec[data-dealer="${CSS.escape(dl)}"]`);if(!sec)return;
    const ids=medbuys.filter(x=>x.dealer===dl&&ds.has(x.date)).map(x=>x.id);const rows=sel(sec,"data-mb",ids).filter(Boolean);
    if(rows.length)flash(rows);else sec.scrollIntoView({behavior:"smooth",block:"start"})},250);return}
+ if(ln.dataset.go==="daily"){const nav=$("navDaily");if(nav)nav.click();return}
+ if(ln.dataset.go==="sale"){const nav=$("navSale");if(nav)nav.click();return}
+ if(ln.dataset.go==="feedout"){try{fdKind="out";fdEdit=null}catch(err){}const nav=$("navFeed");if(nav)nav.click();
+  setTimeout(()=>{try{renderFeed()}catch(err){}flash(sel(document,"data-fd",feeds.filter(x=>x.kind==="out"&&ds.has(x.date)).map(x=>x.id)))},250);return}
+ if(ln.dataset.go==="medout"){const nav=$("navMed");if(nav)nav.click();
+  setTimeout(()=>{try{mbPartSet("out")}catch(err){}flash(sel(document,"data-mo",medouts.filter(x=>ds.has(x.date)).map(x=>x.id)))},250);return}
  if(ln.dataset.go==="feed"){try{fdKind="in";fdEdit=null}catch(err){}const nav=$("navFeed");if(nav)nav.click();
   setTimeout(()=>{try{renderFeed()}catch(err){}flash(sel(document,"data-fd",feeds.filter(x=>x.kind!=="out"&&ds.has(x.date)).map(x=>x.id)))},250);return}
  if(ln.dataset.go==="spend"){const g=spends.filter(x=>x.type!=="break"&&ds.has(x.date)),u=sups.filter(x=>x.type!=="break"&&ds.has(x.date));
@@ -3687,6 +3810,19 @@ body:not(.supview) #svMed{display:none}
 #svMed .smnote{font-family:"Jameel Noori","Segoe UI",serif;direction:rtl;text-align:right;background:#fff4d6;border:1px solid #f0c75e;color:#7a4f00;border-radius:10px;padding:6px 10px;font-size:16px;line-height:1.8;margin:6px 0 10px}
 #svMed h3{font-size:15px;margin:10px 0 6px}.smro{display:inline-block;background:#e6ecf2;color:#34485c;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;vertical-align:middle;margin-left:6px}
 tr.smnew td{background:#fff8e6}.smnw{color:#b5520b}
+#svRem .srbig{width:100%;background:#c26a00;color:#fff;border:0;border-radius:12px;padding:10px;font:21px "Jameel Noori","Segoe UI",serif}
+#srForm{display:flex;flex-direction:column;gap:8px;margin-top:10px}#srForm[hidden]{display:none}
+#svRem .srq{font:20px "Jameel Noori","Segoe UI",serif;direction:rtl;text-align:right}
+.srchips{display:flex;flex-wrap:wrap;gap:7px}.srchips button{border:1.5px solid #c5d3e0;background:#fff;border-radius:999px;padding:6px 12px;font-weight:600;font-size:14px;color:#0f1d2b}
+.srchips button.ur{font:16px "Jameel Noori","Segoe UI",serif}.srchips button.on{background:#1c5d93;border-color:#1c5d93;color:#fff}
+#svRem .srwa{background:#1f9d55;color:#fff;border:0;border-radius:10px;padding:10px;font-weight:700;font-size:15px}
+#svRem h3{font-size:15px;margin:12px 0 6px}.srok{color:#1f7a4d}.srwait{color:#b5520b}
+#svRem .srdel{background:none;border:0;color:#9aa8b5;font-size:14px;padding:0 4px}
+body:not(.supview) #svRem{display:none}
+#srBox{display:flex;flex-direction:column;gap:10px;margin:10px 12px 0}#srBox[hidden]{display:none}
+#srBox .sritem{background:#fff6d6;border:2px solid #e8b400;border-radius:16px;padding:12px;direction:rtl;text-align:right;font-family:"Jameel Noori","Segoe UI",serif}
+#srBox .h{font-size:21px;color:#7a5200}#srBox .m{font-size:21px;line-height:1.8;margin:2px 0 6px}#srBox .d{font:12.5px "Segoe UI",Roboto,sans-serif;color:#4a5d70;text-align:right;margin-bottom:8px}
+#srBox button{width:100%;background:#2e7d4f;color:#fff;border:0;border-radius:10px;padding:8px;font:20px "Jameel Noori","Segoe UI",serif}
 #smBox{direction:rtl;text-align:right;background:#fff;border:2px solid #b5520b;border-radius:14px;padding:10px 12px;margin:0 0 12px;font-family:"Jameel Noori","Segoe UI",serif}
 #smBox[hidden]{display:none}#smBox b{display:block;font-size:18px;font-weight:400}#smBox small{display:block;color:#5d6b64;font:13px "Segoe UI",Roboto,sans-serif;text-align:right}
 #smBox button{margin-top:6px;background:#b5520b;color:#fff;border:0;border-radius:9px;padding:4px 16px;font:17px "Jameel Noori","Segoe UI",serif}
@@ -3699,7 +3835,7 @@ body.hpsupnav{padding-bottom:76px!important}
 @media (min-width:1000px){#smForm{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}#smForm>.dayhead,#smForm>.row,#smForm>.toast{grid-column:1/-1}#smNav{max-width:520px;margin:0 auto;border-radius:16px 16px 0 0}}
 </style>
 
-<style>#spQPdf[hidden],#suQPdf[hidden]{display:none!important}</style>
+<style>#spQPdf[hidden],#suQPdf[hidden],#fqPdf[hidden]{display:none!important}</style>
 
 </body>
 </html>
