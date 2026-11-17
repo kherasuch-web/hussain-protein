@@ -1,11 +1,11 @@
 {
- "ver": "1.26.10",
- "note": "Page Break shows that page total; Sale page explanation lines removed",
- "noteUr": "پیج بریک میں اس صفحے کا ٹوٹل، سیل صفحے سے فالتو لائنیں ہٹا دیں",
+ "ver": "1.26.11",
+ "note": "Supervisor box becomes one thin line once seen; new update screen with filling logo",
+ "noteUr": "سپروائزر والا باکس دیکھنے کے بعد پتلی لائن، اپڈیٹ کا نیا ڈیزائن",
  "android": {
-  "zip": "android-1.26.10.zip",
+  "zip": "android-1.26.11.zip",
   "minBuild": 27,
-  "sha256": "488a39af3fe10c4d7ddf97c9895b5eb34e37f8b78325c38be7dbe397c406b21f"
+  "sha256": "0f7a9d4b8b4d260bada20a75551d13f61a57d4d3f857f275a06d2d652b7bf486"
  },
  "windows": {
   "files": [

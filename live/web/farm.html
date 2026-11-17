@@ -4095,7 +4095,7 @@ const open=e=>{const bx=$("smBox");if(!bx||bx.hidden)return;e.stopPropagation();
   if(med)setTimeout(()=>{const m=$("svMed");if(m)m.scrollIntoView({behavior:"smooth",block:"start"})},300)};
 const bx=$("smBox");if(bx){bx.addEventListener("click",open,true)}
 // medicine counts as seen once the farm leaves Supervisor Data (New tags stay while looking)
-let pend=0;const _sv=setSupView;setSupView=function(on){if(on){pend=supmeds.map(x=>Date.parse(x.createdAt||0)).reduce((a,c)=>Math.max(a,c),0)}else if(pend){try{if(pend>+(localStorage.getItem("hp-smseen")||0))localStorage.setItem("hp-smseen",String(pend))}catch(e){}pend=0}return _sv.apply(this,arguments)};
+let pend=0;const _sv=setSupView;setSupView=function(on){if(on){markD();pend=supmeds.map(x=>Date.parse(x.createdAt||0)).reduce((a,c)=>Math.max(a,c),0)}else if(pend){try{if(pend>+(localStorage.getItem("hp-smseen")||0))localStorage.setItem("hp-smseen",String(pend))}catch(e){}pend=0}return _sv.apply(this,arguments)};
 try{hl()}catch(e){}
 })();
 </script>
@@ -4103,6 +4103,22 @@ try{hl()}catch(e){}
 table tr.brk td.pbl{text-align:left!important;white-space:nowrap}
 table tr.brk td.pbt{text-align:center!important;font-style:normal!important;font-weight:700;color:var(--fg)!important;font-size:12.5px!important}
 </style>
+<style>/* v1.26.11: supervisor box in daily entry becomes one thin line once seen */
+.supbox.thin{flex-direction:row;align-items:center;gap:10px;padding:6px 10px;border-width:1.5px;border-color:#e5a77a}
+html body .supbox.thin .legend{display:none!important}.supbox.thin .supt{flex:0 0 auto;font-size:16px}.supbox.thin .supt b{display:none}
+.supbox.thin .supd{flex:1;text-align:center;font-size:12px;white-space:nowrap;min-width:0}.supbox.thin .save{width:auto;flex:0 0 auto;padding:5px 12px;font-size:16px;margin:0}
+</style>
+<script>
+(function(){
+const ts=v=>typeof v==="number"?v:(Date.parse(v||0)||0);
+const _rb=renderSupBox;renderSupBox=function(day){const x=_rb.apply(this,arguments);try{const box=$("supBox");box.classList.remove("thin");if(box.hidden)return x;
+  const sd=supd[flockId+"_"+pad(day)];let seen=0;try{seen=+(localStorage.getItem("hp-sdseen")||0)}catch(e){}
+  if(sd&&ts(sd.savedAt)<=seen){box.classList.add("thin");$("supTxt").textContent="سپروائزر کا دن "+day;
+    const f=(sd.fd||0)+(sd.fn||0),m=(sd.md||0)+(sd.mn||0);$("supSum").textContent="Feed "+F(f)+" · Mortality "+F(m)}}catch(e){}return x};
+$("supLoad").addEventListener("click",()=>setTimeout(()=>{try{const sd=supd[flockId+"_"+pad(editDay??nextDay())];if(sd&&ts(sd.savedAt)>+(localStorage.getItem("hp-sdseen")||0))localStorage.setItem("hp-sdseen",String(ts(sd.savedAt)));renderSupBox(editDay??nextDay());window.hpSupHl&&hpSupHl()}catch(e){}},50));
+try{render()}catch(e){}
+})();
+</script>
 
 </body>
 </html>
