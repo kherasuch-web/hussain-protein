@@ -1,1 +1,19 @@
-{"ver": "1.26.8", "note": "Entry hide button on phone (all sections), Sale dealer vehicle list + Waiting Vehicles, Kanda dealer vehicle list, Out Medicine fold on Windows, key icon on Main home", "android": {"zip": "android-1.26.8.zip", "minBuild": 27, "sha256": "1fb5ea805da66b340b5a48c2db28ae36c07f624c61b109c9010cf8fb00ac6848"}, "windows": {"files": ["index.html", "app.js", "farm.html", "farm.js"], "minDesk": "1.26.0"}}
+{
+ "ver": "1.26.9",
+ "note": "Update box; phone Daily close button; supervisor headline; last 7 days record on phone",
+ "noteUr": "اپڈیٹ باکس، فون پر ڈیلی اینٹری بند بٹن، سپروائزر ہیڈ لائن، فون پر آخری 7 دن کا ریکارڈ",
+ "android": {
+  "zip": "android-1.26.9.zip",
+  "minBuild": 27,
+  "sha256": "c9c8b7ad2ee3b08ab41a255d51cef2eea3cbf8ff7d9eb4e1072a563e1d985f30"
+ },
+ "windows": {
+  "files": [
+   "index.html",
+   "app.js",
+   "farm.html",
+   "farm.js"
+  ],
+  "minDesk": "1.26.0"
+ }
+}
