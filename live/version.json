@@ -1,11 +1,11 @@
 {
- "ver": "1.26.9",
- "note": "Update box; phone Daily close button; supervisor headline; last 7 days record on phone",
- "noteUr": "اپڈیٹ باکس، فون پر ڈیلی اینٹری بند بٹن، سپروائزر ہیڈ لائن، فون پر آخری 7 دن کا ریکارڈ",
+ "ver": "1.26.10",
+ "note": "Page Break shows that page total; Sale page explanation lines removed",
+ "noteUr": "پیج بریک میں اس صفحے کا ٹوٹل، سیل صفحے سے فالتو لائنیں ہٹا دیں",
  "android": {
-  "zip": "android-1.26.9.zip",
+  "zip": "android-1.26.10.zip",
   "minBuild": 27,
-  "sha256": "c9c8b7ad2ee3b08ab41a255d51cef2eea3cbf8ff7d9eb4e1072a563e1d985f30"
+  "sha256": "488a39af3fe10c4d7ddf97c9895b5eb34e37f8b78325c38be7dbe397c406b21f"
  },
  "windows": {
   "files": [

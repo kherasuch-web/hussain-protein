@@ -830,7 +830,6 @@ body.supview #hpLogoBtn{display:none}
           <div class="toast" id="dvToast" role="status"></div>
         </div>
         <div class="tablewrap"><table class="fdt" id="dvTable"></table></div>
-        <div class="legend">Numbers the dealers send. ⚖ Load pending = empty weight done. ⏳ Not arrived = not weighed yet. ✅ In Sale = moved to the dealer's sale.</div>
       </section>
       <section class="card dvcard" id="wvCard" aria-label="Waiting vehicles">
         <h2 class="en" id="wvH">⚖ Waiting Vehicles <span class="dvcnt" id="wvCnt" hidden></span></h2>
@@ -849,7 +848,6 @@ body.supview #hpLogoBtn{display:none}
           <div class="toast" id="wvToast" role="status"></div>
         </div>
         <div class="tablewrap"><table class="fdt" id="wvTable"></table></div>
-        <div class="legend">Tap a vehicle to write its Load Weight. It then moves to the dealer's sale by itself.</div>
       </section>
       <div id="slDealers" style="display:flex;flex-direction:column;gap:10px"></div>
       <section class="card" id="slFirst" aria-label="Add dealer">
@@ -882,7 +880,6 @@ body.supview #hpLogoBtn{display:none}
           <div class="toast" id="kvToast" role="status"></div>
         </div>
         <div class="tablewrap"><table class="fdt" id="kvTable"></table></div>
-        <div class="legend">Numbers the dealers send. ⏳ Not arrived = not weighed yet. ✅ In Sale = weighed in Kanda Sale.</div>
       </section>
       <section class="card" id="kdForm" aria-label="Kanda vehicle">
         <div class="dayhead"><h2 class="en" id="kdTitle">Kanda Sale · New Vehicle</h2></div>
@@ -1510,7 +1507,7 @@ function kdSection(d){
   const el=document.createElement("section");el.className="card kdsec";el.dataset.dk=d.dk;
   el.innerHTML=`<button type="button" class="mbhead" aria-expanded="false"><h2 class="en"><span class="chev" aria-hidden="true">▶</span><span class="mbdname"></span></h2><span class="daybadge num mbdtot"></span></button><div class="mbbody" hidden>
     <div class="tablewrap"><table class="fdt sltab"></table></div>
-    <div class="legend">Tap a vehicle to open it above (edit, delete or its own bill). Total Price = Weight of the date × Rate.</div>
+
     <div class="row"><button class="ghost" type="button" data-act="pdf">⬇ Download Dealer Bill</button></div>
     <div data-box="pdf" hidden style="display:none;flex-direction:column;gap:8px;border:1px dashed var(--line);border-radius:10px;padding:10px">
       <div class="row"><button class="ghost" type="button" data-act="pdfrate" aria-pressed="false">Rate in Bill: Off</button></div>
@@ -1800,8 +1797,8 @@ function supPdf(toast){
   const list=dateOrder(sups), items=list.filter(x=>x.type!=="break");
   if(!items.length){toast("No supervisor payments yet.",true);return}
   const tot=r2(items.reduce((a,x)=>a+(x.amount||0),0)), ds=items.map(x=>x.date).filter(Boolean).sort(), dot=v=>v?esc(v):"...";
-  let run=0,n=0,h=`<thead><tr><th>Sr</th><th>Date</th><th class="r">Amount Given</th><th>Counterpart</th><th>Via</th></tr></thead><tbody>`;
-  h+=list.map(x=>{if(x.type==="break")return `<tr class="bd"><td colspan="2">Page Break · Total so far (Rs)</td><td class="r">${F(r2(run))}</td><td colspan="2"></td></tr>`;
+  let run=0,pg=0,n=0,h=`<thead><tr><th>Sr</th><th>Date</th><th class="r">Amount Given</th><th>Counterpart</th><th>Via</th></tr></thead><tbody>`;
+  h+=list.map(x=>{if(x.type==="break"){const t=run-pg;pg=run;return `<tr class="bd"><td colspan="2" style="text-align:left">Page Break</td><td class="r">${F(r2(run))}</td><td colspan="2" style="text-align:center;font-style:normal;font-weight:700">Total: ${F(r2(t))}</td></tr>`}
     run+=x.amount||0;return `<tr><td>${++n}</td><td>${dmy(x.date)}</td><td class="r">${x.amount?F(x.amount):"..."}</td><td>${dot(x.cp)}</td><td>${dot(x.via)}</td></tr>`}).join("");
   h+=`<tr class="bt"><td colspan="2">Total (Rs)</td><td class="r">${F(tot)}</td><td colspan="2"></td></tr>`;
   return billPdf({title:"Supervisor Advance",info:[["Dates",ds.length?dmy(ds[0])+" to "+dmy(ds[ds.length-1]):"..."],["Report Date",dmy(todayISO())]],
@@ -1850,7 +1847,7 @@ function renderSpend(){
     $("spTable").innerHTML=h+"</tbody>";
   }else{
   let run=0;
-  h+=list.map(x=>{if(x.type!=="break")run+=x.amount||0;return x;}).map((x,i,arr)=>x.type==="break"?`<tr class="brk" data-sp="${esc(x.id)}"><td colspan="4">Page Break · Total so far (Rs)</td><td class="num amt">${F(arr.slice(0,i).filter(y=>y.type!=="break").reduce((a,y)=>a+(y.amount||0),0))}</td></tr>`:
+  h+=list.map(x=>{if(x.type!=="break")run+=x.amount||0;return x;}).map((x,i,arr)=>x.type==="break"?`<tr class="brk" data-sp="${esc(x.id)}"><td class="pbl">Page Break</td><td colspan="3" class="pbt">Total: ${F(r2(arr.slice(arr.slice(0,i).map(y=>y.type).lastIndexOf("break")+1,i).filter(y=>y.type!=="break").reduce((a,y)=>a+(y.amount||0),0)))}</td><td class="num amt">${F(r2(arr.slice(0,i).filter(y=>y.type!=="break").reduce((a,y)=>a+(y.amount||0),0)))}</td></tr>`:
     `<tr data-sp="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="dsc"><div>${esc(x.desc)}</div></td><td>${esc(dot(x.qty))}</td><td class="cpc">${esc(dot(x.cp))}</td><td class="num amt">${x.amount?F(x.amount):"..."}</td></tr>`).join("");
   if(items.length)h+=`<tr class="tot"><td colspan="4">Total (Rs)</td><td class="num amt">${F(tot)}</td></tr>`;
   else h+=`<tr><td colspan="5" class="empty">No spendings yet. Add the first one above.</td></tr>`;
@@ -1958,7 +1955,7 @@ function saleSection(d){
     <div class="toast" role="status"></div>
     <h2 class="en" style="margin-top:6px">Record</h2>
     <div class="tablewrap"><table class="fdt sltab"></table></div>
-    <div class="legend">Saafi Weight = Load Weight − Empty Weight. Total Price = Saafi Weight of the date × Rate. Tap a vehicle row to edit or delete it.</div>
+
     <div class="row"><button class="ghost" type="button" data-act="pdf">⬇ Download PDF Bill</button></div>
     <div data-box="pdf" hidden style="display:none;flex-direction:column;gap:8px;border:1px dashed var(--line);border-radius:10px;padding:10px"><label>Day for one-day bill<select data-f="pdfday"></select></label>
       <div class="row"><button class="ghost" type="button" data-act="pdfrate" aria-pressed="false">Rate in Bill: Off</button></div>
@@ -2154,12 +2151,12 @@ function renderSup(){
   const list=dateOrder(sups);
   const items=list.filter(x=>x.type!=="break"), sum=l=>r2(l.reduce((a,x)=>a+(x.amount||0),0)), tot=sum(items), mk=todayISO().slice(0,7), dot=v=>v?esc(v):"...";
   $("suTotal").textContent=rs(tot);$("suMonth").textContent=rs(sum(items.filter(x=>(x.date||"").slice(0,7)===mk)));$("suCount").textContent=F(items.length);
-  let run=0,h=`<thead><tr><th>Date</th><th class="amt">Amount Given</th><th>Counterpart</th><th>Via</th></tr></thead><tbody>`;
+  let run=0,pgS=0,h=`<thead><tr><th>Date</th><th class="amt">Amount Given</th><th>Counterpart</th><th>Via</th></tr></thead><tbody>`;
   const sf=suFilter();$("suQPdf").hidden=!sf;
   if(sf){const hit=sf.hit,qt=sum(hit);h+=hit.map(x=>`<tr data-su="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="num amt">${x.amount?F(x.amount):"..."}</td><td class="w"><div>${dot(x.cp)}</div></td><td class="w"><div>${dot(x.via)}</div></td></tr>`).join("");
     h+=hit.length?`<tr class="tot"><td colspan="2">Total (Rs) · ${F(hit.length)} entr${hit.length>1?"ies":"y"} ${esc(sf.lab)}</td><td class="num amt" colspan="2" style="text-align:left">${F(qt)}</td></tr>`:`<tr><td colspan="4" class="empty">${sf.none}</td></tr>`;}
   else{
-  h+=list.map(x=>{if(x.type==="break")return `<tr class="brk" data-su="${esc(x.id)}"><td colspan="3">Page Break · Total so far (Rs)</td><td class="num amt">${F(r2(run))}</td></tr>`;
+  h+=list.map(x=>{if(x.type==="break"){const t=run-pgS;pgS=run;return `<tr class="brk" data-su="${esc(x.id)}"><td class="pbl">Page Break</td><td colspan="2" class="pbt">Total: ${F(r2(t))}</td><td class="num amt">${F(r2(run))}</td></tr>`}
     run+=x.amount||0;return `<tr data-su="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="num amt">${x.amount?F(x.amount):"..."}</td><td class="w"><div>${dot(x.cp)}</div></td><td class="w"><div>${dot(x.via)}</div></td></tr>`}).join("");
   h+=items.length?`<tr class="tot"><td>Total (Rs)</td><td class="num amt">${F(tot)}</td><td colspan="2"></td></tr>`:`<tr><td colspan="4" class="empty">No supervisor payments yet. Add the first one above.</td></tr>`;}
   $("suTable").innerHTML=h+"</tbody>";
@@ -4102,6 +4099,10 @@ let pend=0;const _sv=setSupView;setSupView=function(on){if(on){pend=supmeds.map(
 try{hl()}catch(e){}
 })();
 </script>
+<style>/* v1.26.10 page break: label at line start, that page's total in the middle */
+table tr.brk td.pbl{text-align:left!important;white-space:nowrap}
+table tr.brk td.pbt{text-align:center!important;font-style:normal!important;font-weight:700;color:var(--fg)!important;font-size:12.5px!important}
+</style>
 
 </body>
 </html>
