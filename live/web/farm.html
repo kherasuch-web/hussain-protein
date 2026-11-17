@@ -3445,8 +3445,8 @@ html body .hpfoldx,html body .hpfxrow{display:none!important}
 .slpair{display:contents}
 @media (min-width:1000px){.slpair{display:grid;grid-template-columns:1fr 1fr;gap:12px}}
 /* v1.26.3: daily record last 7 days on Windows */
-@media (min-width:1000px){#hist:not(.hpall) tr.hpold{display:none}}
-@media (max-width:999px){#histMore{display:none!important}}
+#hist:not(.hpall) tr.hpold{display:none}
+#histMore[hidden]{display:none!important}#histMore{display:block;margin:10px auto 0;font-family:"Jameel Noori","Segoe UI",serif;font-size:17px}
 /* v1.26.3: Feed - all 6 boxes in one line on Windows */
 @media (min-width:1000px){html body #vFeed>.sumrow{grid-template-columns:repeat(6,minmax(0,1fr))!important}html body #vFeed>.sumrow>div{padding-inline:12px!important}html body #vFeed>.sumrow{margin-inline:72px 0!important}}
 /* v1.26.3: Kanda form - empty message lines take no space (less gap under Calculate Weight) */
@@ -4053,6 +4053,53 @@ $("kdForm").addEventListener("click",e=>{if(e.target.id!=="kdCalc"||kdEdit||!$("
   e.stopPropagation();e.preventDefault();sure=key;$("kdCalc").textContent="Calculate anyway? (Are you sure?)";kdT(m?"This vehicle belongs to "+m.dealer+". Check the dealer.":"This number was not sent by any dealer. Check it.",true)},true);
 $("kvDate").value=todayISO();
 const sub=()=>{if(!db){setTimeout(sub,400);return}db.collection("kandadv").onSnapshot(q=>{KV=q.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.shed==="s1");if(view==="sale")render()},e=>{})};sub();
+})();
+</script>
+<style>/* v1.26.10 phone: close button on Daily entry + supervisor headline */
+#hpDClose{display:none}
+@media (max-width:999px){#hpDClose{display:inline-block;margin-inline-start:auto;border:0;background:#eef3f8;color:#173f66;border-radius:10px;padding:6px 12px;font:16px "Jameel Noori","Segoe UI",serif;cursor:pointer}}
+html.hpro #hpDClose,#entryCard.hpfolded #hpDClose{display:none!important}
+#smBox{display:flex;align-items:center;gap:10px;background:#fff4e6!important;border:2px solid #e08a00!important;border-radius:16px!important;padding:12px 14px!important;cursor:pointer}
+#smBox[hidden]{display:none!important}
+#smBox::before{content:"";flex:0 0 26px;height:26px;border-radius:50%;background:#ff9800;box-shadow:inset 0 -3px 0 rgba(0,0,0,.12)}
+#smBox .hltx{flex:1;min-width:0}#smBox b{color:#7a3d00;font-size:19px!important}#smBox .hlmed{display:block;color:#b5520b;font-size:16px}
+#smBox button{margin:0!important;flex:0 0 auto;background:#e08a00!important}
+</style>
+<script>
+(function(){
+const $=i=>document.getElementById(i);
+const ts=v=>typeof v==="number"?v:(Date.parse(v||0)||0);
+const K="hp-sdseen";const seenD=()=>{try{const v=localStorage.getItem(K);if(v!=null)return +v}catch(e){}return Date.now()-2*864e5};
+const markD=()=>{const m=Object.values(supd).filter(d=>d.flock===flockId).map(d=>ts(d.savedAt)).reduce((a,b)=>Math.max(a,b),0);if(m)try{localStorage.setItem(K,String(m))}catch(e){}};
+// phone: close button at top of Daily entry
+function btn(){const e=$("entryCard");if(!e||$("hpDClose"))return;const hd=e.querySelector(":scope>.dayhead");if(!hd)return;
+  const b=document.createElement("button");b.type="button";b.id="hpDClose";b.textContent="▲ اینٹری بند کریں";
+  b.onclick=()=>{e.classList.add("hpfolded");const h=$("histH");if(h)setTimeout(()=>h.scrollIntoView({behavior:"smooth",block:"start"}),50)};hd.appendChild(b)}
+btn();
+// headline: supervisor sent day N (+ medicine)
+function hl(){const bx=$("smBox");if(!bx||HPMODE!=="farm"||!flockId)return;
+  if(!bx.querySelector(".hltx")){const w=document.createElement("div");w.className="hltx";bx.prepend(w);w.append(bx.querySelector("b"));const m=document.createElement("span");m.className="hlmed";w.append(m);w.append(bx.querySelector("small"))}
+  const sn=seenD(),D=Object.values(supd).filter(d=>d.flock===flockId&&d.day&&ts(d.savedAt)>sn).sort((a,b)=>a.day-b.day);
+  let sm=0;try{sm=+(localStorage.getItem("hp-smseen")||0)}catch(e){}
+  const M=supmeds.filter(x=>(!x.flock||x.flock===flockId)&&Date.parse(x.createdAt||0)>sm);
+  if(supView||(!D.length&&!M.length)){bx.hidden=true;return}
+  const who=supInfo.name||"سپروائزر",b=bx.querySelector("b"),med=bx.querySelector(".hlmed"),sm2=bx.querySelector("small");
+  const last=[...D.map(d=>ts(d.savedAt)),...M.map(x=>Date.parse(x.createdAt||0))].reduce((a,c)=>Math.max(a,c),0),dt=new Date(last);
+  if(D.length){const n=D.map(d=>d.day);b.textContent=who+" نے دن "+(n.length>3?n[0]+" سے "+n[n.length-1]:n.join("، "))+" کا ڈیٹا بھیجا ہے";med.textContent=M.length?"+ "+M.length+" میڈیسن":""}
+  else{b.textContent=who+" نے میڈیسن کی "+M.length+" نئی اینٹری"+(M.length>1?"اں":"")+" بھیجی ہیں";med.textContent=""}
+  med.hidden=!med.textContent;
+  sm2.textContent=last?String(dt.getDate()).padStart(2,"0")+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+dt.getFullYear()+" · "+dt.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}):"";
+  bx.dataset.only=D.length?"":"med";bx.hidden=false}
+window.hpSupHl=hl;
+const _r=render;render=function(){const x=_r.apply(this,arguments);try{btn();hl()}catch(e){}return x};
+const _m=renderSupMed;renderSupMed=function(){const x=_m.apply(this,arguments);try{hl()}catch(e){}return x};
+const _l=supLoad;supLoad=function(){const x=_l.apply(this,arguments);try{markD();hl()}catch(e){}return x};
+const open=e=>{const bx=$("smBox");if(!bx||bx.hidden)return;e.stopPropagation();const med=bx.dataset.only==="med";markD();setSupView(true);bx.hidden=true;
+  if(med)setTimeout(()=>{const m=$("svMed");if(m)m.scrollIntoView({behavior:"smooth",block:"start"})},300)};
+const bx=$("smBox");if(bx){bx.addEventListener("click",open,true)}
+// medicine counts as seen once the farm leaves Supervisor Data (New tags stay while looking)
+let pend=0;const _sv=setSupView;setSupView=function(on){if(on){pend=supmeds.map(x=>Date.parse(x.createdAt||0)).reduce((a,c)=>Math.max(a,c),0)}else if(pend){try{if(pend>+(localStorage.getItem("hp-smseen")||0))localStorage.setItem("hp-smseen",String(pend))}catch(e){}pend=0}return _sv.apply(this,arguments)};
+try{hl()}catch(e){}
 })();
 </script>
 
