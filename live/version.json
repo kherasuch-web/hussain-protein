@@ -1,11 +1,11 @@
 {
- "ver": "1.26.13",
- "note": "Feed cost In - Out again; Check Cost / Clear Cost toggle; End Date fix",
- "noteUr": "فیڈ کا خرچ پہلے کی طرح، Check Cost / Clear Cost، End Date کی غلطی ٹھیک",
+ "ver": "1.26.14",
+ "note": "Flock close: leftover medicine, keep feed for next flock, closed flock lock (only rates + leftover), supervisor leftover medicine, Previous Store Manual switch, Self Traditional Name",
+ "noteUr": "فلاک بند: بقایا میڈیسن، فیڈ اگلے فلاک میں، بند فلاک لاک، سپروائزر بقایا میڈیسن، Previous Store Manual، Self میں Traditional Name",
  "android": {
-  "zip": "android-1.26.13.zip",
+  "zip": "android-1.26.14.zip",
   "minBuild": 27,
-  "sha256": "dcba66dbb1090923e242bda7c6987c02118d125414fca342dafc03caee9074c9"
+  "sha256": "2d8c863b1618bfea8b6d24b478f28f083c25d84013df645314aa54621875b811"
  },
  "windows": {
   "files": [

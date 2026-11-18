@@ -1915,7 +1915,7 @@ function renderMain(){
   const sum=(l,k)=>Math.round(l.reduce((a,x)=>a+(x[k]||0),0));
   const gen=sum(spends.filter(x=>x.type!=="break"),"amount");
   const fdIn=sum(feeds.filter(x=>x.kind==="in"),"price"), fdOut=sum(feeds.filter(x=>x.kind==="out"),"price"), fdW=flock&&flock.raw&&flock.raw.feedTotal||0, FC=fdCost(last), feedC=Math.round(fdW||FC.cost);
-  const mdW=flock&&flock.raw&&flock.raw.medTotal||0, med=Math.round((mdW||storeTot()+sum(medbuys.filter(mbCounted),"price"))-moTot());
+  const mdW=flock&&flock.raw&&flock.raw.medTotal||0, mdU=wExtra&&wExtra.medUsed||0, med=mdU?Math.round(mdU):Math.round((mdW||storeTot()+sum(medbuys.filter(mbCounted),"price"))-moTot());
   const adv=sum(sups.filter(x=>x.type!=="break"),"amount");
   const X=saX(), people=sals.filter(x=>x.kind==="person");
   const pay=saPayDate()||todayISO(), sal=r2(people.reduce((a,x)=>a+saTotal(x,pay),0));
@@ -1923,7 +1923,7 @@ function renderMain(){
   const grand=Math.round(gen+feedC+med+lab);
   $("mnExp").innerHTML="<tbody>"+row("General (incl. chicks)",F(gen),{go:"spend:gen"})+
     (fdW?row("Feed (written total)",F(feedC),{go:"feed"}):(FC.mode==="normal"?row("Feed (In − Out)",F(feedC),{go:"feed"})+row("In value",F(fdIn),{c:"sub",go:"feed"})+row("Out value","− "+F(fdOut),{c:"sub",go:"feed"}):row(FC.mode==="check"?"Feed (Check Cost · eaten)":"Feed (eaten · flock closed)",F(feedC),{go:"feed"})+FC.rows.filter(x=>x.eat||x.cost).map(x=>row(esc(x.t||"...")+" · "+F(x.eat)+" bags eaten",F(x.cost),{c:"sub",go:"feed"})).join("")+(FC.mode==="check"&&FC.storeB?row("Left · "+F(FC.storeB)+" bags (not in cost)",F(FC.storeV),{c:"sub",go:"feed"}):"")))+
-    row(mdW?"Medicine (written total)":"Medicine (store + dealers)",F(med),{go:"med"})+
+    row(mdU?"Medicine (used · written)":mdW?"Medicine (written total)":"Medicine (store + dealers)",F(med),{go:"med"})+
     row("Labour (salary till "+dmy(pay)+")",F(lab),{go:"spend:sal"})+
     row("Advance (paid)",F(adv),{c:"sub",go:"spend:sup"})+
     row("Net Salary (to pay)",F(net),{c:"sub",go:"spend:sal",neg:net<0})+
@@ -2250,7 +2250,9 @@ let mbOpen=null;
 // v1.23: split a dealer box into form part + record part (phone: display:contents = no change; Windows: side by side)
 function hpSplit(bd){const kids=[...bd.children],i=kids.findIndex(c=>c.tagName==="H2");if(i<1)return;const f=document.createElement("div"),r=document.createElement("div");f.className="hpform";r.className="hprec";kids.slice(0,i).forEach(c=>f.appendChild(c));kids.slice(i).forEach(c=>r.appendChild(c));bd.append(f,r)}
 function mbApplyOpen(){document.querySelectorAll(".mbsec").forEach(el=>{const o=el.dataset.dealer===mbOpen;el.classList.toggle("open",o);el.querySelector(".mbbody").hidden=!o;el.querySelector(".mbhead").setAttribute("aria-expanded",o)})}
-const storeTot=()=>mbStore&&mbStore.total?mbStore.total:0;
+/* v1.26.14 store manual: On = one written total (old way); Off = each line's Rate + Total, total = sum */
+const stMan=()=>!!mbStore&&(mbStore.manual!=null?!!mbStore.manual:!!mbStore.total);
+const storeTot=()=>stMan()?(mbStore&&mbStore.total||0):r2(medbuys.filter(x=>x.dealer===MB_STORE.id).reduce((a,x)=>a+(x.price||0),0));
 function dealerSection(d){
   const k=d.id, el=document.createElement("section");el.className="card mbsec";el.dataset.dealer=k;
   el.innerHTML=`<button type="button" class="mbhead" aria-expanded="false"><h2 class="en"><span class="chev" aria-hidden="true">▶</span><span class="mbdname"></span></h2><span class="daybadge num mbdtot"></span></button><div class="mbbody" hidden>
@@ -2274,7 +2276,8 @@ function dealerSection(d){
   el.querySelector('[data-act="ddel"]').remove();el.querySelector('[data-box="ddel"]').remove();
   if(k===MB_WFN.id){el.classList.add("wfn");el.querySelector("[data-adddealer]").remove();el.querySelector("[data-srcrow]").remove();/* v1.26.3: Traditional Name kept here too (her ask) */el.querySelector(".legend").textContent="Tap a row to edit. Tap ↪ Move when you know the dealer.";el.querySelector('[data-f="price"]').placeholder="Optional (write if known)"}
   hpSplit(el.querySelector(".mbbody"));
-  if(k===MB_STORE.id){el.querySelector("[data-adddealer]").remove();el.querySelectorAll('[data-f="rate"],[data-f="price"]').forEach(i=>i.closest("label").remove());
+  if(k===MB_STORE.id){el.querySelector("[data-adddealer]").remove();el.querySelectorAll('[data-f="rate"],[data-f="price"]').forEach(i=>i.closest("label").classList.add("stRP"));
+    el.querySelector(".mbbody").insertAdjacentHTML("afterbegin",`<div class="stmrow"><button type="button" class="srctog" data-act="stman">Manual: Off</button><span class="stmnote"></span></div>`);
     el.querySelector(".mbbody").insertAdjacentHTML("beforeend",`<div class="mbstot" style="border-top:1px solid var(--line,#ddd);padding-top:12px;display:flex;flex-direction:column;gap:10px">
       <label>Store Total (Rs) · written by user<input class="txt" inputmode="decimal" data-f="stot" placeholder="Total amount of store medicine"></label>
       <div class="legend mbsum"></div>
@@ -2300,8 +2303,9 @@ function dealerSection(d){
 
     if((a==="stsave"||a==="stclear")&&db){const tb=q(".mbsttoast"),v=a==="stsave"?mNum(q('[data-f="stot"]').value):null;
       if(a==="stsave"&&!v){tb.textContent="Please write the store total.";tb.classList.add("err");return}
-      b.disabled=true;const ok=await write(db.doc("dealers/"+storeId()),{kind:"store",total:v,shed:"s0",updatedAt:new Date().toISOString()});b.disabled=false;
+      b.disabled=true;const ok=await write(db.doc("dealers/"+storeId()),{kind:"store",total:v,manual:true,shed:"s0",updatedAt:new Date().toISOString()});b.disabled=false;
       tb.classList.toggle("err",!ok);tb.textContent=ok?(v?"Saved: "+rs(v):"Total cleared."):"Could not save. Please try again.";if(ok&&!v)q('[data-f="stot"]').value="";renderMed();return}
+    if(a==="stman"&&db){b.disabled=true;const on=!stMan();const ok=await write(db.doc("dealers/"+storeId()),{kind:"store",total:mbStore&&mbStore.total||null,manual:on,shed:"s0",updatedAt:new Date().toISOString()});b.disabled=false;if(!ok)t("Could not save. Please try again.",true);renderMed();return}
     if(a==="srctog"&&db){const d=dealers.find(x=>x.id===k);if(!d)return;const {id:_i,...rest}=d;b.disabled=true;const ok=await write(db.doc("dealers/"+k),{...rest,src:!mbSelf(d),updatedAt:new Date().toISOString()});b.disabled=false;if(!ok)t("Could not save. Please try again.",true);renderMed();return}
     if(a==="del")q('[data-box="del"]').hidden=false;
     if(a==="delno")q('[data-box="del"]').hidden=true;
@@ -2332,7 +2336,7 @@ async function mbSrcMove(){if(mbMoving||HPMODE!=="farm"||!db||!RAW.dealers||!RAW
     let ok=true;for(const x of l){const {id,...r}=x;ok=(await put("medbuy/"+id,{...r,src:x.trad.trim(),trad:"",updatedAt:new Date().toISOString()}))&&ok}
     if(ok){const {id,...r}=d;await put("dealers/"+id,{...r,src:true,srcMoved:true,updatedAt:new Date().toISOString()})}
     mbMoving=false}}
-const mbNoTrad=d=>!!d&&/self|سیلف/i.test(d.name||"");
+const mbNoTrad=d=>false; /* v1.26.14: Traditional Name in Self too (her ask, search) */
 const mbSelf=d=>!!d&&(d.src===true||(d.src==null&&/self|سیلف/i.test(d.name||"")));
 // ---------- v1.27 Out Medicine (medicine given out of this farm; value comes off the medicine total) ----------
 const moTot=()=>r2(medouts.reduce((a,x)=>a+(x.price||0),0));
@@ -2434,15 +2438,16 @@ function renderMed(){
   const all=medbuys.slice().sort(byDate), dot=v=>v?esc(v):"...", sum=l=>r2(l.reduce((a,x)=>a+(x.price||0),0));
   ds.forEach(d=>{
     const el=wrap.querySelector(`.mbsec[data-dealer="${d.id}"]`), list=all.filter(x=>x.dealer===d.id), isSt=d.id===MB_STORE.id, tot=isSt?storeTot():sum(list);
+    const isM=isSt&&stMan();if(isSt){el.classList.toggle("stman",isM);const sb=el.querySelector('[data-act="stman"]');if(sb){sb.textContent="Manual: "+(isM?"On ✓":"Off");sb.classList.toggle("on",isM);sb.disabled=!canWrite}el.querySelector(".stmnote").textContent=isM?"One total written by you. Rate / Total of lines hidden (kept).":"Each line has Rate and Total. Section total = sum of lines.";}
     if(isSt){const inp=el.querySelector('[data-f="stot"]');if(document.activeElement!==inp)inp.value=mbStore&&mbStore.total?F(mbStore.total):"";
       el.querySelector(".mbsum").textContent=mbStore&&mbStore.total?"":"No Store Total written yet.";el.querySelector(".mbsum").hidden=!!(mbStore&&mbStore.total);}
     el.querySelector(".mbdname").textContent=(mbEdit[d.id]?"Edit · ":"")+d.name;el.querySelector(".mbdtot").textContent=rs(tot);
     const isW=d.id===MB_WFN.id,mvOk=isW&&canWrite;
     const sf=!isW&&mbSelf(d),nt=mbNoTrad(d),sl=el.querySelector("[data-srcl]"),tl=el.querySelector("[data-tradl]");if(sl){if(sf)sl.style.removeProperty("display");else sl.style.setProperty("display","none","important")}if(tl){if(nt)tl.style.setProperty("display","none","important");else tl.style.removeProperty("display")}
     const sr=el.querySelector("[data-srcrow]");if(sr){if(isSt)sr.remove();else{const sb=sr.querySelector(".srctog");sb.textContent="Source column: "+(sf?"On ✓":"Off");sb.classList.toggle("on",sf);sb.disabled=!canWrite}}
-    let h=`<thead><tr><th>Date</th><th>Medicine Name</th>${nt?"":"<th>Traditional Name</th>"}${sf?"<th>Source</th>":""}<th>Quantity</th>${isSt?"":`<th class="amt">Rate</th><th class="amt">Total Price</th>`}${mvOk?"<th></th>":""}</tr></thead><tbody>`;
-    h+=list.map(x=>`<tr data-mb="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="w"><div>${esc(x.name)}</div></td>${nt?"":`<td class="w"><div>${dot(x.trad)}</div></td>`}${sf?`<td class="w"><div>${dot(x.src)}</div></td>`:""}<td class="w"><div>${dot(x.qty)}</div></td>${isSt?"":`<td class="num amt">${x.rate?F(x.rate):"..."}</td><td class="num amt">${x.price?F(x.price):"..."}</td>`}${mvOk?`<td><button type="button" class="wfnmv" data-mv="${esc(x.id)}">↪ Move</button></td>`:""}</tr>`).join("");
-    h+=(list.length||(isSt&&tot))?`<tr class="tot"><td colspan="${(isSt?3:5)+(sf?1:0)-(nt?1:0)}">Total (Rs) · ${esc(d.name)}</td><td class="num amt">${isSt&&!tot?"...":F(tot)}</td>${mvOk?"<td></td>":""}</tr>`:`<tr><td colspan="${(isSt?4:6)+(sf?1:0)-(nt?1:0)+(mvOk?1:0)}" class="empty">${isW?"Nothing waiting. Write medicine here when its dealer is not known yet.":d.id===MB_STORE.id?"No previous store medicine yet. Add the first one above.":"No medicine from this dealer yet. Add the first one above."}</td></tr>`;
+    let h=`<thead><tr><th>Date</th><th>Medicine Name</th>${nt?"":"<th>Traditional Name</th>"}${sf?"<th>Source</th>":""}<th>Quantity</th>${isM?"":`<th class="amt">Rate</th><th class="amt">Total Price</th>`}${mvOk?"<th></th>":""}</tr></thead><tbody>`;
+    h+=list.map(x=>`<tr data-mb="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="w"><div>${esc(x.name)}</div></td>${nt?"":`<td class="w"><div>${dot(x.trad)}</div></td>`}${sf?`<td class="w"><div>${dot(x.src)}</div></td>`:""}<td class="w"><div>${dot(x.qty)}</div></td>${isM?"":`<td class="num amt">${x.rate?F(x.rate):"..."}</td><td class="num amt">${x.price?F(x.price):"..."}</td>`}${mvOk?`<td><button type="button" class="wfnmv" data-mv="${esc(x.id)}">↪ Move</button></td>`:""}</tr>`).join("");
+    h+=(list.length||(isSt&&tot))?`<tr class="tot"><td colspan="${(isM?3:5)+(sf?1:0)-(nt?1:0)}">Total (Rs) · ${esc(d.name)}</td><td class="num amt">${isSt&&!tot?"...":F(tot)}</td>${mvOk?"<td></td>":""}</tr>`:`<tr><td colspan="${(isM?4:6)+(sf?1:0)-(nt?1:0)+(mvOk?1:0)}" class="empty">${isW?"Nothing waiting. Write medicine here when its dealer is not known yet.":d.id===MB_STORE.id?"No previous store medicine yet. Add the first one above.":"No medicine from this dealer yet. Add the first one above."}</td></tr>`;
     el.querySelector(".mbtab").innerHTML=h+"</tbody>";
     const ed=!!mbEdit[d.id];el.querySelector('[data-act="cancel"]').hidden=el.querySelector('[data-act="del"]').hidden=!ed;el.querySelector('[data-act="save"]').disabled=!canWrite;
   });
@@ -2763,6 +2768,8 @@ $("hpLogoBtn").addEventListener("click",pdfOpen);$("pdfBg").addEventListener("cl
   sp.addEventListener("touchmove",e=>{if(y0==null)return;dy=Math.max(0,e.touches[0].clientY-y0);sp.style.transition="none";sp.style.transform=dy?`translateY(${dy}px)`:""},{passive:true});
   sp.addEventListener("touchend",()=>{if(y0==null)return;sp.style.transition="";sp.style.transform="";if(dy>90)pdfClose();y0=null})})();
 $("ffSave").addEventListener("click",()=>saveExtra({finalEnd:$("ffEnd").value||null},"ffToast").then(()=>renderFinal()));
+/* v1.26.14: emptying the End Date box removes the saved End Date at once (no need to press Save) */
+["input","change"].forEach(ev=>$("ffEnd").addEventListener(ev,()=>{if(!$("ffEnd").value&&wExtra.finalEnd&&canWrite)saveExtra({finalEnd:null},"ffToast").then(()=>{renderFinal();try{renderMain()}catch(e){}})}));
 $("saLeave").addEventListener("input",saCalc);
 $("mnAvgSave").addEventListener("click",()=>{const v=mNum($("mnAvgW").value);saveExtra({costAvgW:v||null},"mnAvgToast").then(()=>renderMain())});
 $("saFCalcBtn").addEventListener("click",()=>{saFOpen=!saFOpen;try{localStorage.setItem("hpg-fcalc",saFOpen?"1":"0")}catch(e){}saFeedShow()});
@@ -4180,27 +4187,30 @@ function check(){const ls=[...document.querySelectorAll("#fcBox input.fcl")];if(
   $("fcChk").innerHTML=Math.abs(d)<0.01?urd("✓ ٹوٹل بچی "+F(tot)+" بوری = روز کی رپورٹ کا Feed In Store "+F(st)):urd("روز کی رپورٹ میں Feed In Store "+F(st)+" بوری ہے، آپ نے "+F(tot)+" لکھی ہیں۔ "+F(Math.abs(d))+" بوری کا فرق ہے۔",1)}
 function box(){const b=$("fcBox");if(!open||!canWrite||HPMODE!=="farm"){b.hidden=true;return}
   const T=types(),old={};feeds.filter(x=>x.baq).forEach(x=>old[fdTy(x)]=(old[fdTy(x)]||0)+(x.bags||0));
-  const to=(feeds.find(x=>x.baq)||{}).name||wExtra.feedLeftTo||"";
+  const to=(feeds.find(x=>x.baq)||{}).name||wExtra.feedLeftTo||"",loc=(feeds.find(x=>x.baq)||{}).loc||wExtra.feedLeftLoc||"",keep=wExtra.feedLeftKeep!==false;
   b.innerHTML=`<h3 dir="rtl">فلاک کلوز · بچی ہوئی فیڈ</h3><div class="legend ur">ہر قسم کی بچی بوریاں لکھیں (کچھ نہ بچا ہو تو 0)۔ یہ Out Feed میں "بقایا" بن کر End Date پر چلی جائیں گی۔ ریٹ: سب سے نئی آئی فیڈ کا۔</div>
   <div class="tablewrap"><table class="fdt" id="fcTab"><thead><tr><th>Type</th><th class="amt">In</th><th class="amt">Out</th><th class="amt">Left (bags)</th><th class="amt">Rate</th></tr></thead><tbody>
   ${T.map(t=>{const x=bal(t);return `<tr><td class="w"><div>${esc(t||"...")}</div></td><td class="num amt">${F(x.i)}</td><td class="num amt">${F(x.o)}</td><td class="amt"><input class="txt fcl" inputmode="decimal" data-t="${esc(t)}" value="${old[t]!=null?old[t]:""}" placeholder="0"></td><td class="num amt fcr">...</td></tr>`}).join("")||'<tr><td colspan="5" class="empty">No In Feed entries.</td></tr>'}
   <tr class="tot"><td>Total</td><td></td><td></td><td class="num amt" id="fcTot">0</td><td class="num amt">Rs <span id="fcVal">0</span></td></tr></tbody></table></div>
-  <label class="ur" style="display:block;margin-top:8px">کہاں گئی<input id="fcTo" class="txt" maxlength="60" value="${esc(to)}" placeholder="مثلاً اگلا فلاک"></label>
-  <div id="fcChk"></div><div class="row" style="margin-top:8px;gap:8px"><button class="save" id="fcGo" type="button" style="font-family:'Jameel Noori',serif">بقایا فیڈ سیو کریں</button><button class="ghost" id="fcNo" type="button" style="font-family:'Jameel Noori',serif">بند کریں</button></div><div class="toast" id="fcToast" role="status"></div>`;
-  b.hidden=false;b.querySelectorAll("input.fcl").forEach(i=>i.addEventListener("input",check));$("fcGo").onclick=save;$("fcNo").onclick=()=>{open=false;fcRender()};check()}
+  <div class="fc2"><label class="ur">کہاں گئی<input id="fcTo" class="txt" maxlength="60" value="${esc(to)}" placeholder="مثلاً اگلا فلاک"></label><label class="ur">Location<input id="fcLoc" class="txt" maxlength="60" value="${esc(loc)}" placeholder="مثلاً فارم کا اسٹور"></label></div>
+  <label class="fckeep ur"><input type="checkbox" id="fcKeep"${keep?" checked":""}><span><b>فیڈ فارم پر ہی رہے گی (اگلے فلاک میں)</b><small>نیا فلاک شروع کرنے پر یہ بوریاں خود اس کی In Feed میں آ جائیں گی (اسی Type اور ریٹ سے)</small></span></label>
+  <div id="lmPart"></div>
+  <div id="fcChk"></div><div class="row" style="margin-top:8px;gap:8px"><button class="save" id="fcGo" type="button" style="font-family:'Jameel Noori',serif">بقایا سیو کریں</button><button class="ghost" id="fcNo" type="button" style="font-family:'Jameel Noori',serif">بند کریں</button></div><div class="toast" id="fcToast" role="status"></div>`;
+  b.hidden=false;b.querySelectorAll("input.fcl").forEach(i=>i.addEventListener("input",check));$("fcGo").onclick=save;$("fcNo").onclick=()=>{open=false;fcRender()};check();try{window.lmBox&&lmBox()}catch(e){console.log("lmErr",e.message)}}
 function sum(){const e=$("fcSum");if(!flockId){e.hidden=true;return}const done=!!wExtra.feedLeftDone,end=wExtra.finalEnd;
-  if(done){const bq=feeds.filter(x=>x.baq),n=r2(bq.reduce((a,x)=>a+(x.bags||0),0));e.className="";e.innerHTML=`<span>✓ بچی ہوئی فیڈ: ${n?F(n)+" بوری Out ہو گئی"+(bq[0]&&bq[0].name?" ("+esc(bq[0].name)+")":""):"کچھ نہیں بچی"} · فیڈ کا خرچ اب اصل ہے</span>`+(canWrite&&HPMODE==="farm"?'<button type="button" id="fcEdit">بدلیں</button>':"");e.hidden=open}
+  if(done){const bq=feeds.filter(x=>x.baq),n=r2(bq.reduce((a,x)=>a+(x.bags||0),0));e.className="";e.innerHTML=`<span>✓ بچی ہوئی فیڈ: ${n?F(n)+" بوری Out ہو گئی"+(bq[0]&&bq[0].name?" ("+esc(bq[0].name)+")":""):"کچھ نہیں بچی"} · فیڈ کا خرچ اب اصل ہے${window.lmSumTxt?lmSumTxt():""}</span>`+(canWrite&&HPMODE==="farm"?'<button type="button" id="fcEdit">بدلیں</button>':"");e.hidden=open}
   else if(end){e.className="todo";e.innerHTML='<span>بچی ہوئی فیڈ ابھی نہیں لکھی۔ تب تک فیڈ کا خرچ ساری In − Out ہے۔</span>'+(canWrite&&HPMODE==="farm"?'<button type="button" id="fcEdit">ابھی لکھیں</button>':"");e.hidden=open}
   else e.hidden=true;
   const b=$("fcEdit");if(b)b.onclick=()=>{open=true;fcRender();$("fcBox").scrollIntoView({behavior:"smooth",block:"start"})}}
 async function save(){const end=wExtra.finalEnd;if(!end){toast("fcToast","پہلے End Date سیو کریں۔",true);return}
-  const ins=[...document.querySelectorAll("#fcBox input.fcl")],to=$("fcTo").value.trim();$("fcGo").disabled=true;
+  const ins=[...document.querySelectorAll("#fcBox input.fcl")],to=$("fcTo").value.trim(),loc=$("fcLoc").value.trim(),keep=$("fcKeep").checked;$("fcGo").disabled=true;
   const lots=fdLots(feeds.filter(x=>x.kind==="out"&&!x.baq));let seq=feeds.reduce((m,x)=>Math.max(m,x.seq||0),0),ok=true;const now=new Date().toISOString();
   for(const x of feeds.filter(x=>x.baq)){try{await db.doc("feedlog/"+x.id).delete()}catch(e){ok=false}}
   for(const i of ins){const n=fNum(i.value);if(!n)continue;const t=i.dataset.t,r=fdTake(lots,t,n),rate=r.b?Math.round(r.v/r.b):0;
     const id="fdbq"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-    ok=await write(db.doc("feedlog/"+id),{kind:"out",date:end,bags:n,type:t,name:to||"بقایا",loc:"",rate,price:Math.round(r.v),priceManual:false,baq:true,seq:++seq,shed:"s1",flock:flockId,createdAt:now,updatedAt:now})&&ok}
-  ok=await saveExtra({feedLeftDone:true,feedLeftTo:to,feedLeftAt:now})&&ok;
+    ok=await write(db.doc("feedlog/"+id),{kind:"out",date:end,bags:n,type:t,name:to||"بقایا",loc,rate,price:Math.round(r.v),priceManual:false,baq:true,seq:++seq,shed:"s1",flock:flockId,createdAt:now,updatedAt:now})&&ok}
+  if(window.lmSave)ok=await lmSave(end)&&ok;
+  ok=await saveExtra({feedLeftDone:true,feedLeftTo:to,feedLeftLoc:loc,feedLeftKeep:keep,feedLeftAt:now,...(window.lmExtra?lmExtra():{})})&&ok;
   $("fcGo").disabled=false;if(ok){open=false;fcRender()}else toast("fcToast","سیو نہیں ہو سکا، دوبارہ کوشش کریں۔",true)}
 function tag(){document.querySelectorAll("#fdTableOut tr[data-fd]").forEach(r=>{const x=feeds.find(y=>y.id===r.dataset.fd);if(x&&x.baq){r.classList.add("hpbaq");const c=r.cells[3];if(c&&!c.querySelector(".bqt"))c.insertAdjacentHTML("beforeend",'<span class="bqt">بقایا</span>')}})}
 function fcRender(){try{sum();box()}catch(e){console.log("fcErr",e.message)}}
@@ -4279,6 +4289,177 @@ card.addEventListener("pointerdown",start);card.addEventListener("pointermove",m
 new MutationObserver(()=>{if(!pop.hidden){x=0;y=0;set()}}).observe(pop,{attributes:true,attributeFilter:["hidden"]});
 })();
 </script>
+<style>/* v1.26.14 flock close: leftover medicine, keep feed, lock */
+#fcBox .fc2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}#fcBox .fc2 label{display:block}
+.fckeep{display:flex!important;gap:10px;align-items:flex-start;background:#eef6ff;border:1px solid #b9d3ef;border-radius:12px;padding:10px;margin-top:10px;cursor:pointer}
+.fckeep input{width:22px;height:22px;flex:none;margin-top:4px}.fckeep span{display:flex;flex-direction:column}.fckeep b{font-weight:400;font-size:18px}.fckeep small{font-size:14px;color:#456;line-height:1.8}
+#lmPart{margin-top:14px;border-top:2px dashed #e0b0a0;padding-top:10px}#lmPart h3{margin:0 0 4px;color:#b3412e;font:20px "Jameel Noori","Segoe UI",serif;direction:rtl}
+#lmPart .lmf{display:grid;grid-template-columns:1fr 1fr;gap:8px}#lmPart .lmf label{display:block}#lmPart .lmf3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:6px}
+#lmPart .lmauto{color:#1d6b2a;font-size:11px}#lmPart .lmsrc{font:12.5px "Segoe UI",Roboto,sans-serif;color:#4a5d70;margin-top:4px}
+#lmPart button.lmadd{width:100%;margin-top:8px;border:1.5px dashed #1c5d93;background:#fff;color:#1c5d93;border-radius:10px;padding:8px;font:18px "Jameel Noori","Segoe UI",serif;cursor:pointer}
+#lmPart .lmx{border:0;background:#fde4df;color:#b3412e;border-radius:8px;padding:2px 9px;cursor:pointer}
+#lmPart table.lmu td:last-child{text-align:right}#lmPart .neg{color:#b3412e}#lmPart tr.mut td{color:#888}#lmPart tr.mut td:last-child{text-decoration:line-through}
+#lmPart .lmman{margin-top:8px}.lmtag{font:13px "Jameel Noori",serif;color:#b3412e}
+#lkBar{display:flex;gap:8px;align-items:center;background:#fff1e0;border:1px solid #e0a060;color:#8a3d00;border-radius:12px;padding:8px 12px;margin:8px 12px 0;font:17px "Jameel Noori","Segoe UI",serif;direction:rtl;text-align:right}#lkBar[hidden]{display:none!important}
+#lkMsg{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:10000;background:#8a3d00;color:#fff;border-radius:12px;padding:10px 16px;font:17px "Jameel Noori","Segoe UI",serif;direction:rtl;max-width:90vw;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.25)}#lkMsg[hidden]{display:none}
+body.lkview #entryCard,body.lkview #histH .hpch,body.lkview #hpDClose{display:none!important}
+#moTable tr.hpbaq td,#svMedLeft tr td{background:#fff4d6}.bqt2{display:inline-block;font:13px "Jameel Noori",serif;background:#e08a00;color:#fff;border-radius:6px;padding:0 6px;margin-inline-start:4px}
+#slBox{margin:10px 12px 0;background:#fff8d6;border:2px solid #e0a800;border-radius:16px;padding:12px}#slBox[hidden]{display:none!important}
+#slBox h3{margin:0;font:21px "Jameel Noori","Segoe UI",serif;color:#7a5200;direction:rtl;text-align:right}#slBox .ur{font-family:"Jameel Noori","Segoe UI",serif;direction:rtl;text-align:right}
+#slBox .slf{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}#slBox label{display:block}
+#slBox button.slsave{width:100%;margin-top:8px;background:#1c5d93;color:#fff;border:0;border-radius:10px;padding:9px;font:19px "Jameel Noori","Segoe UI",serif}
+#slBox button.slnone{width:100%;margin-top:6px;background:none;border:0;color:#1c5d93;font:17px "Jameel Noori","Segoe UI",serif;cursor:pointer}
+#slBox .slx{border:0;background:#fde4df;color:#b3412e;border-radius:8px;padding:2px 9px}
+#slBox .slok{background:#eaf6ea;color:#1d6b2a;border-radius:10px;padding:6px 10px;margin-top:8px}
+</style>
+<script>
+/* v1.26.14 flock close (her rules 2026-11-18):
+   - End Date saved = flock closed: view only, only RATES and the leftover (بقایا) can change.
+   - New flock started = old flock fully closed (old view, already view only).
+   - Leftover medicine written in the close box -> Out Medicine "بقایا" rows; rate by Medicine Name from the last purchase.
+   - Medicine used = In - Out - leftover, or written by hand (wExtra.medUsed).
+   - Clearing End Date removes the بقایا rows and opens the flock again.
+   - Keep feed on farm: new flock gets those bags in In Feed; leftover medicine goes to the new flock Previous Store Medicine (Manual Off). */
+(function(){
+const $=i=>document.getElementById(i);
+const nk=v=>String(v||"").toLowerCase().replace(/\s+/g,"");
+const qn=v=>{const m=String(v||"").replace(/,/g,"").match(/\d+(\.\d+)?/);return m?parseFloat(m[0]):0};
+const isClosed=()=>HPMODE!=="sup"&&!oldView&&!!flockId&&flockId===liveFlock&&!!(wExtra&&wExtra.finalEnd);
+window.hpClosed=isClosed;
+/* ---------- lock ---------- */
+let mt=0;function lkMsg(m){let e=$("lkMsg");if(!e){e=document.createElement("div");e.id="lkMsg";document.body.appendChild(e)}e.textContent=m||"فلاک بند ہے (End Date لگی ہے)۔ اب صرف ریٹ اور بقایا بدل سکتے ہیں۔";e.hidden=false;clearTimeout(mt);mt=setTimeout(()=>e.hidden=true,3500)}
+const RK=new Set(["rate","price","priceManual","updatedAt","savedAt","feedrate","feed","feedManual","rateAuto"]);
+function allowed(p,d,del){if(!isClosed())return true;const a=String(p).split("/");
+  if(a[0]==="flocks"){if(a[1]!==flockId)return true;if(a.length===2)return false;return a[2]==="weeks"&&a[3]==="extra"}
+  if(!FLOCKED.has(a[0])||a.length!==2)return true;
+  const ex=(RAW[a[0]]||[]).find(x=>x.id===a[1]);
+  if(ex&&ex.flock&&ex.flock!==flockId)return true;
+  if(!ex){if(del)return true;if(d&&d.flock&&d.flock!==flockId)return true;return !!(d&&d.baq)||a[0]==="salerate"||a[0]==="kandarate"}
+  if(ex.baq)return true;if(del)return false;
+  const ks=new Set([...Object.keys(ex),...Object.keys(d||{})]);ks.delete("id");
+  for(const k of ks){if(RK.has(k))continue;if(JSON.stringify(ex[k]??null)!==JSON.stringify((d||{})[k]??null))return false}
+  return true}
+const lockReady=setInterval(()=>{if(!db)return;clearInterval(lockReady);const _doc=db.doc.bind(db);
+  db.doc=p=>{const r=_doc(p);if(r&&r.set){const st=r.set.bind(r);r.set=d=>allowed(p,d,false)?st(d):(lkMsg(),Promise.reject({code:"locked"}))}
+    if(r&&r.delete){const dl=r.delete.bind(r);r.delete=()=>allowed(p,null,true)?dl():(lkMsg(),Promise.reject({code:"locked"}))}return r}},100);
+function lkBar(){let b=$("lkBar");if(!b){b=document.createElement("div");b.id="lkBar";b.hidden=true;const hd=document.querySelector("header");if(hd)hd.after(b);else document.body.prepend(b)}
+  const on=isClosed();b.hidden=!on;document.body.classList.toggle("lkview",on&&HPMODE==="farm");
+  if(on)b.innerHTML=`<span>🔒 فلاک بند ہے · End Date ${dmy(wExtra.finalEnd)} · صرف ریٹ اور بقایا بدل سکتے ہیں۔ کھولنا ہو تو Final FCR میں End Date خالی کریں۔</span>`}
+/* ---------- leftover medicine (close box) ---------- */
+let lmRows=null,lmPick=null,lmManual=false;
+const baqMo=()=>medouts.filter(x=>x.baq);
+function buys(){return medbuys.filter(x=>x.dealer!==MB_STORE.id&&x.name)}
+const dName=id=>id===MB_WFN.id?"Waiting For Note":((dealers.find(d=>d.id===id)||{}).name||"...");
+function lastBuy(name,dealer){const L=buys().filter(x=>nk(x.name)===nk(name)&&(!dealer||x.dealer===dealer)).sort(byDate);return L[L.length-1]||null}
+function sugs(){const by={};buys().forEach(x=>{const k=nk(x.name);(by[k]=by[k]||[]).push(x)});const out=[];
+  Object.values(by).forEach(L=>{const ds=[...new Set(L.map(x=>x.dealer))];if(ds.length<2)out.push(L[0].name);else ds.forEach(d=>{const b=lastBuy(L[0].name,d);out.push(L[0].name+" · "+dName(d)+(b&&b.rate?" · "+F(b.rate):""))})});
+  medbuys.filter(x=>x.dealer===MB_STORE.id&&x.name&&!by[nk(x.name)]).forEach(x=>out.push(x.name));
+  return [...new Set(out)].sort()}
+function rowsInit(){if(lmRows)return;lmRows=baqMo().sort(byDate).map(x=>({name:x.name,trad:x.trad||"",qty:x.qty||"",rate:x.rate||0,price:x.price||0,src:x.src||null,rateAuto:x.rateAuto!==false,dealer:x.dealer||""}));lmManual=wExtra.medUsed!=null&&wExtra.medUsed!==""}
+function medIn(){const mdW=flock&&flock.raw&&flock.raw.medTotal||0;return Math.round(mdW||storeTot()+medbuys.filter(mbCounted).reduce((a,x)=>a+(x.price||0),0))}
+function usedAuto(left){const out=r2(medouts.filter(x=>!x.baq).reduce((a,x)=>a+(x.price||0),0));return {inn:medIn(),out,left,used:Math.round(medIn()-out-left)}}
+window.lmBox=function(){const P=$("lmPart");if(!P)return;rowsInit();
+  const left=Math.round(lmRows.reduce((a,x)=>a+(x.price||0),0)),U=usedAuto(left);
+  P.innerHTML=`<h3>بچی ہوئی میڈیسن</h3><div class="legend ur">جو میڈیسن بچ گئی ہو وہ لکھیں (کچھ نہ بچا ہو تو خالی چھوڑ دیں)۔ یہ Out Medicine میں "بقایا" بن کر جائے گی اور اگلے فلاک میں Previous Store Medicine میں آ جائے گی۔ ریٹ Medicine Name کی آخری خرید سے۔</div>
+  <div class="lmf"><label class="en">Medicine Name<span class="sugw"><input id="lmName" class="txt" maxlength="100" autocomplete="off" placeholder="Name written on the medicine" data-sk="lmName"><span class="sug" role="listbox" hidden></span></span></label><label class="en">Traditional Name <span class="lmauto">✓ auto</span><input id="lmTrad" class="txt" maxlength="100"></label></div>
+  <div class="lmf3"><label class="en">Quantity<input id="lmQty" class="txt" maxlength="40" placeholder="e.g. 2 Kg"></label><label class="en">Rate <span class="lmauto">✓ auto</span><input id="lmRate" class="txt" inputmode="decimal"></label><label class="en">Total <span class="lmauto">✓ auto</span><input id="lmTot" class="txt" inputmode="decimal"></label></div>
+  <div class="lmsrc" id="lmSrc"></div><button type="button" class="lmadd" id="lmAdd">+ یہ میڈیسن لسٹ میں ڈالیں</button>
+  <div class="tablewrap"><table class="fdt"><thead><tr><th>Medicine Name</th><th>Traditional Name</th><th>Quantity</th><th class="amt">Rate</th><th class="amt">Total</th><th></th></tr></thead><tbody>
+  ${lmRows.map((x,i)=>`<tr><td>${esc(x.name)}</td><td>${x.trad?esc(x.trad):"..."}</td><td>${x.qty?esc(x.qty):"..."}</td><td class="num amt">${x.rate?F(x.rate):"..."}</td><td class="num amt">${x.price?F(x.price):"..."}</td><td><button type="button" class="lmx" data-lmx="${i}">✕</button></td></tr>`).join("")||'<tr><td colspan="6" class="empty">کوئی میڈیسن نہیں لکھی۔</td></tr>'}
+  ${lmRows.length?`<tr class="tot"><td colspan="4">Total · ${lmRows.length} items</td><td class="num amt">${F(left)}</td><td></td></tr>`:""}</tbody></table></div>
+  <div class="tablewrap" style="margin-top:10px"><table class="fdt lmu"><thead><tr><th>Medicine cost</th><th class="amt">Rs</th></tr></thead><tbody>
+  <tr><td>In (all dealers + store)</td><td class="num amt">${F(U.inn)}</td></tr><tr><td>Out Medicine</td><td class="num amt neg">− ${F(U.out)}</td></tr><tr><td>Left (بقایا)</td><td class="num amt neg">− ${F(U.left)}</td></tr>
+  <tr class="${lmManual?"mut":"tot"}"><td>Used (auto)</td><td class="num amt">${F(U.used)}</td></tr>${lmManual?`<tr class="tot"><td>Used <span class="lmtag">خود لکھی</span></td><td class="num amt">${F(wExtra.medUsed)}</td></tr>`:""}</tbody></table></div>
+  <label class="ur lmman">Used خود لکھیں (Rs) · خالی چھوڑیں تو خود حساب<input id="lmUsed" class="txt" inputmode="decimal" value="${wExtra.medUsed!=null&&wExtra.medUsed!==""?F(wExtra.medUsed):""}" placeholder="${F(U.used)}"></label>`;
+  sugData.lmName=sugs();const ni=$("lmName");attachSug(ni,ni.nextElementSibling,"lmName");
+  ni.nextElementSibling.addEventListener("click",()=>setTimeout(pick,0));ni.addEventListener("change",pick);
+  $("lmQty").addEventListener("input",tot);$("lmRate").addEventListener("input",()=>{lmPick&&(lmPick.manual=true);tot()});$("lmTot").addEventListener("input",()=>{lmPick&&(lmPick.manualTot=true)});
+  $("lmAdd").onclick=add;P.querySelectorAll("[data-lmx]").forEach(b=>b.onclick=()=>{lmRows.splice(+b.dataset.lmx,1);lmBox()})};
+function pick(){const v=$("lmName").value.trim();if(!v)return;const a=v.split(" · ");let name=a[0],dl=null;
+  if(a.length>1){const d=[MB_WFN,...dealers].find(x=>x.name===a[1]||(x.id===MB_WFN.id&&a[1]==="Waiting For Note"));dl=d?d.id:null}
+  $("lmName").value=name;const b=lastBuy(name,dl);lmPick={src:b?b.id:null,dealer:b?b.dealer:"",manual:false,manualTot:false};
+  if(b){$("lmTrad").value=b.trad||"";$("lmRate").value=b.rate?F(b.rate):"";$("lmSrc").textContent="Rate = last purchase · "+dmy(b.date)+" · "+dName(b.dealer)+" · "+(b.qty||"")+(b.rate?" · Rs "+F(b.rate):" · rate not written yet")}
+  else{const st=medbuys.filter(x=>x.dealer===MB_STORE.id&&nk(x.name)===nk(name)).pop();if(st&&!$("lmTrad").value)$("lmTrad").value=st.trad||"";$("lmRate").value="";$("lmSrc").innerHTML='<span style="font-family:\'Jameel Noori\',serif;color:#b3412e;font-size:16px">'+(st?"یہ میڈیسن اس فلاک میں کسی ڈیلر سے نہیں آئی، صرف Previous Store میں تھی۔ ":"")+'ریٹ خود لکھیں۔</span>'}tot()}
+function tot(){const r=xNum($("lmRate").value),q=qn($("lmQty").value);if(!(lmPick&&lmPick.manualTot))$("lmTot").value=r&&q?F(Math.round(r*q)):""}
+function add(){const name=$("lmName").value.trim();if(!name){$("lmName").focus();return}
+  if(!lmPick){const b=lastBuy(name);lmPick={src:b?b.id:null,dealer:b?b.dealer:"",manual:!!$("lmRate").value.trim(),manualTot:!!$("lmTot").value.trim()};if(b&&!$("lmRate").value.trim()&&b.rate){$("lmRate").value=F(b.rate);tot()}if(b&&!$("lmTrad").value.trim())$("lmTrad").value=b.trad||""}
+  const rate=xNum($("lmRate").value),price=xNum($("lmTot").value)||Math.round(rate*qn($("lmQty").value));
+  lmRows.push({name,trad:$("lmTrad").value.trim(),qty:$("lmQty").value.trim(),rate,price,src:lmPick&&lmPick.src||null,dealer:lmPick&&lmPick.dealer||"",rateAuto:!(lmPick&&(lmPick.manual||lmPick.manualTot))});lmPick=null;lmBox();setTimeout(()=>$("lmName")&&$("lmName").focus(),0)}
+window.lmExtra=function(){const v=$("lmUsed")?$("lmUsed").value.trim():"";return {medLeftDone:true,medUsed:v?xNum(v):null}};
+window.lmSave=async function(end){rowsInit();if($("lmName")&&$("lmName").value.trim())add();let ok=true;const now=new Date().toISOString();
+  for(const x of baqMo()){try{await db.doc("medout/"+x.id).delete()}catch(e){ok=false}}
+  for(const x of lmRows){const id="mobq"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    ok=await write(db.doc("medout/"+id),{date:end,name:x.name,trad:x.trad,qty:x.qty,to:"بقایا",rate:x.rate||0,price:x.price||0,baq:true,src:x.src,dealer:x.dealer,rateAuto:x.rateAuto,shed:"s1",flock:flockId,createdAt:now,updatedAt:now})&&ok}
+  lmRows=null;return ok};
+window.lmSumTxt=function(){const L=baqMo(),v=Math.round(L.reduce((a,x)=>a+(x.price||0),0));return " · بچی میڈیسن: "+(L.length?F(L.length)+" (Rs "+F(v)+")":"کچھ نہیں")+(wExtra.medUsed?" · Used خود لکھی Rs "+F(wExtra.medUsed):"")};
+/* rates change later -> leftover rates follow (feed: newest lot rate; medicine: last purchase rate unless written by hand) */
+let auT=0,auBusy=false;function autoRates(){clearTimeout(auT);auT=setTimeout(async()=>{if(auBusy||!isClosed()||!canWrite||HPMODE!=="farm"||!db)return;auBusy=true;try{
+  const lots=fdLots(feeds.filter(x=>x.kind==="out"&&!x.baq));const now=new Date().toISOString();
+  for(const x of feeds.filter(x=>x.baq).sort((a,b)=>(a.seq||0)-(b.seq||0))){const r=fdTake(lots,fdTy(x),x.bags||0),rate=r.b?Math.round(r.v/r.b):0,price=Math.round(r.v);
+    if(rate&&(rate!==x.rate||price!==x.price)){const {id,...d}=x;await write(db.doc("feedlog/"+id),{...d,rate,price,updatedAt:now})}}
+  for(const x of baqMo()){if(x.rateAuto===false||!x.src)continue;const b=medbuys.find(y=>y.id===x.src);if(!b||!b.rate)continue;const price=Math.round(b.rate*qn(x.qty));
+    if(b.rate!==x.rate||price!==x.price){const {id,...d}=x;await write(db.doc("medout/"+id),{...d,rate:b.rate,price,updatedAt:now})}}
+  }catch(e){console.log("auErr",e.message)}auBusy=false},1500)}
+/* End Date cleared -> remove بقایا rows, flock opens again */
+const _se=saveExtra;saveExtra=async function(patch,tid){const had=!!wExtra.finalEnd;
+  if(patch&&"finalEnd" in patch&&!patch.finalEnd&&had){for(const x of feeds.filter(x=>x.baq).concat([])){try{await db.doc("feedlog/"+x.id).delete()}catch(e){}}
+    for(const x of baqMo()){try{await db.doc("medout/"+x.id).delete()}catch(e){}}patch={...patch,feedLeftDone:false,medLeftDone:false};lmRows=null}
+  return _se.call(this,patch,tid)};
+/* Out Medicine table: tag بقایا rows */
+function tagMo(){document.querySelectorAll("#moTable tr[data-mo]").forEach(r=>{const x=medouts.find(y=>y.id===r.dataset.mo);if(x&&x.baq){r.classList.add("hpbaq");const c=r.cells[1];if(c&&!c.querySelector(".bqt2"))c.insertAdjacentHTML("beforeend",'<span class="bqt2">بقایا</span>')}})}
+if(typeof renderMedOut==="function"){const _m=renderMedOut;renderMedOut=function(){const x=_m.apply(this,arguments);try{tagMo()}catch(e){}autoRates();return x}}
+const _rf=renderFeed;renderFeed=function(){const x=_rf.apply(this,arguments);autoRates();lkBar();return x};
+const _rd=render;render=function(){const x=_rd.apply(this,arguments);try{lkBar()}catch(e){}return x};
+/* ---------- new flock: carry kept feed + leftover medicine ---------- */
+let prev=null;
+$("confirmNew").addEventListener("click",()=>{if(!flockId||HPMODE!=="farm")return;const keep=wExtra.feedLeftDone&&wExtra.feedLeftKeep!==false;
+  const fb=keep?feeds.filter(x=>x.baq&&x.bags):[],mb=medouts.filter(x=>x.baq);
+  prev={id:flockId,no:flock&&flock.raw&&flock.raw.no,feed:fb.map(x=>({...x})),med:mb.map(x=>({...x}))};
+  const n=r2(fb.reduce((a,x)=>a+(x.bags||0),0));if(n&&!$("sFeed").value)$("sFeed").value=n});
+$("sGo").addEventListener("click",()=>{const P=prev;if(!P||(!P.feed.length&&!P.med.length))return;const t0=Date.now();
+  const iv=setInterval(async()=>{if(Date.now()-t0>20000){clearInterval(iv);return}if(!liveFlock||liveFlock===P.id)return;clearInterval(iv);prev=null;
+    const nf=liveFlock,start=$("sStart").value||todayISO(),now=new Date().toISOString(),from="From previous Flock"+(P.no?" ("+P.no+")":"");let seq=Date.now()%100000;
+    for(const x of P.feed){const id="fdcy"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+      try{await db.doc("feedlog/"+id).set({kind:"in",date:start,bags:x.bags,type:x.type||"",name:from,loc:x.loc||"",rate:x.rate||0,price:x.price||0,priceManual:false,carry:true,fromFlock:P.id,seq:++seq,shed:"s1",flock:nf,createdAt:now,updatedAt:now})}catch(e){}}
+    if(P.med.length){const did="prevstore";
+      try{await db.doc("dealers/prevstore_"+nf).set({kind:"store",total:null,manual:false,shed:"s0",flock:nf,updatedAt:now})}catch(e){}
+      for(const x of P.med){const id="mbcy"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+        try{await db.doc("medbuy/"+id).set({dealer:did,date:start,name:x.name||"",trad:x.trad||"",qty:x.qty||"",rate:x.rate||0,price:x.price||0,carry:true,fromFlock:P.id,seq:++seq,shed:"s1",flock:nf,createdAt:now})}catch(e){}}}
+  },400)});
+/* ---------- supervisor: leftover medicine box when birds reach 0 ---------- */
+function supNeed(){if(HPMODE!=="sup"||!flock)return false;const h=compute(days),l=h[h.length-1];return !!(l&&flock.placed&&l.bRem<=0)||!!(wExtra&&wExtra.finalEnd)}
+function slBox(){if(HPMODE!=="sup")return;let b=$("slBox");if(!b){b=document.createElement("div");b.id="slBox";b.hidden=true;b.dir="ltr";const bn=document.querySelector(".hpsupb"),sr=$("srBox");if(sr&&sr.parentNode)sr.after(b);else if(bn)bn.after(b);else $("vDaily").prepend(b);
+    b.addEventListener("click",slClick)}
+  const on=supNeed();b.hidden=!on;if(!on)return;const L=smList("left"),items=L.filter(x=>x.name),none=L.some(x=>x.none);
+  if(b.dataset.k===JSON.stringify(L.map(x=>x.id+x.updatedAt))&&b.innerHTML)return;b.dataset.k=JSON.stringify(L.map(x=>x.id+x.updatedAt));
+  b.innerHTML=`<h3>🐔 چوزے ختم ہو گئے · بقایا میڈیسن لکھیں</h3><div class="ur" style="font-size:15px;color:#6a5000;line-height:1.9">اسٹور میں جو میڈیسن بچ گئی ہے وہ ایک ایک کر کے لکھیں۔ کچھ نہ بچا ہو تو "کچھ نہیں بچا" دبائیں۔</div>
+  <div class="slf"><label class="en">Medicine Name<span class="sugw"><input id="slName" class="txt" maxlength="100" autocomplete="off" placeholder="Name written on the medicine" data-sk="smName"><span class="sug" role="listbox" hidden></span></span></label><label class="en">Traditional Name<span class="sugw"><input id="slTrad" class="txt" maxlength="100" autocomplete="off" data-sk="smTrad"><span class="sug" role="listbox" hidden></span></span></label></div>
+  <div class="slf"><label class="en">Quantity<input id="slQty" class="txt" maxlength="40" placeholder="e.g. 2 Kg"></label><span></span></div>
+  <button type="button" class="slsave" data-sl="save">بقایا میڈیسن سیو کریں</button><div class="toast" id="slToast" role="status"></div>
+  ${items.length?`<div class="tablewrap" style="margin-top:8px"><table class="fdt"><thead><tr><th>Medicine Name</th><th>Traditional Name</th><th>Quantity</th><th></th></tr></thead><tbody>${items.map(x=>`<tr><td>${esc(x.name)}</td><td>${x.trad?esc(x.trad):"..."}</td><td>${x.qty?esc(x.qty):"..."}</td><td><button type="button" class="slx" data-slx="${esc(x.id)}">✕</button></td></tr>`).join("")}<tr class="tot"><td colspan="4">${items.length} entr${items.length>1?"ies":"y"}</td></tr></tbody></table></div>`:""}
+  ${none&&!items.length?'<div class="ur slok">✓ آپ نے بتایا: کوئی میڈیسن نہیں بچی</div>':`<button type="button" class="slnone" data-sl="none">کچھ نہیں بچا ✓</button>`}`;
+  b.querySelectorAll("input[data-sk]").forEach(i=>{if(!sugData[i.dataset.sk])sugData[i.dataset.sk]=[];attachSug(i,i.nextElementSibling,i.dataset.sk)})}
+async function slClick(e){const x=e.target.closest("[data-slx]"),a=e.target.closest("[data-sl]");if(!db)return;const now=new Date().toISOString();
+  if(x){try{await db.doc("supmed/"+x.dataset.slx).delete()}catch(er){}return}if(!a)return;
+  if(a.dataset.sl==="none"){for(const y of smList("left").filter(y=>y.none)){try{await db.doc("supmed/"+y.id).delete()}catch(er){}}
+    try{await db.doc("supmed/sl"+Date.now().toString(36)).set({kind:"left",none:true,date:todayISO(),name:"",trad:"",qty:"",party:"",flock:flockId||null,createdAt:now,updatedAt:now})}catch(er){}return}
+  const name=$("slName").value.trim();if(!name){toast("slToast","Medicine Name لکھیں۔",true);$("slName").focus();return}a.disabled=true;
+  try{await db.doc("supmed/sl"+Date.now().toString(36)+Math.random().toString(36).slice(2,5)).set({kind:"left",date:todayISO(),name,trad:$("slTrad").value.trim(),qty:$("slQty").value.trim(),party:"",flock:flockId||null,createdAt:now,updatedAt:now});
+    for(const y of smList("left").filter(y=>y.none)){try{await db.doc("supmed/"+y.id).delete()}catch(er){}}}catch(er){toast("slToast","سیو نہیں ہو سکا۔",true)}a.disabled=false}
+/* farm: Supervisor Data shows his leftover list (view only) */
+function svLeft(){const s=$("svMed");if(!s||HPMODE==="sup")return;let t=$("svMedLeft");if(!t){s.insertAdjacentHTML("beforeend",'<h3 class="en">Leftover Medicine (<span style="font-family:\'Jameel Noori\',serif">بقایا</span>)</h3><div class="tablewrap"><table id="svMedLeft" class="fdt"></table></div>');t=$("svMedLeft")}
+  const L=smList("left"),items=L.filter(x=>x.name),dot=v=>v?esc(v):"...";
+  t.innerHTML=`<thead><tr><th>Date</th><th>Medicine Name</th><th>Traditional Name</th><th>Quantity</th></tr></thead><tbody>`+(items.length?items.map(x=>`<tr><td class="num">${dmy(x.date)}</td><td>${dot(x.name)}</td><td>${dot(x.trad)}</td><td>${dot(x.qty)}</td></tr>`).join("")+`<tr class="tot"><td colspan="4">${items.length} entr${items.length>1?"ies":"y"}</td></tr>`:`<tr><td colspan="4" class="empty">${L.some(x=>x.none)?"Supervisor: nothing left.":"Nothing yet."}</td></tr>`)+"</tbody>"}
+const _rs=renderSupMed;renderSupMed=function(){const x=_rs.apply(this,arguments);try{svLeft();slBox()}catch(e){console.log("slErr",e.message)}return x};
+const _r2=render;render=function(){const x=_r2.apply(this,arguments);try{slBox()}catch(e){}return x};
+setTimeout(()=>{try{lkBar();svLeft();slBox()}catch(e){}},500);
+setInterval(()=>{try{autoRates();lkBar()}catch(e){}},5000);
+})();
+</script>
+<style>/* v1.26.14 store manual */
+.mbsec:not(.stman) .mbstot{display:none!important}.mbsec.stman .stRP{display:none!important}
+.stmrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.stmnote{font-size:13px;color:#4a5d70}
+</style>
 
 </body>
 </html>
