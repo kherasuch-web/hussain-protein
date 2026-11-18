@@ -1,11 +1,11 @@
 {
- "ver": "1.26.12",
- "note": "Search follows In/Out tab; feed cost = feed eaten (average rate, exact after flock close); Check Cost; movable message card",
- "noteUr": "سرچ ٹیب کے حساب سے، فیڈ کا خرچ کھائی گئی فیڈ کا، Check Cost، میسج کارڈ کھسک سکتا ہے",
+ "ver": "1.26.13",
+ "note": "Feed cost In - Out again; Check Cost / Clear Cost toggle; End Date fix",
+ "noteUr": "فیڈ کا خرچ پہلے کی طرح، Check Cost / Clear Cost، End Date کی غلطی ٹھیک",
  "android": {
-  "zip": "android-1.26.12.zip",
+  "zip": "android-1.26.13.zip",
   "minBuild": 27,
-  "sha256": "67aef6bd18d40e2a58cee88e57dd944886dd962cad635464e8bfa126277ae8cc"
+  "sha256": "dcba66dbb1090923e242bda7c6987c02118d125414fca342dafc03caee9074c9"
  },
  "windows": {
   "files": [

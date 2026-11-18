@@ -1889,13 +1889,16 @@ function fdLots(outs){const ins=feeds.filter(x=>x.kind==="in"),lots=[],T=[...new
   T.forEach(t=>{let o=outs.filter(x=>fdTy(x)===t).reduce((a,x)=>a+(x.bags||0),0);ins.filter(x=>fdTy(x)===t).sort(byDate).forEach(x=>{let b=x.bags||0;const k=Math.min(b,o);b-=k;o-=k;if(b>0)lots.push({t,date:x.date||"",seq:x.seq||0,b,r:fdUR(x)})})});
   return lots.sort((a,b)=>b.date.localeCompare(a.date)||b.seq-a.seq)}
 function fdTake(lots,t,n){let v=0,b=0;lots.filter(l=>t==null||l.t===t).forEach(l=>{if(n<=0)return;const k=Math.min(l.b,n);n-=k;b+=k;v+=k*l.r;l.b-=k});return {b:r2(b),v}}
-function fdCost(last){const ins=feeds.filter(x=>x.kind==="in"),outs=feeds.filter(x=>x.kind==="out"),done=!!wExtra.feedLeftDone;
+/* v1.26.13 (her rule): normal = In - Out value (as before). Check Cost (toggle, per phone) = exact with leftover per type.
+   Flock closed (leftover written, Out Feed "بقایا" rows) = exact per type. */
+const ccKey=()=>"hp-ccon-"+flockId,ccGet=()=>{try{const v=localStorage.getItem(ccKey());return v?JSON.parse(v):null}catch(e){return null}};
+function fdCost(last){const ins=feeds.filter(x=>x.kind==="in"),outs=feeds.filter(x=>x.kind==="out"),done=!!wExtra.feedLeftDone,cc=done?null:ccGet();
   const T=[...new Set(ins.concat(outs).map(fdTy))].sort((a,b)=>!a?1:!b?-1:a.localeCompare(b)),sb={},sv={};
   const B=l=>l.reduce((a,x)=>a+(x.bags||0),0),P=l=>l.reduce((a,x)=>a+(x.price||0),0);
-  /* her rule: before close = feed eaten (daily report) x average In rate */
-  if(!done){const ib=B(ins),avg=ib?P(ins)/ib:0,eat=last?r2(last.fTot):0;return {rows:[],cost:Math.round(eat*avg),eat,avg,est:true}}
+  if(!done&&!cc)return {mode:"normal",rows:[],cost:Math.round(P(ins)-P(outs))};
+  if(cc){const lots=fdLots(outs);T.forEach(t=>{const n=fNum(cc[t]);if(!n)return;const r=fdTake(lots,t,n);sb[t]=r.b;sv[t]=r.v})}
   const rows=T.map(t=>{const fi=ins.filter(x=>fdTy(x)===t),fo=outs.filter(x=>fdTy(x)===t);return {t,eat:r2(B(fi)-B(fo)-(sb[t]||0)),cost:Math.round(P(fi)-P(fo)-(sv[t]||0))}});
-  return {rows,cost:rows.reduce((a,x)=>a+x.cost,0),storeB:r2(Object.values(sb).reduce((a,b)=>a+b,0)),storeV:Math.round(Object.values(sv).reduce((a,b)=>a+b,0)),est:!done}}
+  return {mode:done?"closed":"check",rows,cost:rows.reduce((a,x)=>a+x.cost,0),storeB:r2(Object.values(sb).reduce((a,b)=>a+b,0)),storeV:Math.round(Object.values(sv).reduce((a,b)=>a+b,0))}}
 function renderMain(){
   if(!flock)return;
   const hist=compute(days), last=hist[hist.length-1]||null, dot="...";
@@ -1919,7 +1922,7 @@ function renderMain(){
   const lab=Math.round(sal+(X.caching||0)+saFeedCalc().amt+(X.birdfee||0)), net=Math.round(lab-adv);
   const grand=Math.round(gen+feedC+med+lab);
   $("mnExp").innerHTML="<tbody>"+row("General (incl. chicks)",F(gen),{go:"spend:gen"})+
-    (fdW?row("Feed (written total)",F(feedC),{go:"feed"}):(FC.est?row("Feed (eaten × average rate)",F(feedC),{go:"feed"})+row(F(FC.eat)+" bags × Rs "+F(Math.round(FC.avg))+" (average)",F(feedC),{c:"sub",go:"feed"}):row("Feed (eaten · flock closed)",F(feedC),{go:"feed"})+FC.rows.filter(x=>x.eat||x.cost).map(x=>row(esc(x.t||"...")+" · "+F(x.eat)+" bags eaten",F(x.cost),{c:"sub",go:"feed"})).join("")))+
+    (fdW?row("Feed (written total)",F(feedC),{go:"feed"}):(FC.mode==="normal"?row("Feed (In − Out)",F(feedC),{go:"feed"})+row("In value",F(fdIn),{c:"sub",go:"feed"})+row("Out value","− "+F(fdOut),{c:"sub",go:"feed"}):row(FC.mode==="check"?"Feed (Check Cost · eaten)":"Feed (eaten · flock closed)",F(feedC),{go:"feed"})+FC.rows.filter(x=>x.eat||x.cost).map(x=>row(esc(x.t||"...")+" · "+F(x.eat)+" bags eaten",F(x.cost),{c:"sub",go:"feed"})).join("")+(FC.mode==="check"&&FC.storeB?row("Left · "+F(FC.storeB)+" bags (not in cost)",F(FC.storeV),{c:"sub",go:"feed"}):"")))+
     row(mdW?"Medicine (written total)":"Medicine (store + dealers)",F(med),{go:"med"})+
     row("Labour (salary till "+dmy(pay)+")",F(lab),{go:"spend:sal"})+
     row("Advance (paid)",F(adv),{c:"sub",go:"spend:sup"})+
@@ -4187,7 +4190,7 @@ function box(){const b=$("fcBox");if(!open||!canWrite||HPMODE!=="farm"){b.hidden
   b.hidden=false;b.querySelectorAll("input.fcl").forEach(i=>i.addEventListener("input",check));$("fcGo").onclick=save;$("fcNo").onclick=()=>{open=false;fcRender()};check()}
 function sum(){const e=$("fcSum");if(!flockId){e.hidden=true;return}const done=!!wExtra.feedLeftDone,end=wExtra.finalEnd;
   if(done){const bq=feeds.filter(x=>x.baq),n=r2(bq.reduce((a,x)=>a+(x.bags||0),0));e.className="";e.innerHTML=`<span>✓ بچی ہوئی فیڈ: ${n?F(n)+" بوری Out ہو گئی"+(bq[0]&&bq[0].name?" ("+esc(bq[0].name)+")":""):"کچھ نہیں بچی"} · فیڈ کا خرچ اب اصل ہے</span>`+(canWrite&&HPMODE==="farm"?'<button type="button" id="fcEdit">بدلیں</button>':"");e.hidden=open}
-  else if(end){e.className="todo";e.innerHTML='<span>بچی ہوئی فیڈ ابھی نہیں لکھی۔ تب تک فیڈ کا خرچ اوسط ریٹ سے ہے۔</span>'+(canWrite&&HPMODE==="farm"?'<button type="button" id="fcEdit">ابھی لکھیں</button>':"");e.hidden=open}
+  else if(end){e.className="todo";e.innerHTML='<span>بچی ہوئی فیڈ ابھی نہیں لکھی۔ تب تک فیڈ کا خرچ ساری In − Out ہے۔</span>'+(canWrite&&HPMODE==="farm"?'<button type="button" id="fcEdit">ابھی لکھیں</button>':"");e.hidden=open}
   else e.hidden=true;
   const b=$("fcEdit");if(b)b.onclick=()=>{open=true;fcRender();$("fcBox").scrollIntoView({behavior:"smooth",block:"start"})}}
 async function save(){const end=wExtra.finalEnd;if(!end){toast("fcToast","پہلے End Date سیو کریں۔",true);return}
@@ -4205,11 +4208,11 @@ window.fcRender=fcRender;
 const _rf=renderFinal;renderFinal=function(){const x=_rf.apply(this,arguments);fcRender();return x};
 const _fe=renderFeed;renderFeed=function(){const x=_fe.apply(this,arguments);try{tag()}catch(e){};fcRender();return x};
 // Save End Date -> open the leftover box (if not done yet)
-$("ffSave").addEventListener("click",()=>setTimeout(()=>{if($("ffEnd").value&&!wExtra.feedLeftDone){open=true;fcRender();const b=$("fcBox");if(b&&!b.hidden)b.scrollIntoView({behavior:"smooth",block:"start"})}},700));
+$("ffSave").addEventListener("click",()=>setTimeout(()=>{if(!wExtra.finalEnd){open=false;fcRender();return}if(!wExtra.feedLeftDone){open=true;fcRender();const b=$("fcBox");if(b&&!b.hidden)b.scrollIntoView({behavior:"smooth",block:"start"})}},700));
 // New flock: remind if leftover feed not written
 const w=$("fcWarn");
 $("newFlock").addEventListener("click",()=>{if(wExtra.feedLeftDone||!feeds.some(x=>x.kind==="in")){w.hidden=true;return}
-  w.innerHTML='<span>⚠ بچی ہوئی فیڈ ابھی نہیں لکھی۔ پہلے Final FCR میں End Date اور بچی فیڈ لکھیں، ورنہ اس فلاک کا فیڈ خرچ اوسط ریٹ پر رہے گا۔</span><button type="button" id="fcWGo">ابھی لکھیں</button>';w.hidden=false;
+  w.innerHTML='<span>⚠ بچی ہوئی فیڈ ابھی نہیں لکھی۔ پہلے Final FCR میں End Date اور بچی فیڈ لکھیں، ورنہ اس فلاک کا فیڈ خرچ ساری In − Out رہے گا۔</span><button type="button" id="fcWGo">ابھی لکھیں</button>';w.hidden=false;
   $("fcWGo").onclick=()=>{w.hidden=true;$("confirmNo").click();setView("daily");open=!!wExtra.finalEnd;fcRender();setTimeout(()=>{const c=wExtra.finalEnd?$("fcBox"):$("ffEnd");if(c)c.scrollIntoView({behavior:"smooth",block:"center"});if(!wExtra.finalEnd)$("ffEnd").focus()},300)}});
 ["confirmNo","confirmNew"].forEach(i=>$(i).addEventListener("click",()=>{w.hidden=true}));
 fcRender();
@@ -4217,7 +4220,7 @@ fcRender();
 </script>
 <style>/* v1.26.12 Check Cost (her idea): exact feed cost from leftover bags per type, check only */
 .ccrow{display:flex;gap:10px;margin:2px 0 6px}.ccrow button{flex:1;margin:0!important;padding:10px 12px!important}
-#ccBtn{background:#0f6b73!important;color:#fff!important;border-color:#0f6b73!important}
+#ccBtn{background:#0f6b73!important;color:#fff!important;border-color:#0f6b73!important}#ccBtn.ccon{background:#fff!important;color:#0f6b73!important;border:2px solid #0f6b73!important}#ccBtn[hidden]{display:none!important}
 #ccSheet{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:flex-end;justify-content:center}#ccSheet[hidden]{display:none}
 #ccSheet .ccp{background:#fff;width:100%;max-width:620px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:16px;box-sizing:border-box}
 @media (min-width:1000px){#ccSheet{align-items:center}#ccSheet .ccp{border-radius:20px}}
@@ -4237,7 +4240,7 @@ const B=l=>l.reduce((a,x)=>a+(x.bags||0),0),P=l=>l.reduce((a,x)=>a+(x.price||0),
 function types(){return [...new Set(feeds.filter(x=>x.kind==="in").map(fdTy))].sort((a,b)=>!a?1:!b?-1:a.localeCompare(b))}
 function draw(){const T=types(),v=load(),bq=wExtra.feedLeftDone;
   $("ccBody").innerHTML=`<div class="tablewrap"><table class="fdt"><thead><tr><th>Type</th><th class="amt">In</th><th class="amt">Out</th><th class="amt">Left (bags)</th></tr></thead><tbody>${T.map(t=>{const i=B(feeds.filter(x=>x.kind==="in"&&fdTy(x)===t)),o=B(feeds.filter(x=>x.kind==="out"&&fdTy(x)===t));return `<tr><td class="w"><div>${esc(t||"...")}</div></td><td class="num amt">${F(r2(i))}</td><td class="num amt">${F(r2(o))}</td><td class="amt"><input class="txt ccl" inputmode="decimal" data-t="${esc(t)}" value="${bq?0:(v[t]!=null?v[t]:"")}" placeholder="0"></td></tr>`}).join("")||'<tr><td colspan="4" class="empty">No In Feed entries yet.</td></tr>'}
-  <tr class="tot"><td>Total</td><td></td><td></td><td class="num amt" id="ccTot">0</td></tr></tbody></table></div><div id="ccChk"></div><div class="tablewrap"><table class="fdt mntab" id="ccRes"></table></div><div class="legend" id="ccNote"></div>`;
+  <tr class="tot"><td>Total</td><td></td><td></td><td class="num amt" id="ccTot">0</td></tr></tbody></table></div><div id="ccChk"></div><div class="tablewrap"><table class="fdt mntab" id="ccRes"></table></div><div class="legend" id="ccNote"></div><button type="button" class="save" id="ccGo" style="width:100%;margin-top:10px;font-family:'Jameel Noori','Segoe UI',serif;font-size:18px">Main میں دکھائیں</button>`;$("ccGo").onclick=apply;
   $("ccBody").querySelectorAll("input.ccl").forEach(i=>i.addEventListener("input",calc));calc()}
 function calc(){const ins=[...document.querySelectorAll("#ccBody input.ccl")],o={},lots=fdLots(feeds.filter(x=>x.kind==="out"));let tot=0,cost=0;const rows=[];
   ins.forEach(i=>{const t=i.dataset.t,n=fNum(i.value);o[t]=i.value;tot+=n;const r=fdTake(lots,t,n),fi=feeds.filter(x=>x.kind==="in"&&fdTy(x)===t),fo=feeds.filter(x=>x.kind==="out"&&fdTy(x)===t);
@@ -4246,9 +4249,12 @@ function calc(){const ins=[...document.querySelectorAll("#ccBody input.ccl")],o=
   const h=compute(days),L=h[h.length-1],st=L?r2(L.fRem):0,d=r2(tot-st);
   $("ccChk").innerHTML=Math.abs(d)<0.01?`<div class="ur ok">✓ بقایا ${F(tot)} بوری = روز کی رپورٹ کا Feed In Store ${F(st)}</div>`:`<div class="ur bad">روز کی رپورٹ میں Feed In Store ${F(st)} بوری ہے، آپ نے ${F(tot)} لکھی ہیں۔ ${F(Math.abs(d))} بوری کا فرق ہے۔</div>`;
   const M=window.__mn||{},R=(l,v,c="")=>`<tr class="${c}"><td>${l}</td><td class="num amt">${v}</td></tr>`,g=Math.round((M.grand||0)-(M.feedC||0)+cost),pl=Math.round((M.sRs||0)-g);
-  $("ccRes").innerHTML="<tbody>"+rows.map(r=>R(r[0],r[1])).join("")+R("Feed Cost (exact)",F(cost),"tot")+R(M.fdW?"Now in Main (written total)":"Now in Main",F(M.feedC||0),"mut")+R("Grand Total Expenses",F(g))+R("Cost per Bird Alive",M.alive>0?F(r2(g/M.alive)):"...")+(showPL?R(pl>=0?"Profit":"Loss",F(Math.abs(pl)),"tot"):R("Profit / Loss","...","tot"))+"</tbody>";
+  $("ccRes").innerHTML="<tbody>"+rows.map(r=>R(r[0],r[1])).join("")+R("Feed Cost (exact)",F(cost),"tot")+R(M.fdW?"Main now (written total)":"Main now (In − Out)",F(M.feedC||0),"mut")+R("Grand Total Expenses",F(g))+R("Cost per Bird Alive",M.alive>0?F(r2(g/M.alive)):"...")+(showPL?R(pl>=0?"Profit":"Loss",F(Math.abs(pl)),"tot"):R("Profit / Loss","...","tot"))+"</tbody>";
   $("ccNote").textContent=showPL?"":'Profit / Loss shows when "Calculate Profit" is on.'}
-$("ccBtn").addEventListener("click",e=>{e.stopPropagation();if(!flock)return;draw();$("ccSheet").hidden=false});
+function apply(){const o={};document.querySelectorAll("#ccBody input.ccl").forEach(i=>{o[i.dataset.t]=i.value});try{localStorage.setItem(ccKey(),JSON.stringify(o))}catch(e){}$("ccSheet").hidden=true;renderMain()}
+function lab(){const b=$("ccBtn");if(!b)return;const on=!!ccGet()&&!wExtra.feedLeftDone;b.textContent=on?"Clear Cost":"Check Cost";b.classList.toggle("ccon",on);b.hidden=!!wExtra.feedLeftDone}
+const _rmn=renderMain;renderMain=function(){const x=_rmn.apply(this,arguments);try{lab()}catch(e){}return x};
+$("ccBtn").addEventListener("click",e=>{e.stopPropagation();if(!flock)return;if(ccGet()){try{localStorage.removeItem(ccKey())}catch(x){}renderMain();return}draw();$("ccSheet").hidden=false});
 $("ccX").addEventListener("click",()=>{$("ccSheet").hidden=true});
 $("ccSheet").addEventListener("click",e=>{if(e.target.id==="ccSheet")$("ccSheet").hidden=true});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")$("ccSheet").hidden=true});
