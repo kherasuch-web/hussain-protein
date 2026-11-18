@@ -630,6 +630,8 @@ body.supview #hpLogoBtn{display:none}
       <div class="legend en" id="ffEndNote"></div>
       <button class="ghost en" id="ffSave" type="button">Save End Date</button>
       <div class="toast" id="ffToast" role="status"></div>
+      <div id="fcSum" hidden></div>
+      <div id="fcBox" hidden></div>
       <div class="tablewrap"><table id="ffTable" class="fdt mntab"></table></div>
       <div class="fcrbig en" id="ffCalc"></div>
       <div class="legend en">Remaining Bird = Placed − Total Mortality · Total Weight = all sold weight (Vehicle Sale + Kanda) · Total Feed = feed eaten (bags) · Average Weight = Total Weight ÷ Remaining Bird</div>
@@ -799,7 +801,7 @@ body.supview #hpLogoBtn{display:none}
       <section class="card"><div class="dayhead"><h2 class="en">2. Feed Summary (bags)</h2></div><div class="tablewrap"><table class="fdt mntab" id="mnFeed"></table></div></section>
       <section class="card" id="mnSaleCard"><div class="dayhead"><h2 class="en">3. Income (Sale)</h2></div><div class="tablewrap"><table class="fdt mntab" id="mnSale"></table></div></section>
       <section class="card"><div class="dayhead"><h2 class="en" id="mnExpH">4. Expenses</h2><span class="daybadge num" id="mnGrand"></span></div><div class="tablewrap"><table class="fdt mntab" id="mnExp"></table></div><div class="legend">Tap a line to open its section.</div></section>
-      <section class="card" id="mnResCard"><div class="dayhead"><h2 class="en">5. Result</h2><button type="button" id="plBtn" class="save" style="padding:6px 12px">Calculate Profit</button></div><label for="mnAvgW">Average Weight (g) · optional<input id="mnAvgW" class="txt" inputmode="decimal" placeholder="Empty = last weekly weight from FCR"></label><div class="row"><button class="ghost" id="mnAvgSave" type="button">Save Weight</button></div><div class="toast" id="mnAvgToast" role="status"></div><div class="tablewrap"><table class="fdt mntab" id="mnRes"></table></div></section>
+      <section class="card" id="mnResCard"><div class="dayhead"><h2 class="en">5. Result</h2></div><div class="ccrow"><button type="button" id="ccBtn" class="save">Check Cost</button><button type="button" id="plBtn" class="save">Calculate Profit</button></div><label for="mnAvgW">Average Weight (g) · optional<input id="mnAvgW" class="txt" inputmode="decimal" placeholder="Empty = last weekly weight from FCR"></label><div class="row"><button class="ghost" id="mnAvgSave" type="button">Save Weight</button></div><div class="toast" id="mnAvgToast" role="status"></div><div class="tablewrap"><table class="fdt mntab" id="mnRes"></table></div></section>
     </div>
     <div id="vSale" dir="ltr" class="spend" style="display:none">
       <nav class="tabs" role="tablist" aria-label="Sale parts">
@@ -1090,6 +1092,7 @@ body.supview #hpLogoBtn{display:none}
       <div class="toast" id="fiToast" role="status"></div>
       <div class="legend">فلاک مکمل ہو گیا؟ نیا فلاک شروع کرنے سے پرانا ریکارڈ محفوظ رہتا ہے۔</div>
       <button class="ghost" id="newFlock" type="button">نیا فلاک شروع کریں</button>
+      <div id="fcWarn" hidden></div>
       <div id="confirmBox" hidden class="row">
         <button class="danger" id="confirmNew" type="button">ہاں، نیا فلاک</button>
         <button class="ghost" id="confirmNo" type="button">نہیں</button>
@@ -1878,6 +1881,21 @@ function mnTiles(){
   el.innerHTML=MT.map(([n,l,c,p],i)=>{const v=val(l),pc=(v.match(/\(([^)]*)\)/)||[])[1];return `<div class="mt" role="button" tabindex="0" data-tgo="${MTGO[i]||""}" style="--c:${c}"><span class="mi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${p}</svg></span><small>${n}</small><b class="num">${esc(v.replace(/\s*\(.*$/,""))}${pc?`<em>${esc(pc)}</em>`:""}</b></div>`}).join("");
 }
 let farmMoney=false;const moneyOK=()=>HPMODE!=="farm"||farmMoney;
+/* v1.26.12 feed cost = feed EATEN. Lots of each type (oldest first) minus Out; leftover = newest lots.
+   Before the flock is closed the leftover is the daily report's Feed In Store (estimate). After closing,
+   the leftover is written per type and goes out as Out Feed "بقایا" rows, so cost = In - Out. */
+const fdTy=x=>x.type||"",fdUR=x=>x.bags?(x.price||(x.rate?x.rate*x.bags:0))/x.bags:(x.rate||0);
+function fdLots(outs){const ins=feeds.filter(x=>x.kind==="in"),lots=[],T=[...new Set(ins.map(fdTy))];
+  T.forEach(t=>{let o=outs.filter(x=>fdTy(x)===t).reduce((a,x)=>a+(x.bags||0),0);ins.filter(x=>fdTy(x)===t).sort(byDate).forEach(x=>{let b=x.bags||0;const k=Math.min(b,o);b-=k;o-=k;if(b>0)lots.push({t,date:x.date||"",seq:x.seq||0,b,r:fdUR(x)})})});
+  return lots.sort((a,b)=>b.date.localeCompare(a.date)||b.seq-a.seq)}
+function fdTake(lots,t,n){let v=0,b=0;lots.filter(l=>t==null||l.t===t).forEach(l=>{if(n<=0)return;const k=Math.min(l.b,n);n-=k;b+=k;v+=k*l.r;l.b-=k});return {b:r2(b),v}}
+function fdCost(last){const ins=feeds.filter(x=>x.kind==="in"),outs=feeds.filter(x=>x.kind==="out"),done=!!wExtra.feedLeftDone;
+  const T=[...new Set(ins.concat(outs).map(fdTy))].sort((a,b)=>!a?1:!b?-1:a.localeCompare(b)),sb={},sv={};
+  const B=l=>l.reduce((a,x)=>a+(x.bags||0),0),P=l=>l.reduce((a,x)=>a+(x.price||0),0);
+  /* her rule: before close = feed eaten (daily report) x average In rate */
+  if(!done){const ib=B(ins),avg=ib?P(ins)/ib:0,eat=last?r2(last.fTot):0;return {rows:[],cost:Math.round(eat*avg),eat,avg,est:true}}
+  const rows=T.map(t=>{const fi=ins.filter(x=>fdTy(x)===t),fo=outs.filter(x=>fdTy(x)===t);return {t,eat:r2(B(fi)-B(fo)-(sb[t]||0)),cost:Math.round(P(fi)-P(fo)-(sv[t]||0))}});
+  return {rows,cost:rows.reduce((a,x)=>a+x.cost,0),storeB:r2(Object.values(sb).reduce((a,b)=>a+b,0)),storeV:Math.round(Object.values(sv).reduce((a,b)=>a+b,0)),est:!done}}
 function renderMain(){
   if(!flock)return;
   const hist=compute(days), last=hist[hist.length-1]||null, dot="...";
@@ -1893,7 +1911,7 @@ function renderMain(){
   $("mnSale").innerHTML="<tbody>"+row("Vehicles",F(sN),{go:"sale"})+row("Weight Sold (kg)",F(sKg),{go:"sale"})+(KD.n?row("Vehicle Sale (Saafi kg)",F(vKg),{c:"sub",go:"sale"})+row("Kanda Sale (kg)",F(KD.kg),{c:"sub",go:"sale"}):"")+row("Average Rate (Rs per kg)",sKg&&bRs?F(r2(bRs/sKg)):dot,{go:"sale"})+(KD.n||GS?row("Vehicle Sale (Rs)",F(vRs),{c:"sub",go:"sale"})+(KD.n?row("Kanda Sale (Rs)",F(KD.price),{c:"sub",go:"sale"}):""):"")+(GS?row("General Sale (Rs)",F(GS),{c:"sub",go:"sale"}):"")+row("Total Sale (Rs)",F(sRs),{c:"tot",go:"sale"})+(sdealers.some(d=>d.cash)?row("Cash Received",F(sRcv),{c:"sub",go:"sale"})+row("Cash Remaining",F(r2(sCashRs-sRcv)),{c:"sub",go:"sale"}):"")+"</tbody>";
   const sum=(l,k)=>Math.round(l.reduce((a,x)=>a+(x[k]||0),0));
   const gen=sum(spends.filter(x=>x.type!=="break"),"amount");
-  const fdIn=sum(feeds.filter(x=>x.kind==="in"),"price"), fdOut=sum(feeds.filter(x=>x.kind==="out"),"price"), fdW=flock&&flock.raw&&flock.raw.feedTotal||0, feedC=Math.round(fdW||fdIn-fdOut);
+  const fdIn=sum(feeds.filter(x=>x.kind==="in"),"price"), fdOut=sum(feeds.filter(x=>x.kind==="out"),"price"), fdW=flock&&flock.raw&&flock.raw.feedTotal||0, FC=fdCost(last), feedC=Math.round(fdW||FC.cost);
   const mdW=flock&&flock.raw&&flock.raw.medTotal||0, med=Math.round((mdW||storeTot()+sum(medbuys.filter(mbCounted),"price"))-moTot());
   const adv=sum(sups.filter(x=>x.type!=="break"),"amount");
   const X=saX(), people=sals.filter(x=>x.kind==="person");
@@ -1901,13 +1919,13 @@ function renderMain(){
   const lab=Math.round(sal+(X.caching||0)+saFeedCalc().amt+(X.birdfee||0)), net=Math.round(lab-adv);
   const grand=Math.round(gen+feedC+med+lab);
   $("mnExp").innerHTML="<tbody>"+row("General (incl. chicks)",F(gen),{go:"spend:gen"})+
-    (fdW?row("Feed (written total)",F(feedC),{go:"feed"}):row("Feed (In − Out)",F(feedC),{go:"feed"})+row("In value",F(fdIn),{c:"sub",go:"feed"})+row("Out value","− "+F(fdOut),{c:"sub",go:"feed"}))+
+    (fdW?row("Feed (written total)",F(feedC),{go:"feed"}):(FC.est?row("Feed (eaten × average rate)",F(feedC),{go:"feed"})+row(F(FC.eat)+" bags × Rs "+F(Math.round(FC.avg))+" (average)",F(feedC),{c:"sub",go:"feed"}):row("Feed (eaten · flock closed)",F(feedC),{go:"feed"})+FC.rows.filter(x=>x.eat||x.cost).map(x=>row(esc(x.t||"...")+" · "+F(x.eat)+" bags eaten",F(x.cost),{c:"sub",go:"feed"})).join("")))+
     row(mdW?"Medicine (written total)":"Medicine (store + dealers)",F(med),{go:"med"})+
     row("Labour (salary till "+dmy(pay)+")",F(lab),{go:"spend:sal"})+
     row("Advance (paid)",F(adv),{c:"sub",go:"spend:sup"})+
     row("Net Salary (to pay)",F(net),{c:"sub",go:"spend:sal",neg:net<0})+
     row("Grand Total (Rs)",F(grand),{c:"tot big"})+"</tbody>";
-  $("mnGrand").textContent=rs(grand);
+  $("mnGrand").textContent=rs(grand);window.__mn={grand,feedC,sRs,alive,fdW:!!fdW};
   const pl=Math.round(sRs-grand);
   $("mnRes").innerHTML="<tbody>"+row("Total Sale",F(sRs))+row("Grand Total Expenses","− "+F(grand))+(showPL?row(pl>=0?"Profit":"Loss",F(Math.abs(pl)),{c:"tot big",neg:pl<0}):row("Profit / Loss",dot,{c:"tot big"}))+
     (()=>{const C=costKg(alive,grand);return row("Average Weight"+(C.src?" ("+C.src+")":""),C.g?F(C.g)+" g":dot)+row("Total Weight"+(C.g?" ("+(C.g/1000).toFixed(3)+" × "+F(alive)+")":""),C.kg?F(C.kg)+" kg":dot)+row("Cost per kg",C.cost?F(C.cost):dot,{c:"tot"})})()+
@@ -2108,7 +2126,7 @@ function fdTab(list,isIn,pdf,empty){const dot=v=>v?esc(v):"...",R=pdf?' class="r
   h+=list.length?`<tr class="${pdf?"bt":"tot"}"><td${pdf?' colspan="2"':""}>Total · ${n(list)}</td><td${R}>${F(fdBags(list))}</td><td colspan="4">bags</td><td${R}>${F(fdRs(list))}</td></tr>`:`<tr><td colspan="${pdf?8:7}" class="empty">${empty||"Nothing found."}</td></tr>`;
   return h+"</tbody>"}
 function renderFq(){const f=fqFilter(),on=!!f;$("fqRes").style.display=on?"flex":"none";
-  document.querySelectorAll('#vFeed>section.card[aria-label="Add feed entry"],#vFeed>section[aria-label="Feed record"],#vFeed>section[aria-label="Feed by type"],#vFeed>nav.tabs').forEach(e=>on?e.style.setProperty("display","none","important"):e.style.removeProperty("display"));
+  document.querySelectorAll('#vFeed>section.card[aria-label="Add feed entry"],#vFeed>section[aria-label="Feed record"],#vFeed>section[aria-label="Feed by type"]').forEach(e=>on?e.style.setProperty("display","none","important"):e.style.removeProperty("display"));
   if(on){$("fqIn").innerHTML=fdTab(f.inn,true,0,"Nothing found in In Feed.");$("fqOut").innerHTML=fdTab(f.out,false,0,"Nothing found in Out Feed.");
     $("fqInH").textContent="In Feed · "+f.lab;$("fqOutH").textContent="Out Feed · "+f.lab;$("fqPdf").hidden=!f.inn.length&&!f.out.length}}
 const fdGap='<tr><td colspan="8" style="border:0;height:10px"></td></tr>',fdHd=t=>`<thead><tr><th colspan="8" style="text-align:left">${t}</th></tr></thead>`;
@@ -2127,11 +2145,11 @@ function fdPdf(kind,tt,f){const t=typeof tt==="function"?tt:(m,e)=>toast(kind===
   if(useOut)parts.push((kind==="out"?"":fdHd("Out Feed"))+fdTab(outs,false,1));
   if(kind==="all")parts.push(fdHd("Feed by Type")+fdTypeRows(ins,outs));
   const tb=parts.join(fdGap).replace(/<\/?tbody>/g,""),used=(useIn?ins:[]).concat(useOut?outs:[]);
-  const title=kind==="q"?(f.q?"Feed - "+f.q:"Feed"):kind==="in"?"In Feed":kind==="out"?"Out Feed":"Feed Report";
+  const title=kind==="q"?((useOut&&!useIn?"Out Feed":"In Feed")+(f.q?" - "+f.q:"")):kind==="in"?"In Feed":kind==="out"?"Out Feed":"Feed Report";
   const sum=[];if(useIn)sum.push(["In Feed",F(fdBags(ins))+" bags · Rs "+F(Math.round(fdRs(ins)))]);if(useOut)sum.push(["Out Feed",F(fdBags(outs))+" bags · Rs "+F(Math.round(fdRs(outs)))]);
   if(kind==="all")sum.push(["Balance",F(r2(fdBags(ins)-fdBags(outs)))+" bags"]);
   const info=(kind==="q"?[[f.q?"Search":"Dates chosen",f.q||f.lab]]:[]).concat([["Dates",fdDates(used)],["Report Date",dmy(todayISO())]]);
-  return billPdf({title,info,table:tb,sum,file:(kind==="q"?"Feed - "+f.file:title+" - "+dmy(todayISO()).replace(/\//g,"-")),fit:1},t)}
+  return billPdf({title,info,table:tb,sum,file:(kind==="q"?(useOut&&!useIn?"Out Feed - ":"In Feed - ")+f.file:title+" - "+dmy(todayISO()).replace(/\//g,"-")),fit:1},t)}
 // v1.26.4: Supervisor Advance search (name or 📅 dates), same as General Spendings
 let suDateOn=false;
 function suFilter(){const L=sups.filter(x=>x.type!=="break");
@@ -2338,7 +2356,7 @@ function mqTables(f,pdf){const dot=v=>v?esc(v):"...",sum=l=>r2(l.reduce((a,x)=>a
   b+=f.out.length?`<tr class="${pdf?"bt":"tot"}"><td colspan="${pdf?7:6}">Total (Rs) · ${n(f.out)}</td><td${R}>${F(outT)}</td></tr>`:`<tr><td colspan="${pdf?8:7}" class="empty">Nothing found in Out Medicine.</td></tr>`;
   return {a:a+"</tbody>",b:b+"</tbody>",inT,outT}}
 function renderMq(){const f=mqFilter(),on=!!f;$("mqRes").style.display=on?"flex":"none";
-  if(on){["moPart","mbDealers","mbWfnWarn","mbFirst","mbNewBox"].forEach(i=>{const e=$(i);if(e)e.style.setProperty("display","none","important")});$("vMed").querySelector("nav.tabs").style.display="none";
+  if(on){["moPart","mbDealers","mbWfnWarn","mbFirst","mbNewBox"].forEach(i=>{const e=$(i);if(e)e.style.setProperty("display","none","important")});
     const t=mqTables(f);$("mqIn").innerHTML=t.a;$("mqOut").innerHTML=t.b;$("mqInH").textContent="In Medicine · "+f.lab;$("mqOutH").textContent="Out Medicine · "+f.lab;$("mqPdf").hidden=!f.inn.length&&!f.out.length}
   else if(mqWasOn){["moPart","mbDealers","mbWfnWarn","mbFirst","mbNewBox"].forEach(i=>{const e=$(i);if(e)e.style.removeProperty("display")});$("vMed").querySelector("nav.tabs").style.display="";mqWasOn=false;renderMedOut()}
   if(on)mqWasOn=true}
@@ -2346,8 +2364,8 @@ let mqWasOn=false; // v1.26.6 fix: only undo the search hiding once, then put ba
 function mqPdf(tt){const t=typeof tt==="function"?tt:(m,e)=>toast("mqToast",m,e),f=mqFilter();if(!f){t("Write a name or pick dates first.",true);return}if(!f.inn.length&&!f.out.length){t("Nothing found.",true);return}
   const x=mqTables(f,1),ds=[...f.inn,...f.out].map(x=>x.date).filter(Boolean).sort();
   const tb=(f.inn.length?`<thead><tr><th colspan="8" style="text-align:left">In Medicine</th></tr></thead>`+x.a:"")+(f.out.length?(f.inn.length?"<tr><td colspan=\"8\" style=\"border:0;height:10px\"></td></tr>":"")+`<thead><tr><th colspan="8" style="text-align:left">Out Medicine</th></tr></thead>`+x.b:"");
-  return billPdf({title:f.q?"Medicine - "+f.q:"Medicine",info:[[f.q?"Search":"Dates chosen",f.q||f.lab],["Dates",ds.length?dmy(ds[0])+" to "+dmy(ds[ds.length-1]):"..."],["Report Date",dmy(todayISO())]],
-    table:tb.replace(/<\/?tbody>/g,""),sum:[["In Medicine","Rs "+F(Math.round(x.inT))+" · "+F(f.inn.length)],["Out Medicine","Rs "+F(Math.round(x.outT))+" · "+F(f.out.length)]],file:"Medicine - "+f.file,fit:1},t)}
+  return billPdf({title:(f.out.length&&!f.inn.length?"Out Medicine":"In Medicine")+(f.q?" - "+f.q:""),info:[[f.q?"Search":"Dates chosen",f.q||f.lab],["Dates",ds.length?dmy(ds[0])+" to "+dmy(ds[ds.length-1]):"..."],["Report Date",dmy(todayISO())]],
+    table:tb.replace(/<\/?tbody>/g,""),sum:[["In Medicine","Rs "+F(Math.round(x.inT))+" · "+F(f.inn.length)],["Out Medicine","Rs "+F(Math.round(x.outT))+" · "+F(f.out.length)]].filter(r=>r[0]==="In Medicine"?f.inn.length:f.out.length),file:(f.out.length&&!f.inn.length?"Out Medicine - ":"In Medicine - ")+f.file,fit:1},t)}
 function renderMedOut(){
   const out=mbPart==="out";$("mbTabIn").setAttribute("aria-selected",!out);$("mbTabOut").setAttribute("aria-selected",out);
   $("moPart").style.display=out?"flex":"none";["mbDealers","mbWfnWarn"].forEach(i=>{const e=$(i);if(e){if(out)e.style.setProperty("display","none","important");else e.style.removeProperty("display")}});
@@ -3091,7 +3109,7 @@ spFill(null);fdFill(null);suFill(null);saFill(null);
   db.collection("salerate").onSnapshot(s=>{RAW.salerate=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.shed==="s1");srates=RAW.salerate.filter(inF);if(view==="sale")renderSale();if(view==="main")renderMain()},e=>{});
   db.collection("feedlog").onSnapshot(s=>{
     RAW.feedlog=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.shed==="s1");feeds=RAW.feedlog.filter(inF);
-    if(view==="feed")renderFeed();if(view==="main")renderMain();renderSal();
+    if(view==="feed")renderFeed();if(view==="main")renderMain();renderSal();if(window.fcRender)fcRender();
   },e=>{});
   db.collection("flocks").onSnapshot(s=>{allFlocks=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(a.start).localeCompare(String(b.start))||String(a.createdAt).localeCompare(String(b.createdAt)));drawFlBar()},e=>{});
   db.doc("sheds/s1").onSnapshot(s=>{
@@ -4117,6 +4135,142 @@ const _rb=renderSupBox;renderSupBox=function(day){const x=_rb.apply(this,argumen
     const f=(sd.fd||0)+(sd.fn||0),m=(sd.md||0)+(sd.mn||0);$("supSum").textContent="Feed "+F(f)+" · Mortality "+F(m)}}catch(e){}return x};
 $("supLoad").addEventListener("click",()=>setTimeout(()=>{try{const sd=supd[flockId+"_"+pad(editDay??nextDay())];if(sd&&ts(sd.savedAt)>+(localStorage.getItem("hp-sdseen")||0))localStorage.setItem("hp-sdseen",String(ts(sd.savedAt)));renderSupBox(editDay??nextDay());window.hpSupHl&&hpSupHl()}catch(e){}},50));
 try{render()}catch(e){}
+})();
+</script>
+<script>
+/* v1.26.12 search follows tab: In tab -> only In entries, Out tab -> only Out (screen + PDF); tabs stay visible while searching */
+(function(){
+const $=i=>document.getElementById(i);
+const cut=(f,out)=>{if(f){if(out)f.inn=[];else f.out=[]}return f};
+const _m=mqFilter;mqFilter=function(){return cut(_m.apply(this,arguments),mbPart==="out")};
+const _f=fqFilter;fqFilter=function(){return cut(_f.apply(this,arguments),fdKind==="out")};
+const show=(ids,on)=>ids.forEach(i=>{const e=$(i);if(!e)return;const w=e.tagName==="TABLE"?e.parentElement:e;w.style.display=on?"":"none"});
+const _rm=renderMq;renderMq=function(){const x=_rm.apply(this,arguments);const out=mbPart==="out";show(["mqInH","mqIn"],!out);show(["mqOutH","mqOut"],out);const lg=document.querySelector("#mqRes>.legend");if(lg)lg.style.display=out?"none":"";return x};
+const _rf=renderFq;renderFq=function(){const x=_rf.apply(this,arguments);const out=fdKind==="out";show(["fqInH","fqIn"],!out);show(["fqOutH","fqOut"],out);return x};
+try{renderMq();renderFq()}catch(e){}
+})();
+</script>
+<style>/* v1.26.12 leftover feed box */
+#fcBox,#fcSum,#fcWarn{border-radius:14px;padding:12px;margin-top:4px}
+#fcBox{border:2px solid #b3412e;background:#fff}#fcBox h3{margin:0 0 4px;color:#b3412e;font:20px "Jameel Noori","Segoe UI",serif}
+#fcBox .ur,#fcSum,#fcWarn{font-family:"Jameel Noori","Segoe UI",serif;direction:rtl;text-align:right}
+#fcBox input.fcl{width:72px;text-align:right}
+#fcSum{background:#eaf6ea;color:#1d6b2a;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:17px}#fcSum[hidden],#fcWarn[hidden],#fcBox[hidden]{display:none!important}
+#fcSum.todo,#fcWarn{background:#fff1e0;color:#8a3d00;border:1px solid #e0a060}
+#fcSum button,#fcWarn button{font:16px "Jameel Noori","Segoe UI",serif;border:0;border-radius:10px;padding:6px 12px;background:#173f66;color:#fff;cursor:pointer;margin-inline-start:auto}
+.fcok{background:#eaf6ea;color:#1d6b2a;border-radius:10px;padding:8px;margin-top:8px}.fcbad{background:#fff4d6;color:#7a5a00;border-radius:10px;padding:8px;margin-top:8px}
+html.hpro #fcBox,html.hpro #fcSum button,html.hpro #fcWarn{display:none!important}
+#fdTableOut tr.hpbaq td{background:#fff4d6}#fdTableOut tr.hpbaq .bqt{display:inline-block;font:13px "Jameel Noori",serif;background:#e08a00;color:#fff;border-radius:6px;padding:0 6px;margin-inline-start:4px}
+</style>
+<script>
+(function(){
+const $=i=>document.getElementById(i);
+const urd=(m,bad)=>`<div class="ur ${bad?"fcbad":"fcok"}">${m}</div>`;
+let open=false;
+function lastDay(){const h=compute(days);return h[h.length-1]||null}
+function types(){return [...new Set(feeds.filter(x=>x.kind==="in").map(fdTy))].sort((a,b)=>!a?1:!b?-1:a.localeCompare(b))}
+function bal(t){const B=k=>feeds.filter(x=>x.kind===k&&!x.baq&&fdTy(x)===t).reduce((a,x)=>a+(x.bags||0),0);return {i:r2(B("in")),o:r2(B("out"))}}
+function check(){const ls=[...document.querySelectorAll("#fcBox input.fcl")];if(!ls.length)return;let tot=0,val=0;const lots=fdLots(feeds.filter(x=>x.kind==="out"&&!x.baq));
+  ls.forEach(i=>{const n=fNum(i.value);tot+=n;const r=fdTake(lots,i.dataset.t,n);val+=r.v;const c=i.closest("tr").querySelector(".fcr");if(c)c.textContent=n&&r.b?F(Math.round(r.v/r.b)):"..."});
+  tot=r2(tot);$("fcTot").textContent=F(tot);$("fcVal").textContent=F(Math.round(val));
+  const L=lastDay(),st=L?r2(L.fRem):0,d=r2(tot-st);
+  $("fcChk").innerHTML=Math.abs(d)<0.01?urd("✓ ٹوٹل بچی "+F(tot)+" بوری = روز کی رپورٹ کا Feed In Store "+F(st)):urd("روز کی رپورٹ میں Feed In Store "+F(st)+" بوری ہے، آپ نے "+F(tot)+" لکھی ہیں۔ "+F(Math.abs(d))+" بوری کا فرق ہے۔",1)}
+function box(){const b=$("fcBox");if(!open||!canWrite||HPMODE!=="farm"){b.hidden=true;return}
+  const T=types(),old={};feeds.filter(x=>x.baq).forEach(x=>old[fdTy(x)]=(old[fdTy(x)]||0)+(x.bags||0));
+  const to=(feeds.find(x=>x.baq)||{}).name||wExtra.feedLeftTo||"";
+  b.innerHTML=`<h3 dir="rtl">فلاک کلوز · بچی ہوئی فیڈ</h3><div class="legend ur">ہر قسم کی بچی بوریاں لکھیں (کچھ نہ بچا ہو تو 0)۔ یہ Out Feed میں "بقایا" بن کر End Date پر چلی جائیں گی۔ ریٹ: سب سے نئی آئی فیڈ کا۔</div>
+  <div class="tablewrap"><table class="fdt" id="fcTab"><thead><tr><th>Type</th><th class="amt">In</th><th class="amt">Out</th><th class="amt">Left (bags)</th><th class="amt">Rate</th></tr></thead><tbody>
+  ${T.map(t=>{const x=bal(t);return `<tr><td class="w"><div>${esc(t||"...")}</div></td><td class="num amt">${F(x.i)}</td><td class="num amt">${F(x.o)}</td><td class="amt"><input class="txt fcl" inputmode="decimal" data-t="${esc(t)}" value="${old[t]!=null?old[t]:""}" placeholder="0"></td><td class="num amt fcr">...</td></tr>`}).join("")||'<tr><td colspan="5" class="empty">No In Feed entries.</td></tr>'}
+  <tr class="tot"><td>Total</td><td></td><td></td><td class="num amt" id="fcTot">0</td><td class="num amt">Rs <span id="fcVal">0</span></td></tr></tbody></table></div>
+  <label class="ur" style="display:block;margin-top:8px">کہاں گئی<input id="fcTo" class="txt" maxlength="60" value="${esc(to)}" placeholder="مثلاً اگلا فلاک"></label>
+  <div id="fcChk"></div><div class="row" style="margin-top:8px;gap:8px"><button class="save" id="fcGo" type="button" style="font-family:'Jameel Noori',serif">بقایا فیڈ سیو کریں</button><button class="ghost" id="fcNo" type="button" style="font-family:'Jameel Noori',serif">بند کریں</button></div><div class="toast" id="fcToast" role="status"></div>`;
+  b.hidden=false;b.querySelectorAll("input.fcl").forEach(i=>i.addEventListener("input",check));$("fcGo").onclick=save;$("fcNo").onclick=()=>{open=false;fcRender()};check()}
+function sum(){const e=$("fcSum");if(!flockId){e.hidden=true;return}const done=!!wExtra.feedLeftDone,end=wExtra.finalEnd;
+  if(done){const bq=feeds.filter(x=>x.baq),n=r2(bq.reduce((a,x)=>a+(x.bags||0),0));e.className="";e.innerHTML=`<span>✓ بچی ہوئی فیڈ: ${n?F(n)+" بوری Out ہو گئی"+(bq[0]&&bq[0].name?" ("+esc(bq[0].name)+")":""):"کچھ نہیں بچی"} · فیڈ کا خرچ اب اصل ہے</span>`+(canWrite&&HPMODE==="farm"?'<button type="button" id="fcEdit">بدلیں</button>':"");e.hidden=open}
+  else if(end){e.className="todo";e.innerHTML='<span>بچی ہوئی فیڈ ابھی نہیں لکھی۔ تب تک فیڈ کا خرچ اوسط ریٹ سے ہے۔</span>'+(canWrite&&HPMODE==="farm"?'<button type="button" id="fcEdit">ابھی لکھیں</button>':"");e.hidden=open}
+  else e.hidden=true;
+  const b=$("fcEdit");if(b)b.onclick=()=>{open=true;fcRender();$("fcBox").scrollIntoView({behavior:"smooth",block:"start"})}}
+async function save(){const end=wExtra.finalEnd;if(!end){toast("fcToast","پہلے End Date سیو کریں۔",true);return}
+  const ins=[...document.querySelectorAll("#fcBox input.fcl")],to=$("fcTo").value.trim();$("fcGo").disabled=true;
+  const lots=fdLots(feeds.filter(x=>x.kind==="out"&&!x.baq));let seq=feeds.reduce((m,x)=>Math.max(m,x.seq||0),0),ok=true;const now=new Date().toISOString();
+  for(const x of feeds.filter(x=>x.baq)){try{await db.doc("feedlog/"+x.id).delete()}catch(e){ok=false}}
+  for(const i of ins){const n=fNum(i.value);if(!n)continue;const t=i.dataset.t,r=fdTake(lots,t,n),rate=r.b?Math.round(r.v/r.b):0;
+    const id="fdbq"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    ok=await write(db.doc("feedlog/"+id),{kind:"out",date:end,bags:n,type:t,name:to||"بقایا",loc:"",rate,price:Math.round(r.v),priceManual:false,baq:true,seq:++seq,shed:"s1",flock:flockId,createdAt:now,updatedAt:now})&&ok}
+  ok=await saveExtra({feedLeftDone:true,feedLeftTo:to,feedLeftAt:now})&&ok;
+  $("fcGo").disabled=false;if(ok){open=false;fcRender()}else toast("fcToast","سیو نہیں ہو سکا، دوبارہ کوشش کریں۔",true)}
+function tag(){document.querySelectorAll("#fdTableOut tr[data-fd]").forEach(r=>{const x=feeds.find(y=>y.id===r.dataset.fd);if(x&&x.baq){r.classList.add("hpbaq");const c=r.cells[3];if(c&&!c.querySelector(".bqt"))c.insertAdjacentHTML("beforeend",'<span class="bqt">بقایا</span>')}})}
+function fcRender(){try{sum();box()}catch(e){console.log("fcErr",e.message)}}
+window.fcRender=fcRender;
+const _rf=renderFinal;renderFinal=function(){const x=_rf.apply(this,arguments);fcRender();return x};
+const _fe=renderFeed;renderFeed=function(){const x=_fe.apply(this,arguments);try{tag()}catch(e){};fcRender();return x};
+// Save End Date -> open the leftover box (if not done yet)
+$("ffSave").addEventListener("click",()=>setTimeout(()=>{if($("ffEnd").value&&!wExtra.feedLeftDone){open=true;fcRender();const b=$("fcBox");if(b&&!b.hidden)b.scrollIntoView({behavior:"smooth",block:"start"})}},700));
+// New flock: remind if leftover feed not written
+const w=$("fcWarn");
+$("newFlock").addEventListener("click",()=>{if(wExtra.feedLeftDone||!feeds.some(x=>x.kind==="in")){w.hidden=true;return}
+  w.innerHTML='<span>⚠ بچی ہوئی فیڈ ابھی نہیں لکھی۔ پہلے Final FCR میں End Date اور بچی فیڈ لکھیں، ورنہ اس فلاک کا فیڈ خرچ اوسط ریٹ پر رہے گا۔</span><button type="button" id="fcWGo">ابھی لکھیں</button>';w.hidden=false;
+  $("fcWGo").onclick=()=>{w.hidden=true;$("confirmNo").click();setView("daily");open=!!wExtra.finalEnd;fcRender();setTimeout(()=>{const c=wExtra.finalEnd?$("fcBox"):$("ffEnd");if(c)c.scrollIntoView({behavior:"smooth",block:"center"});if(!wExtra.finalEnd)$("ffEnd").focus()},300)}});
+["confirmNo","confirmNew"].forEach(i=>$(i).addEventListener("click",()=>{w.hidden=true}));
+fcRender();
+})();
+</script>
+<style>/* v1.26.12 Check Cost (her idea): exact feed cost from leftover bags per type, check only */
+.ccrow{display:flex;gap:10px;margin:2px 0 6px}.ccrow button{flex:1;margin:0!important;padding:10px 12px!important}
+#ccBtn{background:#0f6b73!important;color:#fff!important;border-color:#0f6b73!important}
+#ccSheet{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:flex-end;justify-content:center}#ccSheet[hidden]{display:none}
+#ccSheet .ccp{background:#fff;width:100%;max-width:620px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:16px;box-sizing:border-box}
+@media (min-width:1000px){#ccSheet{align-items:center}#ccSheet .ccp{border-radius:20px}}
+#ccSheet .cchd{display:flex;align-items:center}#ccSheet h2{margin:0;font-size:22px}#ccX{margin-inline-start:auto;border:0;background:#eef3f8;border-radius:10px;padding:6px 12px;font-size:18px;cursor:pointer}
+#ccSheet .ur{font-family:"Jameel Noori","Segoe UI",serif;direction:rtl;text-align:right}#ccSheet input.ccl{width:72px;text-align:right}
+#ccSheet .ok{background:#eaf6ea;color:#1d6b2a;border-radius:10px;padding:8px;margin:8px 0}#ccSheet .bad{background:#fff4d6;color:#7a5a00;border-radius:10px;padding:8px;margin:8px 0}
+#ccSheet tr.mut td{color:#777}
+html body #ccSheet th{position:static!important;top:auto!important}
+</style>
+<div id="ccSheet" hidden dir="ltr"><div class="ccp" role="dialog" aria-label="Check Cost"><div class="cchd"><h2 class="en">Check Cost</h2><button type="button" id="ccX" aria-label="Close">✕</button></div>
+<div class="ur" style="color:#555;margin:6px 0">ہر قسم کی بقایا بوریاں لکھیں۔ یہ صرف چیک ہے، ریکارڈ نہیں بدلے گا۔</div><div id="ccBody"></div></div></div>
+<script>
+(function(){
+const $=i=>document.getElementById(i),K=()=>"hp-cc-"+flockId;
+const load=()=>{try{return JSON.parse(localStorage.getItem(K())||"{}")}catch(e){return {}}},keep=o=>{try{localStorage.setItem(K(),JSON.stringify(o))}catch(e){}};
+const B=l=>l.reduce((a,x)=>a+(x.bags||0),0),P=l=>l.reduce((a,x)=>a+(x.price||0),0);
+function types(){return [...new Set(feeds.filter(x=>x.kind==="in").map(fdTy))].sort((a,b)=>!a?1:!b?-1:a.localeCompare(b))}
+function draw(){const T=types(),v=load(),bq=wExtra.feedLeftDone;
+  $("ccBody").innerHTML=`<div class="tablewrap"><table class="fdt"><thead><tr><th>Type</th><th class="amt">In</th><th class="amt">Out</th><th class="amt">Left (bags)</th></tr></thead><tbody>${T.map(t=>{const i=B(feeds.filter(x=>x.kind==="in"&&fdTy(x)===t)),o=B(feeds.filter(x=>x.kind==="out"&&fdTy(x)===t));return `<tr><td class="w"><div>${esc(t||"...")}</div></td><td class="num amt">${F(r2(i))}</td><td class="num amt">${F(r2(o))}</td><td class="amt"><input class="txt ccl" inputmode="decimal" data-t="${esc(t)}" value="${bq?0:(v[t]!=null?v[t]:"")}" placeholder="0"></td></tr>`}).join("")||'<tr><td colspan="4" class="empty">No In Feed entries yet.</td></tr>'}
+  <tr class="tot"><td>Total</td><td></td><td></td><td class="num amt" id="ccTot">0</td></tr></tbody></table></div><div id="ccChk"></div><div class="tablewrap"><table class="fdt mntab" id="ccRes"></table></div><div class="legend" id="ccNote"></div>`;
+  $("ccBody").querySelectorAll("input.ccl").forEach(i=>i.addEventListener("input",calc));calc()}
+function calc(){const ins=[...document.querySelectorAll("#ccBody input.ccl")],o={},lots=fdLots(feeds.filter(x=>x.kind==="out"));let tot=0,cost=0;const rows=[];
+  ins.forEach(i=>{const t=i.dataset.t,n=fNum(i.value);o[t]=i.value;tot+=n;const r=fdTake(lots,t,n),fi=feeds.filter(x=>x.kind==="in"&&fdTy(x)===t),fo=feeds.filter(x=>x.kind==="out"&&fdTy(x)===t);
+    const eat=r2(B(fi)-B(fo)-n),c=Math.round(P(fi)-P(fo)-r.v);cost+=c;rows.push([esc(t||"...")+" · "+F(eat)+" bags eaten",F(c)])});
+  if(!wExtra.feedLeftDone)keep(o);tot=r2(tot);$("ccTot").textContent=F(tot);
+  const h=compute(days),L=h[h.length-1],st=L?r2(L.fRem):0,d=r2(tot-st);
+  $("ccChk").innerHTML=Math.abs(d)<0.01?`<div class="ur ok">✓ بقایا ${F(tot)} بوری = روز کی رپورٹ کا Feed In Store ${F(st)}</div>`:`<div class="ur bad">روز کی رپورٹ میں Feed In Store ${F(st)} بوری ہے، آپ نے ${F(tot)} لکھی ہیں۔ ${F(Math.abs(d))} بوری کا فرق ہے۔</div>`;
+  const M=window.__mn||{},R=(l,v,c="")=>`<tr class="${c}"><td>${l}</td><td class="num amt">${v}</td></tr>`,g=Math.round((M.grand||0)-(M.feedC||0)+cost),pl=Math.round((M.sRs||0)-g);
+  $("ccRes").innerHTML="<tbody>"+rows.map(r=>R(r[0],r[1])).join("")+R("Feed Cost (exact)",F(cost),"tot")+R(M.fdW?"Now in Main (written total)":"Now in Main",F(M.feedC||0),"mut")+R("Grand Total Expenses",F(g))+R("Cost per Bird Alive",M.alive>0?F(r2(g/M.alive)):"...")+(showPL?R(pl>=0?"Profit":"Loss",F(Math.abs(pl)),"tot"):R("Profit / Loss","...","tot"))+"</tbody>";
+  $("ccNote").textContent=showPL?"":'Profit / Loss shows when "Calculate Profit" is on.'}
+$("ccBtn").addEventListener("click",e=>{e.stopPropagation();if(!flock)return;draw();$("ccSheet").hidden=false});
+$("ccX").addEventListener("click",()=>{$("ccSheet").hidden=true});
+$("ccSheet").addEventListener("click",e=>{if(e.target.id==="ccSheet")$("ccSheet").hidden=true});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")$("ccSheet").hidden=true});
+})();
+</script>
+<style>/* v1.26.12 drag message card (her ask): hold the top bar and move the card anywhere */
+.msgpop .mgrip{display:flex;justify-content:center;align-items:center;gap:6px;margin:-8px -8px 8px;padding:6px;border-radius:10px;background:#eef3f8;color:#6b7c8f;font-size:13px;cursor:grab;touch-action:none;user-select:none}
+.msgpop>div{touch-action:none;cursor:grab}.msgpop>div:active{cursor:grabbing}.msgpop pre{touch-action:pan-y}
+.msgpop>div{will-change:transform}
+</style>
+<script>
+(function(){
+const pop=document.getElementById("msgPop");if(!pop)return;const card=pop.firstElementChild;
+
+let x=0,y=0,sx=0,sy=0,on=false;const set=()=>{card.style.transform=`translate(${x}px,${y}px)`};
+const start=e=>{if(e.target.closest("button"))return;const pr=e.target.closest("pre");if(pr&&pr.scrollHeight>pr.clientHeight+2)return;on=true;sx=e.clientX-x;sy=e.clientY-y;try{e.target.setPointerCapture(e.pointerId)}catch(_){}e.preventDefault()};
+const move=e=>{if(!on)return;const r=card.getBoundingClientRect(),W=innerWidth,H=innerHeight;let nx=e.clientX-sx,ny=e.clientY-sy;
+  const bx=r.left-x,by=r.top-y;nx=Math.min(Math.max(nx,-bx-r.width+80),W-bx-80);ny=Math.min(Math.max(ny,-by),H-by-60);x=nx;y=ny;set()};
+const end=()=>{on=false};
+card.addEventListener("pointerdown",start);card.addEventListener("pointermove",move);card.addEventListener("pointerup",end);card.addEventListener("pointercancel",end);
+// new copy -> card starts in the middle again
+new MutationObserver(()=>{if(!pop.hidden){x=0;y=0;set()}}).observe(pop,{attributes:true,attributeFilter:["hidden"]});
 })();
 </script>
 

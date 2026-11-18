@@ -1,11 +1,11 @@
 {
- "ver": "1.26.11",
- "note": "Supervisor box becomes one thin line once seen; new update screen with filling logo",
- "noteUr": "سپروائزر والا باکس دیکھنے کے بعد پتلی لائن، اپڈیٹ کا نیا ڈیزائن",
+ "ver": "1.26.12",
+ "note": "Search follows In/Out tab; feed cost = feed eaten (average rate, exact after flock close); Check Cost; movable message card",
+ "noteUr": "سرچ ٹیب کے حساب سے، فیڈ کا خرچ کھائی گئی فیڈ کا، Check Cost، میسج کارڈ کھسک سکتا ہے",
  "android": {
-  "zip": "android-1.26.11.zip",
+  "zip": "android-1.26.12.zip",
   "minBuild": 27,
-  "sha256": "0f7a9d4b8b4d260bada20a75551d13f61a57d4d3f857f275a06d2d652b7bf486"
+  "sha256": "67aef6bd18d40e2a58cee88e57dd944886dd962cad635464e8bfa126277ae8cc"
  },
  "windows": {
   "files": [
