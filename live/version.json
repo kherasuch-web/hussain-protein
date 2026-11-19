@@ -1,11 +1,11 @@
 {
- "ver": "1.26.14",
- "note": "Flock close: leftover medicine, keep feed for next flock, closed flock lock (only rates + leftover), supervisor leftover medicine, Previous Store Manual switch, Self Traditional Name",
- "noteUr": "فلاک بند: بقایا میڈیسن، فیڈ اگلے فلاک میں، بند فلاک لاک، سپروائزر بقایا میڈیسن، Previous Store Manual، Self میں Traditional Name",
+ "ver": "1.26.15",
+ "note": "Lock flock with farm password, double-tap to edit entries, Check Cost uses newest weight (sale or FCR), smaller update box",
+ "noteUr": "فلاک لاک (پاسورڈ سے)، انٹری دو بار ٹیپ سے ایڈٹ، چیک کاسٹ میں نیا وزن، چھوٹا اپڈیٹ ڈبہ",
  "android": {
-  "zip": "android-1.26.14.zip",
+  "zip": "android-1.26.15.zip",
   "minBuild": 27,
-  "sha256": "2d8c863b1618bfea8b6d24b478f28f083c25d84013df645314aa54621875b811"
+  "sha256": "752c5386e7e3ee244f59fa0d45b1678b94f8269692c9f773425afdf55b39ffec"
  },
  "windows": {
   "files": [

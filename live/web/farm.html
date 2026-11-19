@@ -575,7 +575,7 @@ body.supview #hpLogoBtn{display:none}
       <div class="toast pdftoast" id="dlyPdfToast" role="status"></div>
       <button class="ghost" id="bsPdf" type="button">⬇ برڈ سیل کی پی ڈی ایف</button>
       <div class="toast pdftoast" id="bsPdfToast" role="status"></div>
-      <div class="legend">موٹے نمبر خود حساب ہوتے ہیں۔ کسی دن کو درست کرنا ہو تو اس لائن پر ٹیپ کریں۔<br>دن 1 کی ان فیڈ میں شروع کی سٹور فیڈ شامل ہے، حساب میں یہ ایک ہی بار گنی جاتی ہے۔</div>
+      <div class="legend">موٹے نمبر خود حساب ہوتے ہیں۔ کسی دن کو درست کرنا ہو تو اس لائن پر دو بار ٹیپ کریں۔<br>دن 1 کی ان فیڈ میں شروع کی سٹور فیڈ شامل ہے، حساب میں یہ ایک ہی بار گنی جاتی ہے۔</div>
     </section>
 
     <section class="card" id="svFcr" hidden aria-label="سپروائزر کا ویکلی FCR"><h2>سپروائزر کا ویکلی FCR</h2>
@@ -683,7 +683,7 @@ body.supview #hpLogoBtn{display:none}
         <div class="tablewrap"><table id="spTable"></table></div>
         <button class="save pdfbtn" id="spQPdf" type="button" hidden>⬇ Download Search PDF</button>
         <div class="toast pdftoast" id="spQToast" role="status"></div>
-        <div class="legend">Tap a row to edit or delete it.</div>
+        <div class="legend">Double-tap a row to edit or delete it.</div>
       </section>
       </div>
       <div id="spSup" style="display:none;flex-direction:column;gap:16px">
@@ -718,7 +718,7 @@ body.supview #hpLogoBtn{display:none}
         <div class="tablewrap"><table id="suTable" class="fdt"></table></div>
         <button class="save pdfbtn" id="suQPdf" type="button" hidden>⬇ Download Search PDF</button>
         <div class="toast pdftoast" id="suQToast" role="status"></div>
-        <div class="legend">Tap a row to edit or delete it.</div>
+        <div class="legend">Double-tap a row to edit or delete it.</div>
       </section>
       </div>
       <div id="spSal" style="display:none;flex-direction:column;gap:16px">
@@ -752,7 +752,7 @@ body.supview #hpLogoBtn{display:none}
       <section style="display:flex;flex-direction:column;gap:8px" aria-label="Salary record">
         <h2 class="en">Salary Record</h2>
         <div class="tablewrap"><table id="saTable" class="fdt"></table></div>
-        <div class="legend">Tap a row to edit or delete it.</div>
+        <div class="legend">Double-tap a row to edit or delete it.</div>
       </section>
       <section class="card" aria-label="Labour charges">
         <div class="dayhead"><h2 class="en">Labour Charges (all labour)</h2></div>
@@ -801,7 +801,7 @@ body.supview #hpLogoBtn{display:none}
       <section class="card"><div class="dayhead"><h2 class="en">2. Feed Summary (bags)</h2></div><div class="tablewrap"><table class="fdt mntab" id="mnFeed"></table></div></section>
       <section class="card" id="mnSaleCard"><div class="dayhead"><h2 class="en">3. Income (Sale)</h2></div><div class="tablewrap"><table class="fdt mntab" id="mnSale"></table></div></section>
       <section class="card"><div class="dayhead"><h2 class="en" id="mnExpH">4. Expenses</h2><span class="daybadge num" id="mnGrand"></span></div><div class="tablewrap"><table class="fdt mntab" id="mnExp"></table></div><div class="legend">Tap a line to open its section.</div></section>
-      <section class="card" id="mnResCard"><div class="dayhead"><h2 class="en">5. Result</h2></div><div class="ccrow"><button type="button" id="ccBtn" class="save">Check Cost</button><button type="button" id="plBtn" class="save">Calculate Profit</button></div><label for="mnAvgW">Average Weight (g) · optional<input id="mnAvgW" class="txt" inputmode="decimal" placeholder="Empty = last weekly weight from FCR"></label><div class="row"><button class="ghost" id="mnAvgSave" type="button">Save Weight</button></div><div class="toast" id="mnAvgToast" role="status"></div><div class="tablewrap"><table class="fdt mntab" id="mnRes"></table></div></section>
+      <section class="card" id="mnResCard"><div class="dayhead"><h2 class="en">5. Result</h2></div><div class="ccrow"><button type="button" id="ccBtn" class="save">Check Cost</button><button type="button" id="plBtn" class="save">Calculate Profit</button></div><label for="mnAvgW">Average Weight (g) · optional<input id="mnAvgW" class="txt" inputmode="decimal" placeholder="Empty = newest weight (Sale or FCR)"></label><div class="row"><button class="ghost" id="mnAvgSave" type="button">Save Weight</button></div><div class="toast" id="mnAvgToast" role="status"></div><div class="tablewrap"><table class="fdt mntab" id="mnRes"></table></div></section>
     </div>
     <div id="vSale" dir="ltr" class="spend" style="display:none">
       <nav class="tabs" role="tablist" aria-label="Sale parts">
@@ -935,7 +935,7 @@ body.supview #hpLogoBtn{display:none}
       <section style="display:flex;flex-direction:column;gap:8px" aria-label="General sale record">
         <h2 class="en">General Sale Record</h2>
         <div class="tablewrap"><table id="gsTable" class="fdt"></table></div>
-        <div class="legend">Tap a row to edit or delete it. This total also goes into Main › Income.</div>
+        <div class="legend">Double-tap a row to edit or delete it. This total also goes into Main › Income.</div>
         <button class="save pdfbtn" id="gsPdf" type="button">⬇ Download General Sale PDF</button>
         <div class="toast pdftoast" id="gsPdfToast" role="status"></div>
       </section>
@@ -965,7 +965,7 @@ body.supview #hpLogoBtn{display:none}
       <section style="display:flex;flex-direction:column;gap:8px" aria-label="Supervisor medicine record">
         <h2 class="en">In Medicine Record</h2><div class="tablewrap"><table id="smTabIn2" class="fdt"></table></div>
         <h2 class="en">Out Medicine Record</h2><div class="tablewrap"><table id="smTabOut2" class="fdt"></table></div>
-        <div class="legend">Tap a row to edit or delete it.</div>
+        <div class="legend">Double-tap a row to edit or delete it.</div>
       </section>
     </div>
     <div id="vMed" dir="ltr" class="spend" style="display:none">
@@ -1006,7 +1006,7 @@ body.supview #hpLogoBtn{display:none}
       <section style="display:flex;flex-direction:column;gap:8px" aria-label="Out medicine record">
         <h2 class="en">Out Medicine Record</h2>
         <div class="tablewrap"><table id="moTable" class="fdt"></table></div>
-        <div class="legend">Tap a row to edit or delete it.</div>
+        <div class="legend">Double-tap a row to edit or delete it.</div>
         <button class="save pdfbtn" id="moPdf" type="button">⬇ Download Out Medicine PDF</button>
         <div class="toast pdftoast" id="moPdfToast" role="status"></div>
       </section>
@@ -1076,7 +1076,7 @@ body.supview #hpLogoBtn{display:none}
         <div class="tablewrap"><table id="fdTable" class="fdt"></table></div>
         <h2 class="en" style="margin-top:8px">Out Feed Record</h2>
         <div class="tablewrap"><table id="fdTableOut" class="fdt"></table></div>
-        <div class="legend">Tap a row to edit or delete it.</div>
+        <div class="legend">Double-tap a row to edit or delete it.</div>
       </section>
       <section style="display:flex;flex-direction:column;gap:8px" aria-label="Feed by type">
         <h2 class="en">Feed by Type</h2>
@@ -2269,12 +2269,12 @@ function dealerSection(d){
     <div class="toast" role="status"></div>
     <h2 class="en" style="margin-top:6px">Record</h2>
     <div class="tablewrap"><table class="fdt mbtab"></table></div>
-    <div class="legend">Tap a row to edit or delete it.</div>
+    <div class="legend">Double-tap a row to edit or delete it.</div>
     <div class="row"><button class="ghost" type="button" data-act="pdf">⬇ Download PDF Bill</button></div><div class="toast pdftoast" role="status"></div>
     <div class="row" style="justify-content:space-between"><button class="ghost" type="button" data-adddealer="1">+ Add New Dealer</button><button class="danger" type="button" data-act="ddel">Delete Dealer</button></div>
     <div data-box="ddel" hidden style="display:none;flex-direction:column;gap:8px"><div class="legend" style="color:#b42318">This deletes the dealer and ALL its entries. It cannot be undone.</div><div class="row"><button class="danger" type="button" data-act="ddelyes">Yes, delete dealer</button><button class="ghost" type="button" data-act="ddelno">No</button></div></div></div>`;
   el.querySelector('[data-act="ddel"]').remove();el.querySelector('[data-box="ddel"]').remove();
-  if(k===MB_WFN.id){el.classList.add("wfn");el.querySelector("[data-adddealer]").remove();el.querySelector("[data-srcrow]").remove();/* v1.26.3: Traditional Name kept here too (her ask) */el.querySelector(".legend").textContent="Tap a row to edit. Tap ↪ Move when you know the dealer.";el.querySelector('[data-f="price"]').placeholder="Optional (write if known)"}
+  if(k===MB_WFN.id){el.classList.add("wfn");el.querySelector("[data-adddealer]").remove();el.querySelector("[data-srcrow]").remove();/* v1.26.3: Traditional Name kept here too (her ask) */el.querySelector(".legend").textContent="Double-tap a row to edit. Tap ↪ Move when you know the dealer.";el.querySelector('[data-f="price"]').placeholder="Optional (write if known)"}
   hpSplit(el.querySelector(".mbbody"));
   if(k===MB_STORE.id){el.querySelector("[data-adddealer]").remove();el.querySelectorAll('[data-f="rate"],[data-f="price"]').forEach(i=>i.closest("label").classList.add("stRP"));
     el.querySelector(".mbbody").insertAdjacentHTML("afterbegin",`<div class="stmrow"><button type="button" class="srctog" data-act="stman">Manual: Off</button><span class="stmnote"></span></div>`);
@@ -4460,6 +4460,82 @@ setInterval(()=>{try{autoRates();lkBar()}catch(e){}},5000);
 .mbsec:not(.stman) .mbstot{display:none!important}.mbsec.stman .stRP{display:none!important}
 .stmrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.stmnote{font-size:13px;color:#4a5d70}
 </style>
-
+<style>/* v1.26.15 next: flock lock line, double tap, newest weight */
+#flLine{display:flex;align-items:center;gap:10px;background:#fff;border-radius:14px;padding:8px 10px 8px 14px;margin:14px 12px 4px;box-shadow:0 1px 4px rgba(0,0,0,.08);font:15px "Segoe UI",Roboto,sans-serif;color:#33475b}
+#flLine[hidden]{display:none!important}#flLine .tx{flex:1}#flLine .ok{color:#1f7a4d;font-weight:700}#flLine .no{color:#b42318}
+#flLine button{border-radius:10px;padding:7px 14px;font:600 15px "Segoe UI",Roboto,sans-serif;cursor:pointer}
+#flLine .lk{background:#b8452a;color:#fff;border:0}#flLine .ul{background:#fff;color:#173f66;border:1.5px solid #33475b}
+#flPw{position:fixed;inset:0;z-index:9998;background:rgba(10,25,40,.55);display:flex;align-items:center;justify-content:center;padding:18px}
+#flPw[hidden]{display:none!important}#flPw .bx{background:#fff;border-radius:16px;max-width:280px;width:100%;padding:16px;font:15px "Segoe UI",Roboto,sans-serif;color:#173f66}
+#flPw h4{margin:0 0 10px;font-size:17px}#flPw input{width:100%;box-sizing:border-box;padding:9px 10px;border:1px solid #c9d3de;border-radius:10px;font-size:16px}
+#flPw .er{color:#b42318;font-size:13px;min-height:18px;margin:6px 0}#flPw .rw{display:flex;gap:8px}#flPw .rw button{flex:1;border-radius:10px;padding:9px;font:600 15px "Segoe UI",Roboto,sans-serif;border:0;cursor:pointer}
+#flPw .go{background:#1f7a4d;color:#fff}#flPw .cn{background:#eef3f8;color:#173f66}
+#dtHint{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:9997;background:rgba(23,63,102,.85);color:#fff;border-radius:8px;padding:1px 10px;font:14px/1.7 "Jameel Noori",serif;direction:rtl;pointer-events:none;white-space:nowrap}#dtHint[hidden]{display:none!important}
+</style>
+<script>/* v1.26.15 next */
+(function(){
+const $=i=>document.getElementById(i);
+/* ---------- 1. cost check: newest average weight (sale day or FCR week) ---------- */
+costKg=function(alive,grand){
+  const typed=wExtra.costAvgW>0?wExtra.costAvgW:null;
+  const wk=Object.values(weeks).filter(x=>x.weight>0).sort((a,b)=>b.week-a.week)[0]||null;
+  let sl=null;try{const h=compute(days).filter(r=>r.avgW>0);sl=h.length?h[h.length-1]:null}catch(e){}
+  let g=null,src="";
+  if(typed){g=typed;src="written"}
+  else if(sl&&(!wk||sl.day>=wk.week*7)){g=Math.round(sl.avgW*1000);src="sale · day "+sl.day}
+  else if(wk){g=wk.weight;src="week "+wk.week}
+  const kg=g&&alive>0?Math.round(g*alive/1000):0;return {g,src,kg,cost:kg?r2(grand/kg):0}};
+/* ---------- 2. entries open for edit only on double tap ---------- */
+const DT='tr[data-day],tr[data-dv],tr[data-fd],tr[data-kv],tr[data-mb],tr[data-mo],tr[data-sa],tr[data-sp],tr[data-su],tr[data-sv],tr[data-wv],tr[data-gs]';
+let last=null,lt=0,ht=0;
+document.addEventListener("click",e=>{
+  if(e.target.closest("button,a,input,select,textarea,label,[data-act]"))return;
+  const tr=e.target.closest(DT);if(!tr||tr.closest("#hpDay"))return;
+  const now=Date.now();if(last===tr&&now-lt<550){last=null;return}
+  last=tr;lt=now;e.stopPropagation();e.preventDefault();
+},true);
+/* ---------- 3. lock flock (farm password) ---------- */
+const full=()=>HPMODE!=="sup"&&!!flockId&&!!(wExtra&&wExtra.finalEnd&&wExtra.fullLock);
+window.hpFullLock=full;
+let act=0;["pointerdown","keydown"].forEach(t=>document.addEventListener(t,()=>act=Date.now(),true));
+function blocked(p,d){if(!full())return false;const a=String(p).split("/");
+  if(a[0]==="flocks"){if(a[1]!==flockId)return false;if(a[2]==="weeks"&&a[3]==="extra"&&d&&!d.fullLock)return false;return true}
+  if(!FLOCKED.has(a[0]))return false;
+  const ex=(RAW[a[0]]||[]).find(x=>x.id===a[1]);const fl=ex?ex.flock:(d&&d.flock);
+  return !fl||fl===flockId}
+let mt=0;function msg(){if(Date.now()-act>2500)return;let e=$("lkMsg");if(!e){e=document.createElement("div");e.id="lkMsg";document.body.appendChild(e)}
+  e.textContent="فلاک لاک ہے۔ کچھ بدلنا ہو تو Main میں Unlock کریں (فارم پاسورڈ)۔";e.hidden=false;clearTimeout(mt);mt=setTimeout(()=>e.hidden=true,3500)}
+const ready=setInterval(()=>{if(!db)return;clearInterval(ready);const _doc=db.doc.bind(db);
+  db.doc=p=>{const r=_doc(p);if(r&&r.set){const st=r.set.bind(r);r.set=d=>blocked(p,d)?(msg(),Promise.reject({code:"locked"})):st(d)}
+    if(r&&r.delete){const dl=r.delete.bind(r);r.delete=()=>blocked(p,null)?(msg(),Promise.reject({code:"locked"})):dl()}return r}},120);
+function bar(){const b=$("lkBar");if(!b||!full())return;
+  const t=`🔒 فلاک لاک ہے · ${dmy(wExtra.fullLock)} · کچھ نہیں بدل سکتے۔ کھولنے کے لیے Main میں Unlock کریں۔`;
+  if(b.textContent!==t)b.innerHTML=`<span>${t}</span>`;b.hidden=false;document.body.classList.toggle("lkview",HPMODE==="farm")}
+function line(){const vm=$("vMain");if(!vm)return;let l=$("flLine");
+  if(!l){l=document.createElement("div");l.id="flLine";l.dir="ltr";vm.appendChild(l);
+    l.addEventListener("click",e=>{const b=e.target.closest("button");if(b)ask(b.dataset.k)})}
+  const show=!!flockId&&!!(wExtra&&wExtra.finalEnd)&&HPMODE!=="sup";l.hidden=!show;if(!show)return;
+  const ro=document.documentElement.classList.contains("hpro")||!canWrite;let h;
+  if(wExtra.fullLock)h=`<span class="tx">🔒 <b class="ok">Locked</b> · ${dmy(wExtra.fullLock)}</span>`+(ro?"":`<button type="button" class="ul" data-k="un">🔓 Unlock</button>`);
+  else{const ck=(ok,t)=>`<span class="${ok?"":"no"}">${ok?"✓":"○"} ${t}</span>`;
+    h=`<span class="tx">${ck(1,"End Date")} ${ck(!!(wExtra.feedLeftDone||wExtra.medLeftDone),"Leftover")}</span>`+(ro?"":`<button type="button" class="lk" data-k="lk">🔒 Lock flock</button>`)}
+  if(l.innerHTML!==h)l.innerHTML=h}
+function ask(k){let m=$("flPw");if(!m){m=document.createElement("div");m.id="flPw";document.body.appendChild(m)}
+  m.innerHTML=`<div class="bx"><h4>${k==="lk"?"🔒 Lock flock":"🔓 Unlock flock"}</h4><input type="password" id="flPwI" placeholder="Farm password" autocomplete="current-password"><div class="er" id="flPwE"></div><div class="rw"><button type="button" class="go">${k==="lk"?"Lock":"Unlock"}</button><button type="button" class="cn">Cancel</button></div></div>`;
+  m.hidden=false;const i=$("flPwI");i.focus();
+  const go=async()=>{const pw=i.value;if(!pw){$("flPwE").textContent="Write the farm password.";return}
+    const bt=m.querySelector(".go");bt.disabled=true;$("flPwE").textContent="Checking...";
+    let ok=false;try{ok=window.hpCheckPw?await window.hpCheckPw(pw):false}catch(e){$("flPwE").textContent=e&&e.net?"Internet is needed to check the password.":"Wrong password.";bt.disabled=false;return}
+    if(!ok){$("flPwE").textContent="Wrong password.";bt.disabled=false;return}
+    const r=await saveExtra({fullLock:k==="lk"?todayISO():null});
+    if(!r){$("flPwE").textContent="Could not save. Please try again.";bt.disabled=false;return}
+    m.hidden=true;try{renderMain()}catch(e){}tick()};
+  m.querySelector(".go").onclick=go;i.onkeydown=e=>{if(e.key==="Enter")go()};m.querySelector(".cn").onclick=()=>m.hidden=true}
+let mo=null;function tick(){try{line();bar();const b=$("lkBar");if(b&&!mo){mo=new MutationObserver(()=>{try{bar()}catch(e){}});mo.observe(b,{childList:true,subtree:true,characterData:true})}}catch(e){}}
+const _rm=renderMain;renderMain=function(){const x=_rm.apply(this,arguments);tick();return x};
+const _rd=render;render=function(){const x=_rd.apply(this,arguments);tick();return x};
+setTimeout(tick,600);setInterval(tick,3000);
+})();
+</script>
 </body>
 </html>
