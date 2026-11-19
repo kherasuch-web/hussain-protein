@@ -4515,12 +4515,12 @@ function bar(){const b=$("lkBar");if(!b||!full())return;
 function line(){const vm=$("vMain");if(!vm)return;let l=$("flLine");
   if(!l){l=document.createElement("div");l.id="flLine";l.dir="ltr";vm.appendChild(l);
     l.addEventListener("click",e=>{const b=e.target.closest("button");if(b)ask(b.dataset.k)})}
-  const show=!!flockId&&!!(wExtra&&wExtra.finalEnd)&&HPMODE!=="sup";l.hidden=!show;if(!show)return;
+  const show=!!flockId&&!!(wExtra&&wExtra.finalEnd)&&HPMODE!=="sup";if(l.hidden!==!show)l.hidden=!show;if(!show)return;
   const ro=document.documentElement.classList.contains("hpro")||!canWrite;let h;
   if(wExtra.fullLock)h=`<span class="tx">🔒 <b class="ok">Locked</b> · ${dmy(wExtra.fullLock)}</span>`+(ro?"":`<button type="button" class="ul" data-k="un">🔓 Unlock</button>`);
   else{const ck=(ok,t)=>`<span class="${ok?"":"no"}">${ok?"✓":"○"} ${t}</span>`;
     h=`<span class="tx">${ck(1,"End Date")} ${ck(!!(wExtra.feedLeftDone||wExtra.medLeftDone),"Leftover")}</span>`+(ro?"":`<button type="button" class="lk" data-k="lk">🔒 Lock flock</button>`)}
-  if(l.innerHTML!==h)l.innerHTML=h}
+  if(l.dataset.h!==h){l.dataset.h=h;l.innerHTML=h}}
 function ask(k){let m=$("flPw");if(!m){m=document.createElement("div");m.id="flPw";document.body.appendChild(m)}
   m.innerHTML=`<div class="bx"><h4>${k==="lk"?"🔒 Lock flock":"🔓 Unlock flock"}</h4><input type="password" id="flPwI" placeholder="Farm password" autocomplete="current-password"><div class="er" id="flPwE"></div><div class="rw"><button type="button" class="go">${k==="lk"?"Lock":"Unlock"}</button><button type="button" class="cn">Cancel</button></div></div>`;
   m.hidden=false;const i=$("flPwI");i.focus();
@@ -4567,11 +4567,11 @@ function make(){let b=$("supBtn");if(b)return b;const row=$("flRow");if(!row)ret
   b=document.createElement("button");b.type="button";b.id="supBtn";b.innerHTML=svg+"<span>سپروائزر</span>";row.appendChild(b);
   b.addEventListener("click",()=>{if(view!=="daily")setView("daily");const bx=$("smBox");if(bx&&!bx.hidden)bx.click();else setSupView(true)});return b}
 function up(){const b=make();if(!b)return;
-  const show=HPMODE==="farm"&&!!flockId&&!oldView&&!supView&&!!(supInfo&&supInfo.name);b.hidden=!show;if(!show)return;
+  const show=HPMODE==="farm"&&!!flockId&&!oldView&&!supView&&view==="daily"&&!!(supInfo&&supInfo.name);if(b.hidden!==!show)b.hidden=!show;if(!show)return;
   const D=Object.values(supd).filter(d=>d.flock===flockId&&d.day&&ts(d.savedAt)>ls("hp-sdseen",Date.now()-2*864e5)).length>0;
   const M=supmeds.filter(x=>(!x.flock||x.flock===flockId)&&Date.parse(x.createdAt||0)>ls("hp-smseen",0)).length>0;
   const c=D&&M?"sdm":D?"sd":M?"sm":"";if(b.className!==c)b.className=c;
-  b.title=D&&M?"Daily + Medicine":D?"Daily report":M?"Medicine":"Supervisor"}
+  const t=D&&M?"Daily + Medicine":D?"Daily report":M?"Medicine":"Supervisor";if(b.title!==t)b.title=t}
 /* flock list beside the top chip */
 function pop(chip){let p=$("flPop");if(!p){p=document.createElement("div");p.id="flPop";p.hidden=true;document.body.appendChild(p);
     p.addEventListener("click",e=>{const x=e.target.closest("[data-fl]");if(!x)return;p.hidden=true;openFlock(x.dataset.fl)})}

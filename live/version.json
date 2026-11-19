@@ -1,11 +1,11 @@
 {
- "ver": "1.26.17",
- "note": "Fix: Windows supervisor button opens Supervisor Data from any page",
- "noteUr": "درستگی: ونڈوز میں سپروائزر بٹن ہر صفحے سے سپروائزر ڈیٹا کھولے",
+ "ver": "1.26.18",
+ "note": "Fix: Main screen no longer jumps up while typing Average Weight; supervisor button only on Daily page",
+ "noteUr": "درستگی: مین میں وزن لکھتے وقت سکرین اوپر نہیں جائے گی؛ سپروائزر بٹن صرف روزانہ رپورٹ پر",
  "android": {
-  "zip": "android-1.26.17.zip",
+  "zip": "android-1.26.18.zip",
   "minBuild": 27,
-  "sha256": "a3ebe77691bd35a5a8f73836dcf3d4a23eb8061f67d47d1488e4aab20e04ecfe"
+  "sha256": "c94ce6caeebf9fdb45a1dedb5e24d8d09ddf6340dab9ccb2afb2f5b91d7a78dc"
  },
  "windows": {
   "files": [
