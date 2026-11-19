@@ -1985,6 +1985,7 @@ function saleSection(d){
     <div class="row" style="justify-content:space-between"><button class="ghost" type="button" data-addsdealer="1">+ Add New Dealer</button><button class="danger" type="button" data-act="ddel">Delete Dealer</button></div>
     <div data-box="ddel" hidden style="display:none;flex-direction:column;gap:8px"><div class="legend" style="color:#b42318">This deletes the dealer and ALL its entries. It cannot be undone.</div><div class="row"><button class="danger" type="button" data-act="ddelyes">Yes, delete dealer</button><button class="ghost" type="button" data-act="ddelno">No</button></div></div></div>`;
   el.querySelectorAll("input[data-sk]").forEach(inp=>attachSug(inp,inp.nextElementSibling,inp.dataset.sk));
+  try{hpSplit(el.querySelector(".mbbody"))}catch(e){}
   const q=sel=>el.querySelector(sel), f=n=>n==="veh"?q("#slV_"+k):n==="drv"?q("#slD_"+k):n==="mob"?q("#slM_"+k):q(`[data-f="${n}"]`);
   f("mob").inputMode="tel";
   // same driver as before -> his mobile number comes by itself
@@ -3363,7 +3364,7 @@ function setup(){for(const [f,h] of forms()){if(f.dataset.hpf)continue;f.dataset
   const go=()=>{const open=f.classList.contains("hpfolded")||(pre&&!pre());if(pre)pre(true);fold(f,!open);if(open){const i=f.querySelector("input:not([type=date]),textarea");if(i)i.focus({preventScroll:true})}sync()};
   hd.addEventListener("click",go);hd.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}})});
  // tapping a record row to edit opens the form again
- new MutationObserver(()=>{if([...f.querySelectorAll("[id$=Cancel],[data-act=cancel]")].some(b=>!b.closest("[hidden]"))||/ترمیم/.test((f.querySelector("h2")||{}).textContent||""))fold(f,false)}).observe(f,{subtree:true,attributes:true,attributeFilter:["hidden"],childList:true,characterData:true})}}
+ new MutationObserver(()=>{if([...f.querySelectorAll("[id$=Cancel],[data-act=cancel],.slsec [data-act=del]")].some(b=>!b.closest("[hidden]"))||/ترمیم/.test((f.querySelector("h2")||{}).textContent||""))fold(f,false)}).observe(f,{subtree:true,attributes:true,attributeFilter:["hidden"],childList:true,characterData:true})}}
 mq.addEventListener("change",()=>forms().forEach(([f])=>fold(f,mq.matches||f.id!=="entryCard")));
 new MutationObserver(setup).observe(document.documentElement,{childList:true,subtree:true});
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",setup);else setup()})();</script>

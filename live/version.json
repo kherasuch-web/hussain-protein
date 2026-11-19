@@ -1,11 +1,11 @@
 {
- "ver": "1.26.19",
- "note": "Final FCR shows ... until End Date; waiting vehicle opens filled; farm password to delete dealer or sold vehicle; smaller Delete Dealer button",
- "noteUr": "فائنل ایف سی آر End Date تک \"...\"؛ ویٹنگ گاڑی کا ڈیٹا بھرا نظر آئے؛ ڈیلر یا سیل گاڑی ڈیلیٹ پر فارم پاسورڈ؛ چھوٹا Delete Dealer بٹن",
+ "ver": "1.26.20",
+ "note": "Sale dealer entry is closed by default like Medicine; opens from New Entry or double-tap",
+ "noteUr": "سیل ڈیلر میں اینٹری میڈیسن کی طرح بند رہے گی؛ نئی اینٹری یا دو بار ٹیپ سے کھلے گی",
  "android": {
-  "zip": "android-1.26.19.zip",
+  "zip": "android-1.26.20.zip",
   "minBuild": 27,
-  "sha256": "d3ca65c0930ca7bfd965a3fe4d10dc052c02240245f582e8db713d164ec150a1"
+  "sha256": "56c189f2d04d51e27e4c0ca3f5aef9f155be4bb3a77b2658a9d357514ef22b74"
  },
  "windows": {
   "files": [
