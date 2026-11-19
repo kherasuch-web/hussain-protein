@@ -1,11 +1,11 @@
 {
- "ver": "1.26.15",
- "note": "Lock flock with farm password, double-tap to edit entries, Check Cost uses newest weight (sale or FCR), smaller update box",
- "noteUr": "فلاک لاک (پاسورڈ سے)، انٹری دو بار ٹیپ سے ایڈٹ، چیک کاسٹ میں نیا وزن، چھوٹا اپڈیٹ ڈبہ",
+ "ver": "1.26.16",
+ "note": "Windows: supervisor button (colour when data sent), flock list beside top button, logo no longer covers supervisor box; supervisor birds minus farm sale",
+ "noteUr": "ونڈوز: سپروائزر بٹن (ڈیٹا آنے پر رنگ)، فلاک لسٹ اوپر بٹن کے ساتھ؛ سپروائزر کے برڈ سیل سے مائنس",
  "android": {
-  "zip": "android-1.26.15.zip",
+  "zip": "android-1.26.16.zip",
   "minBuild": 27,
-  "sha256": "752c5386e7e3ee244f59fa0d45b1678b94f8269692c9f773425afdf55b39ffec"
+  "sha256": "d59a4bbb44c8a393b11e71300f017cdd843a23f8f11d7c25428829480487a169"
  },
  "windows": {
   "files": [

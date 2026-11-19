@@ -3232,6 +3232,7 @@ $("flBack").addEventListener("click",()=>openFlock(liveFlock));
  .wrap:has(#vDaily[style*="contents"]) #flRow :is(#hpLogoBtn,#flBtn,#flList,#flOld){pointer-events:auto}
  .wrap:has(#vDaily[style*="contents"]) .flock{margin-inline:72px!important;min-height:58px;transform:translateY(-14px);margin-bottom:-14px!important}
  .wrap:has(#vDaily[style*="contents"]) .flock>div{min-height:58px;box-sizing:border-box;padding-block:0!important}
+ .wrap:has(#vDaily[style*="contents"]) #smBox{margin-left:72px!important}
  #flBar{position:relative}
  #flList{position:absolute!important;top:66px;right:0;width:340px;z-index:20;background:#fff;padding:10px;border-radius:16px;box-shadow:0 8px 28px rgba(23,63,102,.25)}
  .wrap:not(:has(#vDaily[style*="contents"])) #flRow{position:relative;z-index:3;margin-bottom:-72px!important;pointer-events:none}
@@ -4535,6 +4536,53 @@ let mo=null;function tick(){try{line();bar();const b=$("lkBar");if(b&&!mo){mo=ne
 const _rm=renderMain;renderMain=function(){const x=_rm.apply(this,arguments);tick();return x};
 const _rd=render;render=function(){const x=_rd.apply(this,arguments);tick();return x};
 setTimeout(tick,600);setInterval(tick,3000);
+})();
+</script><style>/* v1.26.16 supbtn: Windows only - supervisor button in place of the flock button, flock list beside the top chip */
+#supBtn,#flPop{display:none}
+@media (min-width:1000px){
+ #smBox,#svOpen{display:none!important}
+ #flBtn{display:none!important}
+ #flBar:has(#flOld:not([hidden])) #flBtn{display:none!important}
+ #supBtn{display:flex;pointer-events:auto;flex:none;order:-1;margin:0;width:58px;height:58px;border-radius:18px;padding:0;border:0;flex-direction:column;align-items:center;justify-content:center;gap:1px;background:#fff;color:#7d8b99;box-shadow:0 3px 10px rgba(23,63,102,.22);position:relative;overflow:hidden;cursor:pointer;transition:transform .18s ease}
+ #supBtn:active{transform:scale(.92)}
+ #supBtn::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:#c9d3de}
+ #supBtn svg{width:20px;height:20px;margin-top:3px}
+ #supBtn span{font:13px/1.1 "Jameel Noori","Segoe UI",serif;white-space:nowrap}
+ #supBtn.sd{color:#1f7a4d;background:linear-gradient(160deg,#fff 0%,#eef8f1 100%)}#supBtn.sd::before{background:linear-gradient(90deg,#1f7a4d,#2fa36b)}
+ #supBtn.sm{color:#7b3fb3;background:linear-gradient(160deg,#fff 0%,#f4edfb 100%)}#supBtn.sm::before{background:linear-gradient(90deg,#6a2fa0,#9b5fd3)}
+ #supBtn.sdm{background:linear-gradient(160deg,#fff 0%,#f2f4f9 100%)}#supBtn.sdm::before{background:linear-gradient(90deg,#1f7a4d 50%,#7b3fb3 50%)}#supBtn.sdm svg{color:#1f7a4d}#supBtn.sdm span{color:#7b3fb3}
+ #supBtn[hidden]{display:none!important}
+ #flPop{position:fixed;z-index:60;display:flex;gap:6px;align-items:center}
+ #flPop[hidden]{display:none!important}
+ #flPop button{background:#fff;border:1.5px solid #1f5d93;color:#173f66;border-radius:999px;padding:5px 14px;font:16px "Jameel Noori","Segoe UI",serif;direction:rtl;white-space:nowrap;cursor:pointer;box-shadow:0 3px 10px rgba(23,63,102,.2)}
+}
+</style>
+<script>/* v1.26.16 supbtn */
+(function(){
+const $=i=>document.getElementById(i),mq=matchMedia("(min-width:1000px)");
+const ts=v=>typeof v==="number"?v:(Date.parse(v||0)||0);
+const ls=(k,d)=>{try{const v=localStorage.getItem(k);if(v!=null)return +v}catch(e){}return d};
+const svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>';
+function make(){let b=$("supBtn");if(b)return b;const row=$("flRow");if(!row)return null;
+  b=document.createElement("button");b.type="button";b.id="supBtn";b.innerHTML=svg+"<span>سپروائزر</span>";row.appendChild(b);
+  b.addEventListener("click",()=>{const bx=$("smBox");if(bx&&!bx.hidden)bx.click();else setSupView(true)});return b}
+function up(){const b=make();if(!b)return;
+  const show=HPMODE==="farm"&&!!flockId&&!oldView&&!supView&&!!(supInfo&&supInfo.name);b.hidden=!show;if(!show)return;
+  const D=Object.values(supd).filter(d=>d.flock===flockId&&d.day&&ts(d.savedAt)>ls("hp-sdseen",Date.now()-2*864e5)).length>0;
+  const M=supmeds.filter(x=>(!x.flock||x.flock===flockId)&&Date.parse(x.createdAt||0)>ls("hp-smseen",0)).length>0;
+  const c=D&&M?"sdm":D?"sd":M?"sm":"";if(b.className!==c)b.className=c;
+  b.title=D&&M?"Daily + Medicine":D?"Daily report":M?"Medicine":"Supervisor"}
+/* flock list beside the top chip */
+function pop(chip){let p=$("flPop");if(!p){p=document.createElement("div");p.id="flPop";p.hidden=true;document.body.appendChild(p);
+    p.addEventListener("click",e=>{const x=e.target.closest("[data-fl]");if(!x)return;p.hidden=true;openFlock(x.dataset.fl)})}
+  if(!p.hidden){p.hidden=true;return}
+  const L=$("flList");p.innerHTML=L?L.innerHTML:"";if(!p.innerHTML.trim())return;
+  const r=chip.getBoundingClientRect();p.style.left=(r.right+8)+"px";p.style.top=r.top+"px";p.style.height=r.height+"px";p.hidden=false}
+document.addEventListener("click",e=>{if(!mq.matches)return;const c=e.target.closest&&e.target.closest("#dkCh .chip:nth-child(1)");
+  if(!c){const p=$("flPop");if(p&&!p.hidden&&!e.target.closest("#flPop"))p.hidden=true;return}
+  if(oldView)return;e.stopPropagation();e.preventDefault();pop(c)},true);
+addEventListener("scroll",()=>{const p=$("flPop");if(p)p.hidden=true},{passive:true});
+setTimeout(up,600);setInterval(up,1000);
 })();
 </script>
 </body>
