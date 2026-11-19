@@ -1,11 +1,11 @@
 {
- "ver": "1.26.16",
- "note": "Windows: supervisor button (colour when data sent), flock list beside top button, logo no longer covers supervisor box; supervisor birds minus farm sale",
- "noteUr": "ونڈوز: سپروائزر بٹن (ڈیٹا آنے پر رنگ)، فلاک لسٹ اوپر بٹن کے ساتھ؛ سپروائزر کے برڈ سیل سے مائنس",
+ "ver": "1.26.17",
+ "note": "Fix: Windows supervisor button opens Supervisor Data from any page",
+ "noteUr": "درستگی: ونڈوز میں سپروائزر بٹن ہر صفحے سے سپروائزر ڈیٹا کھولے",
  "android": {
-  "zip": "android-1.26.16.zip",
+  "zip": "android-1.26.17.zip",
   "minBuild": 27,
-  "sha256": "d59a4bbb44c8a393b11e71300f017cdd843a23f8f11d7c25428829480487a169"
+  "sha256": "a3ebe77691bd35a5a8f73836dcf3d4a23eb8061f67d47d1488e4aab20e04ecfe"
  },
  "windows": {
   "files": [
