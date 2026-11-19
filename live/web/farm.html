@@ -1310,7 +1310,7 @@ async function finalPoster(toast){
   const dl=window.claude?.use?await window.claude.use("downloads"):null;
   if(!dl){toast("Download is not available here.",true);return}
   if(!flock){toast("No flock started yet.",true);return}
-  const X=finalFcr();if(!X.kg){toast("No sale yet. The Final FCR needs the sold weight.",true);return}
+  const X=finalFcr();if(X.going){toast("سیل جاری ہے۔ پہلے End Date سیو کریں۔",true);return}if(!X.kg){toast("No sale yet. The Final FCR needs the sold weight.",true);return}
   toast("Making poster… please wait");
   try{await pdfLibs()}catch(e){toast("Could not load the picture maker. Please close and open the app again.",true);return}
   let t=0;try{t=(parseInt(localStorage.getItem("hpg-poster")||"-1",10)+1)%PT.length;localStorage.setItem("hpg-poster",String(t))}catch(e){}
@@ -1639,6 +1639,7 @@ async function fcrPdf(toast){
   if(!flock){toast("No flock started yet.",true);return}
   const fin=$("fcrFin").checked, wk=$("fcrWk").checked;
   if(!wk&&!fin){toast("پہلے ویکلی یا فائنل ایف سی آر پر ٹِک لگائیں۔",true);return}
+  if(fin&&finalFcr().going){toast("سیل جاری ہے۔ پہلے End Date سیو کریں۔",true);return}
   if(fin&&!wk&&!finalFcr().kg){toast("No sale yet. The Final FCR needs the sold weight.",true);return}
   toast("Making FCR PDF… please wait");
   try{await pdfLibs()}catch(e){toast("Could not load the PDF maker. Please close and open the app again.",true);return}
@@ -1759,25 +1760,25 @@ const lastSaleISO=()=>[...svehs,...kvehs].map(x=>x.date).filter(Boolean).sort().
 function finalFcr(){
   const hist=compute(days), last=hist[hist.length-1]||null, placed=flock.placed||0, mort=last?last.mTot:0, rem=placed-mort;
   const kg=r2(svehs.reduce((a,x)=>a+slSaafi(x),0)+kvehs.reduce((a,x)=>a+kdTot(x),0)), feed=last?last.fTot:0;
-  return {end:wExtra.finalEnd||lastSaleISO(),endAuto:!wExtra.finalEnd,placed,mort,rem,kg,feed,avg:rem>0&&kg?kg/rem:null,fcr:feed&&kg?kg/feed:null};
+  return {going:!wExtra.finalEnd,end:wExtra.finalEnd||null,endAuto:false,placed,mort,rem,kg,feed,avg:rem>0&&kg?kg/rem:null,fcr:feed&&kg?kg/feed:null};
 }
-function finalFcrTable(X){const d="...";return `<thead><tr><th>Item</th><th class="amt">Value</th></tr></thead><tbody>`+
+function finalFcrTable(X){const d="...";if(X.going)X={...X,kg:0,avg:null,fcr:null};return `<thead><tr><th>Item</th><th class="amt">Value</th></tr></thead><tbody>`+
   [["End Date",X.end?dmy(X.end):d],["Total Bird Placed",F(X.placed)],["Total Mortality",F(X.mort)+(X.placed?" ("+(X.mort/X.placed*100).toFixed(2)+"%)":"")],["Remaining Bird",F(X.rem)],
    ["Total Weight (kg sold)",X.kg?F(X.kg):d],["Total Feed (bags eaten)",F(X.feed)],["Average Weight",X.avg?X.avg.toFixed(3)+" kg":d]].map(([a,b])=>`<tr><td>${a}</td><td class="num amt">${b}</td></tr>`).join("")+
   `<tr class="tot"><td>FCR</td><td class="num amt">${X.fcr?X.fcr.toFixed(2):d}</td></tr></tbody>`}
 function renderFinal(){
   if(!flock)return;const X=finalFcr();
   $("ffTable").innerHTML=finalFcrTable(X);
-  $("ffCalc").innerHTML=X.fcr?`FCR = Total Weight ÷ Total Feed<b>${F(X.kg)} ÷ ${F(X.feed)} = ${X.fcr.toFixed(2)}</b>`:"FCR = Total Weight ÷ Total Feed<b>…</b>";
+  $("ffCalc").classList.toggle("going",!!X.going);$("ffCalc").innerHTML=X.going?'<span class="ur" dir="rtl" style="display:block">سیل جاری ہے۔ فائنل ایف سی آر End Date لکھنے پر بنے گا۔</span>':X.fcr?`FCR = Total Weight ÷ Total Feed<b>${F(X.kg)} ÷ ${F(X.feed)} = ${X.fcr.toFixed(2)}</b>`:"FCR = Total Weight ÷ Total Feed<b>…</b>";
   if(document.activeElement!==$("ffEnd"))$("ffEnd").value=X.end||"";
-  $("ffEndNote").textContent=X.endAuto?"Fills itself with the last sale date. You can change it.":"End Date written by hand. Empty it and save to use the last sale date.";
+  $("ffEndNote").textContent=X.going?"Write the End Date when the last sale is done.":X.endAuto?"Fills itself with the last sale date. You can change it.":"End Date written by hand. Empty it and save to use the last sale date.";
   $("ffSave").disabled=!canWrite;
 }
 async function saveExtra(patch,tid){
   if(!db||!flockId)return false;const ok=await write(db.doc("flocks/"+flockId+"/weeks/extra"),{...wExtra,...patch,kind:"extra",savedAt:new Date().toISOString()});
   if(tid)toast(tid,ok?"Saved.":"Could not save. Please try again.",!ok);return ok}
 function finalFcrPdf(toast){
-  const X=finalFcr();if(!X.kg){toast("No sale yet. The Final FCR needs the sold weight.",true);return}
+  const X=finalFcr();if(X.going){toast("سیل جاری ہے۔ پہلے End Date سیو کریں۔",true);return}if(!X.kg){toast("No sale yet. The Final FCR needs the sold weight.",true);return}
   return billPdf({title:"Final FCR",info:[["Flock Start",dmy(flock.start)],["End Date",X.end?dmy(X.end):"..."],["Report Date",dmy(todayISO())]],
     table:finalFcrTable(X).replace(/ class="num amt"/g,' class="r"').replace(/<tr class="tot">/,'<tr class="bt">').replace('<th class="amt">','<th class="r">'),
     sum:[["FCR = Total Weight ÷ Total Feed",F(X.kg)+" ÷ "+F(X.feed)+" = "+X.fcr.toFixed(2)],["Average Weight = Total Weight ÷ Remaining Bird",X.avg?X.avg.toFixed(3)+" kg":"..."]],
@@ -3873,7 +3874,7 @@ html body .hpfolded.hpfolded{display:none!important}
 html.hpro .hpch,body.supview #histH .hpch{display:none!important}
 </style>
 <style>/* v1.27: a field marked hidden must stay hidden on Windows too (Received shows only when Cash is On) */
-html body label[hidden],html body [data-cashonly][hidden]{display:none!important}
+html body label[hidden],html body [data-cashonly][hidden]{display:none!important}html body .spend label[hidden],html body .spend label[hidden]:is(:has(> .txt),:has(> .sugw)){display:none!important}
 </style>
 <style>/* v1.26.3 phone: the reports logo sits in the blue top bar (no empty line for it) */
 @media (max-width:999px){.hpbar #hpLogoBtn{width:42px;height:42px;border-radius:12px;flex:none;box-shadow:none;order:0;margin:0}.hpbar #hpLogoBtn img{width:38px;height:38px;border-radius:10px}.hpbar:has(#hpLogoBtn)>img{display:none}#flRow:not(:has(#hpLogoBtn)):has(>#flBar[hidden]){display:none}}
@@ -3955,7 +3956,7 @@ const tt=(id,m,e)=>{const b=$(id);b.textContent=m||"";b.classList.toggle("err",!
 function opts(sel,keep){const v=keep!=null?keep:sel.value;sel.innerHTML='<option value="">Choose dealer</option>'+sdealers.slice().sort((a,b)=>(a.seq||0)-(b.seq||0)).map(d=>`<option value="${esc(d.id)}">${esc(d.name)}</option>`).join("");sel.value=v}
 // which dealer list line matches this number (not yet in sale)
 function look(veh){const n=nv(veh);if(!n)return null;const L=dvL().filter(x=>nv(x.veh)===n);return L.find(x=>st(x)==="n")||L.find(x=>st(x)!=="s")||null}
-function check(){const c=$("wvChk");wvSure="";$("wvSave").textContent=wvSel?"Save Load & Move to Sale":"Save Empty Weight";
+function check(){const c=$("wvChk");wvSure="";$("wvSave").textContent=wvSel?(mNum($("wvLoad").value)?"Save Load & Move to Sale":"Save Change"):"Save Empty Weight";
   if(wvSel){c.hidden=true;return}
   const v=$("wvVeh").value.trim();if(!v){c.hidden=true;return}
   const m=look(v),dl=$("wvDl").value;
@@ -3990,7 +3991,7 @@ $("dvDel").addEventListener("click",async()=>{if(!dvEd||!db)return;const b=$("dv
   try{await db.doc("saledv/"+dvEd).delete();DV=DV.filter(x=>x.id!==dvEd);tt("dvToast","Deleted.")}catch(e){tt("dvToast","Could not delete.",1)}dvFill(null);render()});
 $("dvTable").addEventListener("click",e=>{const tr=e.target.closest("tr[data-dv]");if(!tr||!canWrite||document.documentElement.classList.contains("hpro"))return;const x=DV.find(y=>y.id===tr.dataset.dv);if(!x)return;dvFill(x);tt("dvToast","Editing "+x.veh+": change and Save, or Delete.")});
 // waiting vehicles
-function wvMode(x){wvSel=x?x.id:null;document.querySelectorAll('#wvForm [data-wv="e"]').forEach(l=>l.hidden=!!x);document.querySelectorAll('#wvForm [data-wv="l"]').forEach(l=>l.hidden=!x);
+function wvMode(x){const was=wvSel;wvSel=x?x.id:null;if(x){$("wvDate").value=x.date||"";$("wvVeh").value=x.veh||"";$("wvDl").value=x.dealer||"";$("wvDrv").value=x.drv||"";$("wvMob").value=x.mob||"";$("wvEmpty").value=x.empty||""}else if(was)wvClear();document.querySelectorAll('#wvForm [data-wv="l"]').forEach(l=>l.hidden=!x);
   $("wvSel").hidden=!x;if(x)$("wvSel").textContent=x.veh+" · "+dn(x.dealer)+" · Empty "+F(x.empty)+" kg"+(x.drv?" · "+x.drv:"");
   $("wvLoad").value="";$("wvCalc").hidden=true;$("wvCancel").hidden=$("wvDel").hidden=!x;$("wvDel").textContent="Delete";check();render()}
 function wvClear(){$("wvVeh").value="";$("wvDrv").value="";$("wvMob").value="";$("wvEmpty").value="";$("wvDl").value="";if(!$("wvDate").value)$("wvDate").value=todayISO()}
@@ -3999,10 +4000,17 @@ $("wvVeh").addEventListener("change",()=>{const m=look($("wvVeh").value);if(m)$(
 $("wvDl").addEventListener("change",check);
 const drvMob=()=>{const nm=$("wvDrv").value.trim().toLowerCase();if(!nm||$("wvMob").value.trim())return;const o=svehs.concat(WV).slice().reverse().find(x=>(x.drv||"").toLowerCase()===nm&&x.mob);if(o)$("wvMob").value=o.mob};
 $("wvDrv").addEventListener("change",drvMob);$("wvDrv").addEventListener("blur",()=>setTimeout(drvMob,200));
-$("wvLoad").addEventListener("input",()=>{const x=WV.find(y=>y.id===wvSel),l=mNum($("wvLoad").value);$("wvCalc").hidden=!(x&&l);if(x&&l)$("wvCalc").innerHTML=`Saafi Weight = ${F(l)} − ${F(x.empty)} = <b>${F(r2(l-x.empty))} kg</b>`});
+const wvCalcUp=()=>{const x=WV.find(y=>y.id===wvSel),l=mNum($("wvLoad").value),em=mNum($("wvEmpty").value);$("wvCalc").hidden=!(x&&l&&em);if(x&&l&&em)$("wvCalc").innerHTML=`Saafi Weight = ${F(l)} − ${F(em)} = <b>${F(r2(l-em))} kg</b>`};
+$("wvLoad").addEventListener("input",()=>{wvCalcUp();check()});$("wvEmpty").addEventListener("input",wvCalcUp);
 $("wvSave").addEventListener("click",async()=>{if(!db||!canWrite)return;const b=$("wvSave");
-  if(wvSel){const x=WV.find(y=>y.id===wvSel);if(!x)return;const l=mNum($("wvLoad").value);
-    if(!l){tt("wvToast","Write the Load Weight.",1);return}if(l<=x.empty){tt("wvToast","Load Weight must be more than Empty Weight.",1);return}
+  if(wvSel){const x0=WV.find(y=>y.id===wvSel);if(!x0)return;const l=mNum($("wvLoad").value);
+    const x={...x0,date:$("wvDate").value||x0.date,veh:$("wvVeh").value.trim()||x0.veh,dealer:$("wvDl").value||x0.dealer,drv:$("wvDrv").value.trim(),mob:$("wvMob").value.trim(),empty:mNum($("wvEmpty").value)||x0.empty};
+    if(!l){const ch=["date","veh","dealer","drv","mob","empty"].some(k=>(x[k]||"")!==(x0[k]||""));
+      if(!ch){tt("wvToast","Write the Load Weight.",1);return}
+      b.disabled=true;const {id,...dd}=x;const ok=await write(db.doc("salewait/"+x0.id),{...dd,updatedAt:nowI()});b.disabled=false;
+      if(!ok){tt("wvToast","Could not save. Please try again.",1);return}
+      const i=WV.findIndex(y=>y.id===x0.id);if(i>=0)WV[i]={...x};tt("wvToast","Changed: "+x.veh+" · Empty "+F(x.empty)+" kg. Write the Load Weight when it is loaded.");wvMode(null);render();return}
+    if(l<=x.empty){tt("wvToast","Load Weight must be more than Empty Weight.",1);return}
     if(!sdealers.some(d=>d.id===x.dealer)){tt("wvToast","This dealer is not in Sale any more.",1);return}
     b.disabled=true;const sid="sv"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
     let ok=await write(db.doc("salev/"+sid),{dealer:x.dealer,date:x.date,veh:x.veh,drv:x.drv||"",mob:x.mob||"",empty:x.empty,load:l,seq:svehs.reduce((m,y)=>Math.max(m,y.seq||0),0)+1,shed:"s1",flock:x.flock||flockId,createdAt:nowI(),updatedAt:nowI(),fromWait:1});
@@ -4585,5 +4593,31 @@ addEventListener("scroll",()=>{const p=$("flPop");if(p)p.hidden=true},{passive:t
 setTimeout(up,600);setInterval(up,1000);
 })();
 </script>
+<style>#flPw.del h4{color:#b42318}#flPw .ds{margin:0 0 10px;font-size:14px}#flPw.del .go{background:#b42318!important;color:#fff!important}</style>
+<script>(function(){
+/* farm password before deleting a Sale/Kanda dealer or a vehicle that is already in Sale */
+const $=i=>document.getElementById(i);let pass=null;
+const T='.slsec [data-act="delyes"],.slsec [data-act="ddelyes"],.kdsec [data-act="ddelyes"],#kdDelYes';
+function info(b){const sec=b.closest(".slsec,.kdsec"),nm=sec?(sec.querySelector(".mbdname")||{}).textContent||"":"";
+  if(b.dataset.act==="ddelyes")return ["Delete dealer "+nm.trim(),"This dealer and ALL its vehicles will be deleted."];
+  const v=b.id==="kdDelYes"?($("kdV")||{}).value:(sec&&sec.querySelector('[id^="slVeh"],input[data-f="veh"]')||{}).value;
+  return ["Delete vehicle"+(v?" "+v:""),(nm.trim()?nm.trim()+" · ":"")+"This sale entry will be deleted."]}
+function ask(b){const sc0=b.closest(".slsec,.kdsec"),act=b.dataset.act,key=sc0?(sc0.classList.contains("slsec")?'.slsec[data-sd="'+CSS.escape(sc0.dataset.sd)+'"]':'.kdsec[data-dk="'+CSS.escape(sc0.dataset.dk)+'"]'):null;let m=$("flPw");if(!m){m=document.createElement("div");m.id="flPw";document.body.appendChild(m)}
+  const [h,d]=info(b);const esc=x=>String(x).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  m.className="del";m.innerHTML=`<div class="bx"><h4>🗑 ${esc(h)}</h4><p class="ds">${esc(d)}</p><input type="password" id="flPwI" placeholder="Farm password" autocomplete="current-password"><div class="er" id="flPwE"></div><div class="rw"><button type="button" class="go">Delete</button><button type="button" class="cn">Cancel</button></div></div>`;
+  m.hidden=false;const i=$("flPwI");i.focus();
+  const go=async()=>{const pw=i.value;if(!pw){$("flPwE").textContent="Write the farm password.";return}
+    const bt=m.querySelector(".go");bt.disabled=true;$("flPwE").textContent="Checking...";
+    let ok=false;try{ok=window.hpCheckPw?await window.hpCheckPw(pw):false}catch(e){$("flPwE").textContent=e&&e.net?"Internet is needed to check the password.":"Wrong password.";bt.disabled=false;return}
+    if(!ok){$("flPwE").textContent="Wrong password.";bt.disabled=false;return}
+    m.hidden=true;m.className="";let nb=b;if(!b.isConnected){if(b.id)nb=$(b.id);else if(key){const sc=document.querySelector(key);nb=sc&&sc.querySelector('[data-act="'+act+'"]')}}
+    if(!nb){return}pass=nb;nb.click();pass=null};
+  m.querySelector(".go").onclick=go;i.onkeydown=e=>{if(e.key==="Enter")go()};m.querySelector(".cn").onclick=()=>{m.hidden=true;m.className=""}}
+document.addEventListener("click",e=>{const b=e.target.closest(T);if(!b||b===pass)return;e.stopImmediatePropagation();e.preventDefault();ask(b)},true);
+})();</script>
+<style>.slsec [data-act="ddel"],.kdsec [data-act="ddel"]{width:auto!important;flex:0 0 auto!important;align-self:flex-end;margin-left:auto!important;padding:5px 12px!important;min-height:0!important;font-size:13px!important;background:#fff!important;color:#b42318!important;border:1px solid #f1b4ae!important;border-radius:999px!important;box-shadow:none!important}
+.slsec [data-act="ddel"]::before,.kdsec [data-act="ddel"]::before{content:"🗑 "}</style>
+<style>#ffCalc.going{background:#fff7e0!important;color:#7a4b00!important;border:1px solid #f0d49a;padding:5px 10px!important;border-radius:10px;font-size:15px!important;min-height:0!important;text-align:center}#ffCalc.going .ur{font-family:"Jameel Noori",serif;font-size:16px}</style>
+
 </body>
 </html>

@@ -1,11 +1,11 @@
 {
- "ver": "1.26.18",
- "note": "Fix: Main screen no longer jumps up while typing Average Weight; supervisor button only on Daily page",
- "noteUr": "درستگی: مین میں وزن لکھتے وقت سکرین اوپر نہیں جائے گی؛ سپروائزر بٹن صرف روزانہ رپورٹ پر",
+ "ver": "1.26.19",
+ "note": "Final FCR shows ... until End Date; waiting vehicle opens filled; farm password to delete dealer or sold vehicle; smaller Delete Dealer button",
+ "noteUr": "فائنل ایف سی آر End Date تک \"...\"؛ ویٹنگ گاڑی کا ڈیٹا بھرا نظر آئے؛ ڈیلر یا سیل گاڑی ڈیلیٹ پر فارم پاسورڈ؛ چھوٹا Delete Dealer بٹن",
  "android": {
-  "zip": "android-1.26.18.zip",
+  "zip": "android-1.26.19.zip",
   "minBuild": 27,
-  "sha256": "c94ce6caeebf9fdb45a1dedb5e24d8d09ddf6340dab9ccb2afb2f5b91d7a78dc"
+  "sha256": "d3ca65c0930ca7bfd965a3fe4d10dc052c02240245f582e8db713d164ec150a1"
  },
  "windows": {
   "files": [
