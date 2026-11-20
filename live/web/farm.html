@@ -528,7 +528,7 @@ body.supview #hpLogoBtn{display:none}
         <div class="salebox" id="saleBox" hidden>
           <h3 style="margin:0">آج کی سیل</h3>
           <div class="sline"><span>آج بکا کل وزن (سیل ٹیب سے خود)</span><b class="num" id="aSaleKg">0 kg</b></div>
-          <label for="iAvgW">آج کا ایوریج وزن (کلو فی برڈ)<input id="iAvgW" inputmode="decimal" placeholder="مثلاً 1.800"></label>
+          <label for="iAvgW">آج کا ایوریج وزن (گرام فی برڈ)<input id="iAvgW" inputmode="decimal" placeholder="مثلاً 1800"></label>
           <div class="sres"><span>سیل شدہ برڈ</span> <bdi dir="ltr" id="aSoldCalc"></bdi><b class="num" id="aSold">0</b></div>
           <div class="tag" id="aSoldNote">یہ برڈ بقایا برڈ میں سے خود مائنس ہو جائیں گے۔</div>
           <input id="iSold" type="hidden" value="0">
@@ -1155,7 +1155,8 @@ function compute(list){
 }
 const entry=()=>({medD:$("iMedD").value.trim(),medN:$("iMedN").value.trim(),in:fNum($("iIn").value),out:fNum($("iOut").value),fd:bNum($("iFDay").value,fNum),fn:bNum($("iFNight").value,fNum),md:bNum($("iMDay").value,mNumZ),mn:bNum($("iMNight").value,mNumZ),zibD:zibOf($("iMDay").value),zibN:zibOf($("iMNight").value),water:bNum($("iWater").value,fNum),...saleEntry()});
 // the sale box saves the average weight and the counted birds; without an average weight the old typed number stays
-const saleEntry=()=>{const a=fNum($("iAvgW").value);if(a>0)return {avgW:a,sold:Math.round(saleKgOn(dayISO(editDay??nextDay()))/a)};return {avgW:null,sold:iNum($("iSold").value)}};
+const avgKg=()=>{const v=fNum($("iAvgW").value);return v>0?(v>=20?v/1000:v):0};
+const saleEntry=()=>{const a=avgKg();if(a>0)return {avgW:a,sold:Math.round(saleKgOn(dayISO(editDay??nextDay()))/a)};return {avgW:null,sold:iNum($("iSold").value)}};
 const bNum=(v,f)=>String(v).trim()===""?null:f(v);
 const dayDone=d=>d.fd>0&&d.fn>0&&d.md!=null&&d.mn!=null;
 // v1.13 supervisor: today is day N, he sends day N-1 (yesterday); every box needed (0 is fine), a blank box keeps the next day closed
@@ -1172,7 +1173,7 @@ function toast(id,msg,err){$(id).textContent=msg;$(id).classList.toggle("err",!!
 
 function fillForm(r){
   $("iIn").value=r?r.in:0;$("iOut").value=r?r.out:0;$("iFDay").value=r&&r.fd>0?r.fd:"";$("iFNight").value=r&&r.fn>0?r.fn:"";
-  $("iMDay").value=r?mShow(r.md,r.zibD):"";$("iMNight").value=r?mShow(r.mn,r.zibN):"";$("iWater").value=r&&r.water!=null?r.water:"";$("iSold").value=r&&!(r.avgW>0)?r.sold||0:0;$("iAvgW").value=r&&r.avgW>0?r.avgW:"";
+  $("iMDay").value=r?mShow(r.md,r.zibD):"";$("iMNight").value=r?mShow(r.mn,r.zibN):"";$("iWater").value=r&&r.water!=null?r.water:"";$("iSold").value=r&&!(r.avgW>0)?r.sold||0:0;$("iAvgW").value=r&&r.avgW>0?Math.round(r.avgW*1000):"";
   $("iMedD").value=r&&r.medD?r.medD:"";$("iMedN").value=r&&r.medN?r.medN:"";fitMed();
   const showSale=!!(r&&(r.sold||r.avgW));$("saleBox").hidden=!showSale;$("addSale").hidden=showSale;
 }
@@ -1197,7 +1198,7 @@ function render(){
     $("ePend").textContent="دن "+pd.day+" ابھی مکمل نہیں: "+miss.join("، ")+" باقی ہے۔ یہ لکھ کر محفوظ کریں، پھر دن "+(pd.day+1)+" کھلے گا۔";$("ePend").hidden=false}
   else $("ePend").hidden=true;
   $("eBadge").classList.toggle("edit",!!editDay);$("cancelEdit").hidden=!editDay;
-  {const kg=saleKgOn(dayISO(day)),a=fNum($("iAvgW").value);$("aSaleKg").textContent=F(kg)+" kg";
+  {const kg=saleKgOn(dayISO(day)),a=avgKg();$("aSaleKg").textContent=F(kg)+" kg";
    $("aSoldCalc").textContent=a>0?F(kg)+" ÷ "+a.toFixed(3)+" =":"";$("aSold").textContent=F(t.sold||0);
    $("aSoldNote").textContent=!kg?"اس تاریخ کی سیل ابھی سیل ٹیب میں نہیں لکھی۔ پہلے سیل ٹیب میں گاڑی لکھیں۔":a>0?"یہ برڈ بقایا برڈ میں سے خود مائنس ہو جائیں گے۔":"ایوریج وزن لکھیں تو بکے ہوئے برڈ خود گنے جائیں گے۔"}
   $("aFStore").textContent=F(t.fStore);$("aF24").textContent=F(t.f24);$("aFTot").textContent=F(t.fTot);$("aFRem").textContent=F(t.fRem);

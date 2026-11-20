@@ -1,11 +1,11 @@
 {
- "ver": "1.26.20",
- "note": "Sale dealer entry is closed by default like Medicine; opens from New Entry or double-tap",
- "noteUr": "سیل ڈیلر میں اینٹری میڈیسن کی طرح بند رہے گی؛ نئی اینٹری یا دو بار ٹیپ سے کھلے گی",
+ "ver": "1.26.21",
+ "note": "Daily sale average weight is now written in grams (e.g. 2025)",
+ "noteUr": "روزانہ رپورٹ میں سیل کا ایوریج وزن اب گرام میں لکھیں (مثلاً 2025)",
  "android": {
-  "zip": "android-1.26.20.zip",
+  "zip": "android-1.26.21.zip",
   "minBuild": 27,
-  "sha256": "56c189f2d04d51e27e4c0ca3f5aef9f155be4bb3a77b2658a9d357514ef22b74"
+  "sha256": "dcb4888438c66272bb180aecb325f4d1fcb0c76fe9f4c1885da058cb7fb96eaa"
  },
  "windows": {
   "files": [
