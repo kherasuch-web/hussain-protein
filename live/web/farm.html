@@ -3322,6 +3322,8 @@ mq.addEventListener("change",place);if(document.readyState==="loading")document.
  #vMain>.mncol{display:flex;flex-direction:column;gap:16px;min-width:0}
  #vMain>.mncol>*{margin:0!important}
  html{overflow-x:clip}
+ #vMain>.mncol{grid-column:1/-1}#vMain>.mncol[hidden]{display:none}
+ #vMain>.mncol>section.card:not(#hpChart){max-width:760px;width:100%;margin:0 auto!important}
 }
 </style>
 <script>(function(){const mq=matchMedia("(min-width:1000px)");let L=null,busy=false;
@@ -3332,8 +3334,10 @@ function lay(){const m=document.getElementById("vMain");if(!m||busy)return;busy=
   const V=L.filter(c=>!c.hidden&&getComputedStyle(c).display!=="none");
   L.filter(c=>!V.includes(c)).forEach(c=>{if(c.parentElement!==cols[0])cols[0].appendChild(c)});
   // v1.26.3: every card goes under the shorter column, so both sides stay level (no big empty space)
-  const ch=document.getElementById("hpChart"),hs=[0,0];if(ch){if(cols[0].firstChild!==ch)cols[0].prepend(ch);if(!ch.hidden)hs[0]=ch.offsetHeight+16}
-  V.forEach(c=>{const k=hs[1]<hs[0]?1:0;cols[k].appendChild(c);hs[k]+=c.offsetHeight+16})}
+  // v1.26.26 (her ask): ONE column, big cards one below another, fixed order (no jumping / gaps)
+  const ch=document.getElementById("hpChart");if(ch&&cols[0].firstChild!==ch)cols[0].prepend(ch);
+  const RK=["Flock","Feed Summary","Income","Expenses","Result"],rk=c=>{const t=(c.querySelector("h2")||{}).textContent||"";const i=RK.findIndex(x=>t.includes(x));return i<0?99:i};
+  V.slice().sort((x,y)=>rk(x)-rk(y)).forEach(c=>cols[0].appendChild(c));cols[1].hidden=true}
  else if(cols.length){for(const c of L)m.insertBefore(c,cols[0]);const ch=document.getElementById("hpChart"),t=document.getElementById("mnTiles");if(ch&&t)t.after(ch);cols.forEach(d=>d.remove())}
  setTimeout(()=>{busy=false},0)}
 mq.addEventListener("change",lay);

@@ -1,11 +1,11 @@
 {
- "ver": "1.26.25",
- "note": "Feed warning: average from last 3 complete days, tidy layout; feed chart shows unfinished day dashed",
- "noteUr": "فیڈ ریمائنڈر: اوسط صرف مکمل دنوں سے، نئی ترتیب؛ گراف میں ادھورا دن ڈیش لائن",
+ "ver": "1.26.26",
+ "note": "Windows Main: one column, charts full width, cards one below another in fixed order",
+ "noteUr": "ونڈوز مین: گراف پوری چوڑائی میں، خانے ایک کے نیچے ایک مقررہ ترتیب سے",
  "android": {
-  "zip": "android-1.26.25.zip",
+  "zip": "android-1.26.26.zip",
   "minBuild": 27,
-  "sha256": "40c87ecf95203d579f4e80ebdf996ae108ca122e80b3c9a6667e7ca5a5d25839"
+  "sha256": "b97f4e7da59c9e605505c6ad3fb31220d283d141b2f2a9c28da2e76bcf33163a"
  },
  "windows": {
   "files": [
