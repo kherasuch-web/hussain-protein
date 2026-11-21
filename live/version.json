@@ -1,11 +1,11 @@
 {
- "ver": "1.26.23",
- "note": "Cost per kg and Cost per Bird now use birds = chicks - mortality (like weekly FCR), sold birds not taken out",
- "noteUr": "کاسٹ اب ویکلی FCR کی طرح: برڈز = چوزے − موٹیلٹی (بکے ہوئے برڈز نہیں نکالے جاتے)",
+ "ver": "1.26.24",
+ "note": "Supervisor reminder in clear Urdu with 'write now' button; dealer total line has no average rate; Main average rate uses only rated weight",
+ "noteUr": "سپروائزر ریمائنڈر صاف اردو میں + ابھی لکھیں بٹن؛ ڈیلر ٹوٹل سے ایوریج ریٹ ہٹا؛ مین ایوریج صرف ریٹ لگے وزن سے",
  "android": {
-  "zip": "android-1.26.23.zip",
+  "zip": "android-1.26.24.zip",
   "minBuild": 27,
-  "sha256": "b4f34d0621d987efaafd634e7615585f77d82587609f7a9e08d21ce88d14e150"
+  "sha256": "f9ab15865d5aaab3c5d01c8537f877f5dbcb1b59b66f51320d2fb72df168cb14"
  },
  "windows": {
   "files": [

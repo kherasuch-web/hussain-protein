@@ -1457,10 +1457,10 @@ function saleBill(d,date,toast,withRate){
   let h=`<thead><tr><th>Sr</th><th>Date</th><th>Vehicle No</th><th class="r">Empty (kg)</th><th class="r">Load (kg)</th><th class="r">Saafi (kg)</th>${M?'<th class="r">Rate</th><th class="r">Total Price</th>':""}${C?'<th class="r">Received</th><th class="r">Remaining</th>':""}</tr></thead><tbody>`;
   gs.forEach(g=>{h+=g.v.map(x=>`<tr><td>${++n}</td><td>${dmy(x.date)}</td><td>${x.veh?esc(x.veh):"..."}</td><td class="r">${F(x.empty)}</td><td class="r">${F(x.load)}</td><td class="r">${F(slSaafi(x))}</td>${M?"<td></td><td></td>":""}${C?"<td></td><td></td>":""}</tr>`).join("");
     h+=`<tr class="bd"><td colspan="5">${dmy(g.date)} · Total (${F(g.v.length)} vehicle${g.v.length>1?"s":""})</td><td class="r">${F(g.kg)}</td>${M?`<td class="r">${dot(g.rate)}</td><td class="r">${g.rate?F(g.price):"..."}</td>`:""}${C?`<td class="r">${dot(g.recv)}</td><td class="r">${g.rate?F(g.rem):"..."}</td>`:""}</tr>`});
-  const kg=r2(gs.reduce((a,g)=>a+g.kg,0)),price=r2(gs.reduce((a,g)=>a+g.price,0)),recv=r2(gs.reduce((a,g)=>a+g.recv,0)),nv=gs.reduce((a,g)=>a+g.v.length,0);
-  if(!date)h+=`<tr class="bt"><td colspan="5">Grand Total · ${esc(d.name)}</td><td class="r">${F(kg)}</td>${M?`<td class="r">${kg&&price?F(r2(price/kg)):""}</td><td class="r">${F(price)}</td>`:""}${C?`<td class="r">${F(recv)}</td><td class="r">${F(r2(price-recv))}</td>`:""}</tr>`;
+  const kg=r2(gs.reduce((a,g)=>a+g.kg,0)),rkg=r2(gs.filter(g=>g.rate).reduce((a,g)=>a+g.kg,0)),price=r2(gs.reduce((a,g)=>a+g.price,0)),recv=r2(gs.reduce((a,g)=>a+g.recv,0)),nv=gs.reduce((a,g)=>a+g.v.length,0);
+  if(!date)h+=`<tr class="bt"><td colspan="5">Grand Total · ${esc(d.name)}</td><td class="r">${F(kg)}</td>${M?`<td class="r">${rkg&&price?F(r2(price/rkg)):""}</td><td class="r">${F(price)}</td>`:""}${C?`<td class="r">${F(recv)}</td><td class="r">${F(r2(price-recv))}</td>`:""}</tr>`;
   const sum=[["Vehicles",F(nv)],["Saafi Weight",F(kg)+" kg"]];
-  if(M){if(date)sum.push(["Rate (per kg)",gs[0].rate?"Rs "+F(gs[0].rate):"..."]);else sum.push(["Average Rate (per kg)",kg&&price?"Rs "+F(r2(price/kg)):"..."]);
+  if(M){if(date)sum.push(["Rate (per kg)",gs[0].rate?"Rs "+F(gs[0].rate):"..."]);else sum.push(["Average Rate (per kg)",rkg&&price?"Rs "+F(r2(price/rkg)):"..."]);
     sum.push(["Total Price","Rs "+F(Math.round(price))]);if(C)sum.push(["Received","Rs "+F(Math.round(recv))],["Remaining","Rs "+F(Math.round(price-recv))])}
   return billPdf({title:d.name,info:[["Bill",date?"Sale of "+dmy(date)+" (one day)":"Complete sale ("+dmy(gs[0].date)+" to "+dmy(gs[gs.length-1].date)+")"],["Bill Date",dmy(todayISO())]],
     table:h+"</tbody>",sum,file:"Sale Bill - "+d.name+" - "+(date?dmy(date).replace(/\//g,"-"):"Complete")},toast);
@@ -1482,9 +1482,9 @@ function kdTotals(dk){
   const list=kvehs.filter(x=>(x.dk||kdKey(x.dealer))===dk).sort((a,b)=>(a.date||"").localeCompare(b.date||"")||(a.seq||0)-(b.seq||0)||(a.createdAt||"").localeCompare(b.createdAt||""));
   const by={};list.forEach(x=>(by[x.date]=by[x.date]||[]).push(x));
   const groups=Object.keys(by).sort().map(date=>{const v=by[date],kg=r2(v.reduce((a,x)=>a+kdTot(x),0)),rate=kdRateOf(dk,date);return {date,v,kg,rate,price:rate?Math.round(kg*rate):0}});
-  return {groups,kg:r2(groups.reduce((a,g)=>a+g.kg,0)),price:r2(groups.reduce((a,g)=>a+g.price,0)),n:list.length};
+  return {groups,kg:r2(groups.reduce((a,g)=>a+g.kg,0)),rkg:r2(groups.filter(g=>g.rate).reduce((a,g)=>a+g.kg,0)),price:r2(groups.reduce((a,g)=>a+g.price,0)),n:list.length};
 }
-const kdAllTot=()=>{const L=kdDealerList().map(d=>kdTotals(d.dk));return {kg:r2(L.reduce((a,x)=>a+x.kg,0)),price:r2(L.reduce((a,x)=>a+x.price,0)),n:L.reduce((a,x)=>a+x.n,0)}};
+const kdAllTot=()=>{const L=kdDealerList().map(d=>kdTotals(d.dk));return {kg:r2(L.reduce((a,x)=>a+x.kg,0)),price:r2(L.reduce((a,x)=>a+x.price,0)),rkg:r2(L.reduce((a,x)=>a+(x.rkg||0),0)),n:L.reduce((a,x)=>a+x.n,0)}};
 let kdUndoDocs=null;
 function kdKeepUndo(txt,docs){kdUndoDocs=docs;$("kdUndoTxt").textContent=txt;$("kdUndoBar").hidden=false}
 function kdT(m,e){const b=$("kdToast");b.textContent=m;b.classList.toggle("err",!!e)}
@@ -1550,7 +1550,7 @@ function renderKanda(){
       h+=g.v.map(x=>`<tr data-kv="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="w"><div>${x.veh?esc(x.veh):"..."}</div></td><td class="w drvc"><div>${x.drv?esc(x.drv):"..."}${x.mob?`<br><small class="num">${esc(x.mob)}</small>`:""}</div></td><td class="num amt">${F(kdTot(x))}</td><td></td><td></td></tr>`).join("");
       h+=`<tr class="sld"><td colspan="3" class="dcs">${dmy(g.date)} · Total (${F(g.v.length)} vehicle${g.v.length>1?"s":""})</td><td class="num amt">${F(g.kg)}</td><td class="num amt hprt" data-rt="k|${esc(d.dk)}|${g.date}">${g.rate?F(g.rate):"..."}</td><td class="num amt">${g.rate?F(g.price):"..."}</td></tr>`;
     });
-    h+=`<tr class="tot"><td colspan="3" class="dcs">Total · ${esc(d.name)}</td><td class="num amt">${F(T.kg)}</td><td class="num amt">${T.kg&&T.price?F(r2(T.price/T.kg)):""}</td><td class="num amt">${F(T.price)}</td></tr>`;
+    h+=`<tr class="tot"><td colspan="3" class="dcs">Total · ${esc(d.name)}</td><td class="num amt">${F(T.kg)}</td><td class="num amt"></td><td class="num amt">${F(T.price)}</td></tr>`;
     el.querySelector(".sltab").innerHTML=h+"</tbody>";
     const ps=el.querySelector('[data-f="pdfday"]'),pv=ps.value,pds=T.groups.map(g=>g.date).reverse(),po=pds.map(x=>`<option value="${x}">${dmy(x)}</option>`).join("");
     if(ps.dataset.o!==po){ps.innerHTML=po;ps.dataset.o=po;if(pds.includes(pv))ps.value=pv}
@@ -1570,10 +1570,10 @@ function kdDealerBill(d,date,toast,withRate){
   let h=`<thead><tr><th>Sr</th><th>Date</th><th>Vehicle No</th><th class="r">Total Weight (kg)</th>${M?'<th class="r">Rate</th><th class="r">Total Price</th>':""}</tr></thead><tbody>`;
   gs.forEach(g=>{h+=g.v.map(x=>`<tr><td>${++n}</td><td>${dmy(x.date)}</td><td>${x.veh?esc(x.veh):"..."}</td><td class="r">${F(kdTot(x))}</td>${M?"<td></td><td></td>":""}</tr>`).join("");
     h+=`<tr class="bd"><td colspan="3">${dmy(g.date)} · Total (${F(g.v.length)} vehicle${g.v.length>1?"s":""})</td><td class="r">${F(g.kg)}</td>${M?`<td class="r">${dot(g.rate)}</td><td class="r">${g.rate?F(g.price):"..."}</td>`:""}</tr>`});
-  const kg=r2(gs.reduce((a,g)=>a+g.kg,0)),price=r2(gs.reduce((a,g)=>a+g.price,0)),nv=gs.reduce((a,g)=>a+g.v.length,0);
-  if(!date)h+=`<tr class="bt"><td colspan="3">Grand Total · ${esc(d.name)}</td><td class="r">${F(kg)}</td>${M?`<td class="r">${kg&&price?F(r2(price/kg)):""}</td><td class="r">${F(price)}</td>`:""}</tr>`;
+  const kg=r2(gs.reduce((a,g)=>a+g.kg,0)),rkg=r2(gs.filter(g=>g.rate).reduce((a,g)=>a+g.kg,0)),price=r2(gs.reduce((a,g)=>a+g.price,0)),nv=gs.reduce((a,g)=>a+g.v.length,0);
+  if(!date)h+=`<tr class="bt"><td colspan="3">Grand Total · ${esc(d.name)}</td><td class="r">${F(kg)}</td>${M?`<td class="r">${rkg&&price?F(r2(price/rkg)):""}</td><td class="r">${F(price)}</td>`:""}</tr>`;
   const sum=[["Vehicles",F(nv)],["Total Weight",F(kg)+" kg"]];
-  if(M){if(date)sum.push(["Rate (per kg)",gs[0].rate?"Rs "+F(gs[0].rate):"..."]);else sum.push(["Average Rate (per kg)",kg&&price?"Rs "+F(r2(price/kg)):"..."]);sum.push(["Total Price","Rs "+F(Math.round(price))])}
+  if(M){if(date)sum.push(["Rate (per kg)",gs[0].rate?"Rs "+F(gs[0].rate):"..."]);else sum.push(["Average Rate (per kg)",rkg&&price?"Rs "+F(r2(price/rkg)):"..."]);sum.push(["Total Price","Rs "+F(Math.round(price))])}
   return billPdf({title:d.name,info:[["Bill",date?"Kanda sale of "+dmy(date)+" (one day)":"Complete Kanda sale ("+dmy(gs[0].date)+" to "+dmy(gs[gs.length-1].date)+")"],["Bill Date",dmy(todayISO())]],
     table:h+"</tbody>",sum,file:"Kanda Bill - "+d.name+" - "+(date?dmy(date).replace(/\//g,"-"):"Complete")},toast);
 }
@@ -1913,8 +1913,8 @@ function renderMain(){
     row("FCR"+(wk?" (week "+wk.w+")":""),wk?wk.fcr.toFixed(2):dot)+"</tbody>";
   const fIn=r2(flock.openFeed+days.reduce((a,d)=>a+(d.in||0),0)), fOut=r2(days.reduce((a,d)=>a+(d.out||0),0));
   $("mnFeed").innerHTML="<tbody>"+row("Feed In (with opening store)",F(fIn),{go:"daily"})+row("Feed Eaten",F(last?last.fTot:0),{go:"daily"})+row("Feed Out",F(fOut),{go:"daily"})+row("Feed In Store",F(last?last.fRem:flock.openFeed),{c:"tot",go:"daily",neg:last&&last.fRem<0})+"</tbody>";
-  const SL=sdealers.map(d=>slTotals(d.id)), sRcv=Math.round(sdealers.reduce((a,d,i)=>a+(d.cash?SL[i].recv:0),0)), sCashRs=Math.round(sdealers.reduce((a,d,i)=>a+(d.cash?SL[i].price:0),0)), vKg=r2(SL.reduce((a,x)=>a+x.kg,0)), vRs=Math.round(SL.reduce((a,x)=>a+x.price,0)), KD=kdAllTot(), sKg=r2(vKg+KD.kg), GS=gsTotal(), bRs=Math.round(vRs+KD.price), sRs=Math.round(bRs+GS), sN=SL.reduce((a,x)=>a+x.n,0)+KD.n;
-  $("mnSale").innerHTML="<tbody>"+row("Vehicles",F(sN),{go:"sale"})+row("Weight Sold (kg)",F(sKg),{go:"sale"})+(KD.n?row("Vehicle Sale (Saafi kg)",F(vKg),{c:"sub",go:"sale"})+row("Kanda Sale (kg)",F(KD.kg),{c:"sub",go:"sale"}):"")+row("Average Rate (Rs per kg)",sKg&&bRs?F(r2(bRs/sKg)):dot,{go:"sale"})+(KD.n||GS?row("Vehicle Sale (Rs)",F(vRs),{c:"sub",go:"sale"})+(KD.n?row("Kanda Sale (Rs)",F(KD.price),{c:"sub",go:"sale"}):""):"")+(GS?row("General Sale (Rs)",F(GS),{c:"sub",go:"sale"}):"")+row("Total Sale (Rs)",F(sRs),{c:"tot",go:"sale"})+(sdealers.some(d=>d.cash)?row("Cash Received",F(sRcv),{c:"sub",go:"sale"})+row("Cash Remaining",F(r2(sCashRs-sRcv)),{c:"sub",go:"sale"}):"")+"</tbody>";
+  const SL=sdealers.map(d=>slTotals(d.id)), sRcv=Math.round(sdealers.reduce((a,d,i)=>a+(d.cash?SL[i].recv:0),0)), sCashRs=Math.round(sdealers.reduce((a,d,i)=>a+(d.cash?SL[i].price:0),0)), vKg=r2(SL.reduce((a,x)=>a+x.kg,0)), vRs=Math.round(SL.reduce((a,x)=>a+x.price,0)), KD=kdAllTot(), sKg=r2(vKg+KD.kg), GS=gsTotal(), bRs=Math.round(vRs+KD.price), sRs=Math.round(bRs+GS), sN=SL.reduce((a,x)=>a+x.n,0)+KD.n, rKg=r2(SL.reduce((a,x)=>a+(x.rkg||0),0)+(KD.rkg||0));
+  $("mnSale").innerHTML="<tbody>"+row("Vehicles",F(sN),{go:"sale"})+row("Weight Sold (kg)",F(sKg),{go:"sale"})+(KD.n?row("Vehicle Sale (Saafi kg)",F(vKg),{c:"sub",go:"sale"})+row("Kanda Sale (kg)",F(KD.kg),{c:"sub",go:"sale"}):"")+row("Average Rate (Rs per kg)",rKg&&bRs?F(r2(bRs/rKg)):dot,{go:"sale"})+(KD.n||GS?row("Vehicle Sale (Rs)",F(vRs),{c:"sub",go:"sale"})+(KD.n?row("Kanda Sale (Rs)",F(KD.price),{c:"sub",go:"sale"}):""):"")+(GS?row("General Sale (Rs)",F(GS),{c:"sub",go:"sale"}):"")+row("Total Sale (Rs)",F(sRs),{c:"tot",go:"sale"})+(sdealers.some(d=>d.cash)?row("Cash Received",F(sRcv),{c:"sub",go:"sale"})+row("Cash Remaining",F(r2(sCashRs-sRcv)),{c:"sub",go:"sale"}):"")+"</tbody>";
   const sum=(l,k)=>Math.round(l.reduce((a,x)=>a+(x[k]||0),0));
   const gen=sum(spends.filter(x=>x.type!=="break"),"amount");
   const fdIn=sum(feeds.filter(x=>x.kind==="in"),"price"), fdOut=sum(feeds.filter(x=>x.kind==="out"),"price"), fdW=flock&&flock.raw&&flock.raw.feedTotal||0, FC=fdCost(last), feedC=Math.round(fdW||FC.cost);
@@ -1957,7 +1957,7 @@ function slTotals(dl){
   const list=svehs.filter(x=>x.dealer===dl), dates=[...new Set(list.map(x=>x.date))].sort();
   const groups=dates.map(date=>{const v=list.filter(x=>x.date===date).sort((a,b)=>(a.seq||0)-(b.seq||0)),kg=r2(v.reduce((a,x)=>a+slSaafi(x),0)),rate=slRate(dl,date),recv=slRecv(dl,date),price=Math.round(kg*rate);return {date,v,kg,rate,price,recv,rem:r2(price-recv)}});
   const price=r2(groups.reduce((a,g)=>a+g.price,0)),recv=r2(groups.reduce((a,g)=>a+g.recv,0));
-  return {groups,kg:r2(groups.reduce((a,g)=>a+g.kg,0)),price,recv,rem:r2(price-recv),n:list.length};
+  return {groups,kg:r2(groups.reduce((a,g)=>a+g.kg,0)),rkg:r2(groups.filter(g=>g.rate).reduce((a,g)=>a+g.kg,0)),price,recv,rem:r2(price-recv),n:list.length};
 }
 function slApplyOpen(){document.querySelectorAll(".slsec").forEach(el=>{const o=el.dataset.sd===slOpen;el.classList.toggle("open",o);el.querySelector(".mbbody").hidden=!o;el.querySelector(".mbhead").setAttribute("aria-expanded",o)})}
 function saleSection(d){
@@ -2079,7 +2079,7 @@ function renderSale(){
       h+=g.v.map(x=>`<tr data-sv="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="w"><div>${x.veh?esc(x.veh):"..."}</div></td><td class="w drvc"><div>${x.drv?esc(x.drv):"..."}${x.mob?`<br><small class="num">${esc(x.mob)}</small>`:""}</div></td><td class="num amt">${F(x.empty)}</td><td class="num amt">${F(x.load)}</td><td class="num amt">${F(slSaafi(x))}</td><td></td><td></td>${ex}</tr>`).join("");
       h+=`<tr class="sld"><td colspan="5" class="dcs">${dmy(g.date)} · Total (${F(g.v.length)} vehicle${g.v.length>1?"s":""})</td><td class="num amt">${F(g.kg)}</td><td class="num amt hprt" data-rt="v|${esc(d.id)}|${g.date}">${g.rate?F(g.rate):"..."}</td><td class="num amt">${g.rate?F(g.price):"..."}</td>${C?`<td class="num amt hprt" data-rt="r|${esc(d.id)}|${g.date}">${g.recv?F(g.recv):"..."}</td><td class="num amt${g.rem<0?" neg":""}">${g.rate?F(g.rem):"..."}</td>`:""}</tr>`;
     });
-    h+=T.n?`<tr class="tot"><td colspan="5" class="dcs">Total · ${esc(d.name)}</td><td class="num amt">${F(T.kg)}</td><td class="num amt">${T.kg&&T.price?F(r2(T.price/T.kg)):""}</td><td class="num amt">${F(T.price)}</td>${C?`<td class="num amt">${F(T.recv)}</td><td class="num amt">${F(T.rem)}</td>`:""}</tr>`:`<tr><td colspan="${cols}" class="empty">No sale to this dealer yet. Add the first vehicle above.</td></tr>`;
+    h+=T.n?`<tr class="tot"><td colspan="5" class="dcs">Total · ${esc(d.name)}</td><td class="num amt">${F(T.kg)}</td><td class="num amt"></td><td class="num amt">${F(T.price)}</td>${C?`<td class="num amt">${F(T.recv)}</td><td class="num amt">${F(T.rem)}</td>`:""}</tr>`:`<tr><td colspan="${cols}" class="empty">No sale to this dealer yet. Add the first vehicle above.</td></tr>`;
     el.querySelector(".sltab").innerHTML=h+"</tbody>";
     const ps=el.querySelector('[data-f="pdfday"]'),pv=ps.value,pds=T.groups.map(g=>g.date).reverse(),po=pds.map(x=>`<option value="${x}">${dmy(x)}</option>`).join("")||'<option value="">No sale yet</option>';
     if(ps.dataset.o!==po){ps.innerHTML=po;ps.dataset.o=po;if(pds.includes(pv))ps.value=pv}
@@ -2407,11 +2407,20 @@ function smTable(k,ed){const dot=v=>v?esc(v):"...",L=smList(k),seen=+(localStora
 let supnotes=[],srKind="";
 const srUr=k=>k==="Daily data"?"روزانہ ڈیٹا":k;
 const srMsg=x=>dmy(x.date)+" کی "+srUr(x.kind)+" کی اینٹری کریں";
+/* v1.26.24: clear Urdu reminder + button that opens the right form on that date */
+const SRT={"Daily data":["کا <b>روزانہ ڈیٹا</b> (فیڈ، موٹیلٹی، دوائی، پانی) <b>ابھی تک نہیں لکھا</b>۔","✓ لکھ دیا"],"In Feed":["کو جو فیڈ آئی تھی <span dir=\"ltr\">(In Feed)</span> وہ آپ نے <b>ابھی تک نہیں لکھی</b>۔","✓ لکھ دی"],"Out Feed":["کو جو فیڈ باہر گئی تھی <span dir=\"ltr\">(Out Feed)</span> وہ آپ نے <b>ابھی تک نہیں لکھی</b>۔","✓ لکھ دی"],"In Medicine":["کو جو دوائی آئی تھی <span dir=\"ltr\">(In Medicine)</span> وہ آپ نے <b>ابھی تک نہیں لکھی</b>۔","✓ لکھ دی"],"Out Medicine":["کو جو دوائی باہر گئی تھی <span dir=\"ltr\">(Out Medicine)</span> وہ آپ نے <b>ابھی تک نہیں لکھی</b>۔","✓ لکھ دی"]};
+const srHtml=x=>{const t=SRT[x.kind];return t?'<bdi dir="ltr">'+dmy(x.date)+'</bdi> '+t[0]:esc(srMsg(x))};
+function srOpenEl(id){const el=$(id);if(!el)return;if(!el.offsetParent){const v=$(/^sm/.test(id)?"vSupMed":"vDaily"),c=v&&v.querySelector(".hphb:not(.on) .hpch");if(c)c.click()}setTimeout(()=>{el.scrollIntoView({behavior:"smooth",block:"center"});try{el.focus({preventScroll:true})}catch(e){}},80)}
+function srGo(id){const x=supnotes.find(y=>y.id===id);if(!x||!flock)return;
+  if(/Medicine/.test(x.kind)){smShow(true);smKind=/Out/.test(x.kind)?"out":"in";smEdit=null;smFill(null);$("smDate").value=x.date;renderSupMed();srOpenEl("smName");return}
+  smShow(false);const day=Math.round((Date.parse(x.date+"T12:00:00")-Date.parse(flock.start+"T12:00:00"))/864e5)+1,d=days.find(y=>y.day===day);
+  if(d&&day!==nextDay()){editDay=d.day;fillForm(d);toast("toast","دن "+d.day+" ("+dmy(x.date)+") کھل گیا: لکھ کر محفوظ کریں")}
+  render();srOpenEl(x.kind==="In Feed"?"iIn":x.kind==="Out Feed"?"iOut":"iFDay")}
 const srTime=t=>{if(!t)return "";const d=new Date(t);return dmy(t.slice(0,10)).slice(0,5)+" "+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})};
 function renderSupRem(){try{
   const mine=supnotes.filter(x=>!flockId||!x.flock||x.flock===flockId).sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
   if(HPMODE==="sup"){let box=$("srBox");if(!box){box=document.createElement("div");box.id="srBox";box.hidden=true;box.addEventListener("click",srDone)}const open=mine.filter(x=>!x.done);const bn=document.querySelector(".hpsupb");if(bn){if(bn.nextElementSibling!==box)bn.after(box)}else if(box.parentElement!==$("vDaily"))$("vDaily").prepend(box);
-    box.innerHTML=open.map(x=>`<div class="sritem"><div class="h">🔔 فارم نے یاد دلایا</div><div class="m">${esc(srMsg(x))}</div>${x.note||x.createdAt?`<div class="d" dir="ltr">${x.note?"Note: "+esc(x.note)+" · ":""}sent ${esc(srTime(x.createdAt))}</div>`:""}<button type="button" data-srdone="${esc(x.id)}">✓ ہو گیا</button></div>`).join("");box.hidden=!open.length;return}
+    box.innerHTML=open.map(x=>`<div class="sritem"><div class="h">🔔 فارم یاد دلا رہا ہے</div><div class="m">${srHtml(x)}</div>${x.note||x.createdAt?`<div class="d" dir="ltr">${x.note?"Note: "+esc(x.note)+" · ":""}sent ${esc(srTime(x.createdAt))}</div>`:""}<div class="srrow"><button type="button" class="srgo" data-srgo="${esc(x.id)}">✏ ابھی لکھیں</button><button type="button" data-srdone="${esc(x.id)}">${(SRT[x.kind]||[0,"✓ ہو گیا"])[1]}</button></div></div>`).join("");box.hidden=!open.length;return}
   if(HPMODE!=="farm")return;
   let h=`<thead><tr><th>Sent</th><th>What</th><th>Date</th><th>Note</th><th>Status</th></tr></thead><tbody>`;
   h+=mine.length?mine.map(x=>`<tr><td class="num">${esc(srTime(x.createdAt))}</td><td>${esc(x.kind)}</td><td class="num">${dmy(x.date)}</td><td>${x.note?esc(x.note):"..."}</td><td>${x.done?`<b class="srok">✓ Done ${esc(srTime(x.doneAt))}</b>`:`<b class="srwait">⏳ Waiting</b>`}${canWrite?` <button type="button" class="srdel" data-srdel="${esc(x.id)}" title="Delete">✕</button>`:""}</td></tr>`).join(""):`<tr><td colspan="5" class="empty">No reminders yet.</td></tr>`;
@@ -2586,7 +2595,7 @@ if(HPMODE==="farm"){
   $("srWa").addEventListener("click",()=>{if(!srKind||!$("srDate").value){toast("srToast","Choose what is missing and the date first.",true);return}if(window.hpOpenWhatsApp)window.hpOpenWhatsApp(srText())});
   $("srList").addEventListener("click",async e=>{const b=e.target.closest("[data-srdel]");if(!b||!canWrite)return;try{await db.doc("supnote/"+b.dataset.srdel).delete()}catch(er){}});
 }
-async function srDone(e){const b=e.target.closest("[data-srdone]");if(!b)return;b.disabled=true;
+async function srDone(e){const g=e.target.closest("[data-srgo]");if(g){srGo(g.dataset.srgo);return}const b=e.target.closest("[data-srdone]");if(!b)return;b.disabled=true;
   const {id,...old}=supnotes.find(x=>x.id===b.dataset.srdone)||{};if(!id){b.disabled=false;return}const ok=await write(db.doc("supnote/"+id),{...old,done:true,doneAt:new Date().toISOString()});if(!ok)b.disabled=false}
 if(HPMODE==="sup"&&$("srBox"))$("srBox").addEventListener("click",srDone);
 $("mbTabIn").addEventListener("click",()=>mbPartSet("in"));$("mbTabOut").addEventListener("click",()=>mbPartSet("out"));
@@ -3914,6 +3923,7 @@ body:not(.supview) #svRem{display:none}
 #srBox{display:flex;flex-direction:column;gap:10px;margin:10px 12px 0}#srBox[hidden]{display:none}
 #srBox .sritem{background:#fff6d6;border:2px solid #e8b400;border-radius:16px;padding:12px;direction:rtl;text-align:right;font-family:"Jameel Noori","Segoe UI",serif}
 #srBox .h{font-size:21px;color:#7a5200}#srBox .m{font-size:21px;line-height:1.8;margin:2px 0 6px}#srBox .d{font:12.5px "Segoe UI",Roboto,sans-serif;color:#4a5d70;text-align:right;margin-bottom:8px}
+#srBox .m b{color:#b3261e;font-weight:400}#srBox .srrow{display:flex;gap:8px}#srBox .srrow button{flex:1}#srBox button.srgo{background:#1f5fa8}
 #srBox button{width:100%;background:#2e7d4f;color:#fff;border:0;border-radius:10px;padding:8px;font:20px "Jameel Noori","Segoe UI",serif}
 #smBox{direction:rtl;text-align:right;background:#fff;border:2px solid #b5520b;border-radius:14px;padding:10px 12px;margin:0 0 12px;font-family:"Jameel Noori","Segoe UI",serif}
 #smBox[hidden]{display:none}#smBox b{display:block;font-size:18px;font-weight:400}#smBox small{display:block;color:#5d6b64;font:13px "Segoe UI",Roboto,sans-serif;text-align:right}
