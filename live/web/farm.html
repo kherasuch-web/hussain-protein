@@ -1665,7 +1665,7 @@ async function fullReport(withMoney,toast){
   const oldTab=tab, histOf=k=>{tab=k;render();return T("hist")};
   const hFeed=histOf("feed"),hBird=histOf("bird"),hMed=histOf("med");tab=oldTab;render();
   let res=T("mnRes");
-  if(!withMoney){const d=document.createElement("div");d.innerHTML=res;d.querySelectorAll("tr").forEach(r=>{const k=(r.cells[0]||{}).textContent||"";if(!/^(Grand Total Expenses|Cost per Bird Alive|Average Weight|Total Weight|Cost per kg$)/.test(k))r.remove()});res=d.innerHTML}
+  if(!withMoney){const d=document.createElement("div");d.innerHTML=res;d.querySelectorAll("tr").forEach(r=>{const k=(r.cells[0]||{}).textContent||"";if(!/^(Grand Total Expenses|Cost per Bird|Average Weight|Birds \(chicks|Total Weight|Cost per kg$)/.test(k))r.remove()});res=d.innerHTML}
   const secs=(sel)=>[...document.querySelectorAll(sel)].map(el=>{const t=el.querySelector("table").cloneNode(true);t.querySelectorAll(".drvc").forEach(c=>c.remove());t.querySelectorAll(".dcs").forEach(c=>c.colSpan-=1);return `<h4>${esc(el.querySelector(".mbdname").textContent)} · ${esc(el.querySelector(".mbdtot").textContent)}</h4><table class="${t.className}">${t.innerHTML}</table>`}).join("");
   const inner=`<div class="rh"><span class="rlogo"><img src="img/logo-1024.png" alt=""><b>HUSSAIN PROTEIN GROUP</b></span><div><div class="u">${esc(shedNm)}</div><small>Flock start ${dateFor(1)} · Report ${dmy(todayISO()).replace(/\//g,"-")}</small></div></div>
     <h3>Main Summary</h3>${T("mnFlock")}
@@ -1931,11 +1931,11 @@ function renderMain(){
     row("Advance (paid)",F(adv),{c:"sub",go:"spend:sup"})+
     row("Net Salary (to pay)",F(net),{c:"sub",go:"spend:sal",neg:net<0})+
     row("Grand Total (Rs)",F(grand),{c:"tot big"})+"</tbody>";
-  $("mnGrand").textContent=rs(grand);window.__mn={grand,feedC,sRs,alive,fdW:!!fdW};
+  $("mnGrand").textContent=rs(grand);window.__mn={grand,feedC,sRs,alive,fb:Math.max(0,(flock.placed||0)-(mort||0)),fdW:!!fdW};
   const pl=Math.round(sRs-grand);
   $("mnRes").innerHTML="<tbody>"+row("Total Sale",F(sRs))+row("Grand Total Expenses","− "+F(grand))+(showPL?row(pl>=0?"Profit":"Loss",F(Math.abs(pl)),{c:"tot big",neg:pl<0}):row("Profit / Loss",dot,{c:"tot big"}))+
-    (()=>{const C=costKg(alive,grand);return row("Average Weight"+(C.src?" ("+C.src+")":""),C.g?F(C.g)+" g":dot)+row("Total Weight"+(C.g?" ("+(C.g/1000).toFixed(3)+" × "+F(alive)+")":""),C.kg?F(C.kg)+" kg":dot)+row("Cost per kg",C.cost?F(C.cost):dot,{c:"tot"})})()+
-    row("Cost per Bird Alive",alive>0?F(r2(grand/alive)):dot)+row("Cost per kg Sold",showPL&&sKg?F(r2(grand/sKg)):dot)+"</tbody>"+
+    (()=>{const fb=window.__mn.fb,C=costKg(fb,grand);return row("Average Weight"+(C.src?" ("+C.src+")":""),C.g?F(C.g)+" g":dot)+row("Birds (chicks − mortality)",F(fb))+row("Total Weight"+(C.g?" ("+(C.g/1000).toFixed(3)+" × "+F(fb)+")":""),C.kg?F(C.kg)+" kg":dot)+row("Cost per kg",C.cost?F(C.cost):dot,{c:"tot"})})()+
+    row("Cost per Bird",window.__mn.fb>0?F(r2(grand/window.__mn.fb)):dot)+row("Cost per kg Sold",showPL&&sKg?F(r2(grand/sKg)):dot)+"</tbody>"+
     (showPL?"":`<tbody><tr><td colspan="2" style="color:var(--muted);font-size:11px">Press "Calculate Profit" to count Profit / Loss.</td></tr></tbody>`);
   if(document.activeElement!==$("mnAvgW"))$("mnAvgW").value=wExtra.costAvgW||"";$("mnAvgSave").disabled=!canWrite;
   const pb=$("plBtn");if(pb){pb.textContent=showPL?"Hide Profit":"Calculate Profit";pb.className=showPL?"ghost":"save"}
@@ -4277,7 +4277,7 @@ function calc(){const ins=[...document.querySelectorAll("#ccBody input.ccl")],o=
   const h=compute(days),L=h[h.length-1],st=L?r2(L.fRem):0,d=r2(tot-st);
   $("ccChk").innerHTML=Math.abs(d)<0.01?`<div class="ur ok">✓ بقایا ${F(tot)} بوری = روز کی رپورٹ کا Feed In Store ${F(st)}</div>`:`<div class="ur bad">روز کی رپورٹ میں Feed In Store ${F(st)} بوری ہے، آپ نے ${F(tot)} لکھی ہیں۔ ${F(Math.abs(d))} بوری کا فرق ہے۔</div>`;
   const M=window.__mn||{},R=(l,v,c="")=>`<tr class="${c}"><td>${l}</td><td class="num amt">${v}</td></tr>`,g=Math.round((M.grand||0)-(M.feedC||0)+cost),pl=Math.round((M.sRs||0)-g);
-  $("ccRes").innerHTML="<tbody>"+rows.map(r=>R(r[0],r[1])).join("")+R("Feed Cost (exact)",F(cost),"tot")+R(M.fdW?"Main now (written total)":"Main now (In − Out)",F(M.feedC||0),"mut")+R("Grand Total Expenses",F(g))+R("Cost per Bird Alive",M.alive>0?F(r2(g/M.alive)):"...")+(showPL?R(pl>=0?"Profit":"Loss",F(Math.abs(pl)),"tot"):R("Profit / Loss","...","tot"))+"</tbody>";
+  $("ccRes").innerHTML="<tbody>"+rows.map(r=>R(r[0],r[1])).join("")+R("Feed Cost (exact)",F(cost),"tot")+R(M.fdW?"Main now (written total)":"Main now (In − Out)",F(M.feedC||0),"mut")+R("Grand Total Expenses",F(g))+R("Cost per Bird",M.fb>0?F(r2(g/M.fb)):"...")+(showPL?R(pl>=0?"Profit":"Loss",F(Math.abs(pl)),"tot"):R("Profit / Loss","...","tot"))+"</tbody>";
   $("ccNote").textContent=showPL?"":'Profit / Loss shows when "Calculate Profit" is on.'}
 function apply(){const o={};document.querySelectorAll("#ccBody input.ccl").forEach(i=>{o[i.dataset.t]=i.value});try{localStorage.setItem(ccKey(),JSON.stringify(o))}catch(e){}$("ccSheet").hidden=true;renderMain()}
 function lab(){const b=$("ccBtn");if(!b)return;const on=!!ccGet()&&!wExtra.feedLeftDone;b.textContent=on?"Clear Cost":"Check Cost";b.classList.toggle("ccon",on);b.hidden=!!wExtra.feedLeftDone}
