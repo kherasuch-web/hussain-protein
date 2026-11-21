@@ -1548,7 +1548,7 @@ function renderKanda(){
     let h=`<thead><tr><th>Date</th><th>Vehicle No</th><th class="drvc">Driver</th><th class="amt">Weight (kg)</th><th class="amt">Rate</th><th class="amt">Total Price</th></tr></thead><tbody>`;
     T.groups.forEach(g=>{
       h+=g.v.map(x=>`<tr data-kv="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="w"><div>${x.veh?esc(x.veh):"..."}</div></td><td class="w drvc"><div>${x.drv?esc(x.drv):"..."}${x.mob?`<br><small class="num">${esc(x.mob)}</small>`:""}</div></td><td class="num amt">${F(kdTot(x))}</td><td></td><td></td></tr>`).join("");
-      h+=`<tr class="sld"><td colspan="3" class="dcs">${dmy(g.date)} · Total (${F(g.v.length)} vehicle${g.v.length>1?"s":""})</td><td class="num amt">${F(g.kg)}</td><td class="num amt">${g.rate?F(g.rate):"..."}</td><td class="num amt">${g.rate?F(g.price):"..."}</td></tr>`;
+      h+=`<tr class="sld"><td colspan="3" class="dcs">${dmy(g.date)} · Total (${F(g.v.length)} vehicle${g.v.length>1?"s":""})</td><td class="num amt">${F(g.kg)}</td><td class="num amt hprt" data-rt="k|${esc(d.dk)}|${g.date}">${g.rate?F(g.rate):"..."}</td><td class="num amt">${g.rate?F(g.price):"..."}</td></tr>`;
     });
     h+=`<tr class="tot"><td colspan="3" class="dcs">Total · ${esc(d.name)}</td><td class="num amt">${F(T.kg)}</td><td class="num amt">${T.kg&&T.price?F(r2(T.price/T.kg)):""}</td><td class="num amt">${F(T.price)}</td></tr>`;
     el.querySelector(".sltab").innerHTML=h+"</tbody>";
@@ -1798,13 +1798,14 @@ function salaryPdf(toast){
     table:h+"</tbody>",sum:[["Total Salaries",F(tSal)],["Caching",F(cach)],["Feed"+(C.rate!=null?" ("+F(C.bags)+" bags × "+F(C.rate)+")":""),F(C.amt)],["Bird Fee",F(bird)],["Total",F(gross)],["Less: Advance (Supervisor)","− "+F(adv)],["Net Salary","Rs "+F(Math.round(gross-adv))]],
     file:"Salary - "+dmy(till).replace(/\//g,"-")},toast);
 }
+const pbN=n=>"Page Break · "+n+" entr"+(n===1?"y":"ies");
 function supPdf(toast){
   const list=dateOrder(sups), items=list.filter(x=>x.type!=="break");
   if(!items.length){toast("No supervisor payments yet.",true);return}
   const tot=r2(items.reduce((a,x)=>a+(x.amount||0),0)), ds=items.map(x=>x.date).filter(Boolean).sort(), dot=v=>v?esc(v):"...";
   let run=0,pg=0,n=0,h=`<thead><tr><th>Sr</th><th>Date</th><th class="r">Amount Given</th><th>Counterpart</th><th>Via</th></tr></thead><tbody>`;
-  h+=list.map(x=>{if(x.type==="break"){const t=run-pg;pg=run;return `<tr class="bd"><td colspan="2" style="text-align:left">Page Break</td><td class="r">${F(r2(run))}</td><td colspan="2" style="text-align:center;font-style:normal;font-weight:700">Total: ${F(r2(t))}</td></tr>`}
-    run+=x.amount||0;return `<tr><td>${++n}</td><td>${dmy(x.date)}</td><td class="r">${x.amount?F(x.amount):"..."}</td><td>${dot(x.cp)}</td><td>${dot(x.via)}</td></tr>`}).join("");
+  let pc=0;h+=list.map(x=>{if(x.type==="break"){const t=run-pg,c=pc;pg=run;pc=0;return `<tr class="bd"><td colspan="2" style="text-align:left">${pbN(c)}</td><td class="r">${F(r2(run))}</td><td colspan="2" style="text-align:center;font-style:normal;font-weight:700">Total: ${F(r2(t))}</td></tr>`}
+    run+=x.amount||0;pc++;return `<tr><td>${++n}</td><td>${dmy(x.date)}</td><td class="r">${x.amount?F(x.amount):"..."}</td><td>${dot(x.cp)}</td><td>${dot(x.via)}</td></tr>`}).join("");
   h+=`<tr class="bt"><td colspan="2">Total (Rs)</td><td class="r">${F(tot)}</td><td colspan="2"></td></tr>`;
   return billPdf({title:"Supervisor Advance",info:[["Dates",ds.length?dmy(ds[0])+" to "+dmy(ds[ds.length-1]):"..."],["Report Date",dmy(todayISO())]],
     table:h+"</tbody>",sum:[["Entries",F(items.length)],["Total Given","Rs "+F(Math.round(tot))]],file:"Supervisor Advance - "+dmy(todayISO()).replace(/\//g,"-")},toast);
@@ -1852,7 +1853,7 @@ function renderSpend(){
     $("spTable").innerHTML=h+"</tbody>";
   }else{
   let run=0;
-  h+=list.map(x=>{if(x.type!=="break")run+=x.amount||0;return x;}).map((x,i,arr)=>x.type==="break"?`<tr class="brk" data-sp="${esc(x.id)}"><td class="pbl">Page Break</td><td colspan="3" class="pbt">Total: ${F(r2(arr.slice(arr.slice(0,i).map(y=>y.type).lastIndexOf("break")+1,i).filter(y=>y.type!=="break").reduce((a,y)=>a+(y.amount||0),0)))}</td><td class="num amt">${F(r2(arr.slice(0,i).filter(y=>y.type!=="break").reduce((a,y)=>a+(y.amount||0),0)))}</td></tr>`:
+  h+=list.map(x=>{if(x.type!=="break")run+=x.amount||0;return x;}).map((x,i,arr)=>x.type==="break"?`<tr class="brk" data-sp="${esc(x.id)}"><td class="pbl">${pbN(arr.slice(arr.slice(0,i).map(y=>y.type).lastIndexOf("break")+1,i).filter(y=>y.type!=="break").length)}</td><td colspan="3" class="pbt">Total: ${F(r2(arr.slice(arr.slice(0,i).map(y=>y.type).lastIndexOf("break")+1,i).filter(y=>y.type!=="break").reduce((a,y)=>a+(y.amount||0),0)))}</td><td class="num amt">${F(r2(arr.slice(0,i).filter(y=>y.type!=="break").reduce((a,y)=>a+(y.amount||0),0)))}</td></tr>`:
     `<tr data-sp="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="dsc"><div>${esc(x.desc)}</div></td><td>${esc(dot(x.qty))}</td><td class="cpc">${esc(dot(x.cp))}</td><td class="num amt">${x.amount?F(x.amount):"..."}</td></tr>`).join("");
   if(items.length)h+=`<tr class="tot"><td colspan="4">Total (Rs)</td><td class="num amt">${F(tot)}</td></tr>`;
   else h+=`<tr><td colspan="5" class="empty">No spendings yet. Add the first one above.</td></tr>`;
@@ -2076,7 +2077,7 @@ function renderSale(){
     let h=`<thead><tr><th>Date</th><th>Vehicle No</th><th class="drvc">Driver</th><th class="amt">Empty (kg)</th><th class="amt">Load (kg)</th><th class="amt">Saafi (kg)</th><th class="amt">Rate</th><th class="amt">Total Price</th>${C?'<th class="amt">Received</th><th class="amt">Remaining</th>':""}</tr></thead><tbody>`;
     T.groups.forEach(g=>{
       h+=g.v.map(x=>`<tr data-sv="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="w"><div>${x.veh?esc(x.veh):"..."}</div></td><td class="w drvc"><div>${x.drv?esc(x.drv):"..."}${x.mob?`<br><small class="num">${esc(x.mob)}</small>`:""}</div></td><td class="num amt">${F(x.empty)}</td><td class="num amt">${F(x.load)}</td><td class="num amt">${F(slSaafi(x))}</td><td></td><td></td>${ex}</tr>`).join("");
-      h+=`<tr class="sld"><td colspan="5" class="dcs">${dmy(g.date)} · Total (${F(g.v.length)} vehicle${g.v.length>1?"s":""})</td><td class="num amt">${F(g.kg)}</td><td class="num amt">${g.rate?F(g.rate):"..."}</td><td class="num amt">${g.rate?F(g.price):"..."}</td>${C?`<td class="num amt">${g.recv?F(g.recv):"..."}</td><td class="num amt${g.rem<0?" neg":""}">${g.rate?F(g.rem):"..."}</td>`:""}</tr>`;
+      h+=`<tr class="sld"><td colspan="5" class="dcs">${dmy(g.date)} · Total (${F(g.v.length)} vehicle${g.v.length>1?"s":""})</td><td class="num amt">${F(g.kg)}</td><td class="num amt hprt" data-rt="v|${esc(d.id)}|${g.date}">${g.rate?F(g.rate):"..."}</td><td class="num amt">${g.rate?F(g.price):"..."}</td>${C?`<td class="num amt hprt" data-rt="r|${esc(d.id)}|${g.date}">${g.recv?F(g.recv):"..."}</td><td class="num amt${g.rem<0?" neg":""}">${g.rate?F(g.rem):"..."}</td>`:""}</tr>`;
     });
     h+=T.n?`<tr class="tot"><td colspan="5" class="dcs">Total · ${esc(d.name)}</td><td class="num amt">${F(T.kg)}</td><td class="num amt">${T.kg&&T.price?F(r2(T.price/T.kg)):""}</td><td class="num amt">${F(T.price)}</td>${C?`<td class="num amt">${F(T.recv)}</td><td class="num amt">${F(T.rem)}</td>`:""}</tr>`:`<tr><td colspan="${cols}" class="empty">No sale to this dealer yet. Add the first vehicle above.</td></tr>`;
     el.querySelector(".sltab").innerHTML=h+"</tbody>";
@@ -2180,8 +2181,8 @@ function renderSup(){
   if(sf){const hit=sf.hit,qt=sum(hit);h+=hit.map(x=>`<tr data-su="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="num amt">${x.amount?F(x.amount):"..."}</td><td class="w"><div>${dot(x.cp)}</div></td><td class="w"><div>${dot(x.via)}</div></td></tr>`).join("");
     h+=hit.length?`<tr class="tot"><td colspan="2">Total (Rs) · ${F(hit.length)} entr${hit.length>1?"ies":"y"} ${esc(sf.lab)}</td><td class="num amt" colspan="2" style="text-align:left">${F(qt)}</td></tr>`:`<tr><td colspan="4" class="empty">${sf.none}</td></tr>`;}
   else{
-  h+=list.map(x=>{if(x.type==="break"){const t=run-pgS;pgS=run;return `<tr class="brk" data-su="${esc(x.id)}"><td class="pbl">Page Break</td><td colspan="2" class="pbt">Total: ${F(r2(t))}</td><td class="num amt">${F(r2(run))}</td></tr>`}
-    run+=x.amount||0;return `<tr data-su="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="num amt">${x.amount?F(x.amount):"..."}</td><td class="w"><div>${dot(x.cp)}</div></td><td class="w"><div>${dot(x.via)}</div></td></tr>`}).join("");
+  let pcS=0;h+=list.map(x=>{if(x.type==="break"){const t=run-pgS,c=pcS;pgS=run;pcS=0;return `<tr class="brk" data-su="${esc(x.id)}"><td class="pbl">${pbN(c)}</td><td colspan="2" class="pbt">Total: ${F(r2(t))}</td><td class="num amt">${F(r2(run))}</td></tr>`}
+    run+=x.amount||0;pcS++;return `<tr data-su="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="num amt">${x.amount?F(x.amount):"..."}</td><td class="w"><div>${dot(x.cp)}</div></td><td class="w"><div>${dot(x.via)}</div></td></tr>`}).join("");
   h+=items.length?`<tr class="tot"><td>Total (Rs)</td><td class="num amt">${F(tot)}</td><td colspan="2"></td></tr>`:`<tr><td colspan="4" class="empty">No supervisor payments yet. Add the first one above.</td></tr>`;}
   $("suTable").innerHTML=h+"</tbody>";
   const uniq=k=>[...new Set(items.map(x=>x[k]).filter(Boolean))].sort();
@@ -3968,9 +3969,9 @@ function check(){const c=$("wvChk");wvSure="";$("wvSave").textContent=wvSel?(mNu
 function render(){
   if(!$("dvTable"))return;
   opts($("dvDl"));opts($("wvDl"));
-  const ord={p:0,n:1,s:2},L=dvL().map(x=>({...x,_s:st(x)})).sort((a,b)=>ord[a._s]-ord[b._s]||(b.date>a.date?1:b.date<a.date?-1:0));
+  const ord={p:0,n:1,s:2},L=dvL().map(x=>({...x,_s:st(x)})).sort((a,b)=>(b.date>a.date?1:b.date<a.date?-1:0)||ord[a._s]-ord[b._s]);
   const lab={p:"⚖ Load pending",n:"⏳ Not arrived",s:"✅ In Sale"};
-  $("dvTable").innerHTML='<thead><tr><th>Date</th><th>Vehicle No</th><th>Dealer</th><th>Status</th></tr></thead><tbody>'+(L.length?L.map(x=>`<tr data-dv="${esc(x.id)}" class="${x._s==="s"?"dim":""}"><td class="num">${sd(x.date)}</td><td>${esc(x.veh)}</td><td>${esc(dn(x.dealer))}</td><td class="st ${x._s}">${lab[x._s]}</td></tr>`).join(""):'<tr><td colspan="4" class="empty">No vehicle numbers yet. Add the numbers the dealers send.</td></tr>')+"</tbody>";
+  $("dvTable").innerHTML='<thead><tr><th>Date</th><th>Vehicle No</th><th>Dealer</th><th>Status</th></tr></thead><tbody>'+(L.length?L.map((x,i)=>(i&&L[i-1].date!==x.date?'<tr class="hpgap"><td colspan="4"></td></tr>':'')+`<tr data-dv="${esc(x.id)}" class="${x._s==="s"?"dim":""}"><td class="num">${sd(x.date)}</td><td>${esc(x.veh)}</td><td>${esc(dn(x.dealer))}</td><td class="st ${x._s}">${lab[x._s]}</td></tr>`).join(""):'<tr><td colspan="4" class="empty">No vehicle numbers yet. Add the numbers the dealers send.</td></tr>')+"</tbody>";
   const nOpen=L.filter(x=>x._s!=="s").length;$("dvCnt").textContent=nOpen+" waiting";$("dvCnt").hidden=!nOpen;
   const W=wvL().slice().sort((a,b)=>(a.createdAt||"")<(b.createdAt||"")?-1:1);
   $("wvTable").innerHTML='<thead><tr><th>Date</th><th>Vehicle No</th><th>Dealer</th><th class="amt">Empty (kg)</th><th class="amt">Load</th></tr></thead><tbody>'+(W.length?W.map(x=>`<tr data-wv="${esc(x.id)}" class="${wvSel===x.id?"sel":""}"><td class="num">${sd(x.date)}</td><td>${esc(x.veh)}</td><td>${esc(dn(x.dealer))}</td><td class="num amt">${F(x.empty)}</td><td class="lp">${wvSel===x.id?"writing...":canWrite&&!document.documentElement.classList.contains("hpro")?"tap to add":"pending"}</td></tr>`).join(""):'<tr><td colspan="5" class="empty">No vehicle waiting. Write the empty weight when a vehicle comes.</td></tr>')+"</tbody>";
@@ -3978,6 +3979,9 @@ function render(){
   sugData.dvVeh=[...new Set(L.filter(x=>x._s==="n").map(x=>x.veh))];
 }
 window.wvRender=render;
+window.hpDvAll=()=>DV;window.hpWvAll=()=>WV;
+window.hpDvOpen=(dl,date)=>dvL().filter(x=>x.dealer===dl&&x.date<=date&&st(x)==="n");
+window.hpDvDel=async ids=>{let n=0;for(const id of ids){try{await db.doc("saledv/"+id).delete();DV=DV.filter(x=>x.id!==id);n++}catch(e){}}render();return n};
 const _rs=renderSale;renderSale=function(){_rs.apply(this,arguments);try{render()}catch(e){}};
 // dealer vehicle list
 function dvFill(x){dvEd=x?x.id:null;$("dvDate").value=x?x.date:($("dvDate").value||todayISO());if(x)$("dvDl").value=x.dealer;$("dvVeh").value=x?x.veh:"";$("dvCancel").hidden=$("dvDel").hidden=!x;$("dvDel").textContent="Delete";$("dvSave").textContent=x?"Save Change":"Add Vehicle"}
@@ -4060,10 +4064,13 @@ function check(){const c=$("kdChk");sure="";if(kdEdit){c.hidden=true;return}cons
   else if(m){c.className="wvchk bad";c.textContent="🔴 "+v+" belongs to "+m.dealer+", not "+dl+".";c.hidden=false}
   else{c.className="wvchk bad";c.textContent="🔴 This number was NOT sent by any dealer. Add it in Kanda Dealer Vehicles first.";c.hidden=false}
   $("kdCalc").textContent="Calculate Weight"}
-function render(){if(!$("kvTable"))return;const A=L().map(x=>({...x,_s:st(x)})).sort((a,b)=>(a._s==="s")-(b._s==="s")||(b.date>a.date?1:b.date<a.date?-1:0));
-  $("kvTable").innerHTML='<thead><tr><th>Date</th><th>Vehicle No</th><th>Dealer</th><th>Status</th></tr></thead><tbody>'+(A.length?A.map(x=>`<tr data-kv="${esc(x.id)}" class="${x._s==="s"?"dim":""}"><td class="num">${sd(x.date)}</td><td>${esc(x.veh)}</td><td>${esc(x.dealer)}</td><td class="st ${x._s==="s"?"ok":"wait"}" style="color:${x._s==="s"?"#1f7a4d":"#b5520b"}">${x._s==="s"?"✅ In Sale":"⏳ Not arrived"}</td></tr>`).join(""):'<tr><td colspan="4" class="empty">No vehicle numbers yet. Add the numbers the Kanda dealers send.</td></tr>')+"</tbody>";
+function render(){if(!$("kvTable"))return;const A=L().map(x=>({...x,_s:st(x)})).sort((a,b)=>(b.date>a.date?1:b.date<a.date?-1:0)||(a._s==="s")-(b._s==="s"));
+  $("kvTable").innerHTML='<thead><tr><th>Date</th><th>Vehicle No</th><th>Dealer</th><th>Status</th></tr></thead><tbody>'+(A.length?A.map((x,i)=>(i&&A[i-1].date!==x.date?'<tr class="hpgap"><td colspan="4"></td></tr>':'')+`<tr data-kv="${esc(x.id)}" class="${x._s==="s"?"dim":""}"><td class="num">${sd(x.date)}</td><td>${esc(x.veh)}</td><td>${esc(x.dealer)}</td><td class="st ${x._s==="s"?"ok":"wait"}" style="color:${x._s==="s"?"#1f7a4d":"#b5520b"}">${x._s==="s"?"✅ In Sale":"⏳ Not arrived"}</td></tr>`).join(""):'<tr><td colspan="4" class="empty">No vehicle numbers yet. Add the numbers the Kanda dealers send.</td></tr>')+"</tbody>";
   const n=A.filter(x=>x._s==="n").length;$("kvCnt").textContent=n+" waiting";$("kvCnt").hidden=!n}
 window.kvRender=render;
+window.hpKvOpen=(dk,date)=>L().filter(x=>x.dk===dk&&x.date<=date&&st(x)==="n");
+window.hpKvDel=async ids=>{let n=0;for(const id of ids){try{await db.doc("kandadv/"+id).delete();KV=KV.filter(x=>x.id!==id);n++}catch(e){}}render();return n};
+window.hpKvAll=()=>KV;
 const _rk=renderKanda;renderKanda=function(){_rk.apply(this,arguments);try{render();check()}catch(e){}};
 function fill(x){kvEd=x?x.id:null;$("kvDate").value=x?x.date:($("kvDate").value||todayISO());if(x)$("kvDl").value=x.dealer;$("kvVeh").value=x?x.veh:"";$("kvCancel").hidden=$("kvDel").hidden=!x;$("kvDel").textContent="Delete";$("kvSave").textContent=x?"Save Change":"Add Vehicle"}
 $("kvSave").addEventListener("click",async()=>{if(!db||ro())return;const date=$("kvDate").value,dealer=$("kvDl").value.trim(),veh=$("kvVeh").value.trim();
@@ -4620,6 +4627,151 @@ document.addEventListener("click",e=>{const b=e.target.closest(T);if(!b||b===pas
 <style>.slsec [data-act="ddel"],.kdsec [data-act="ddel"]{width:auto!important;flex:0 0 auto!important;align-self:flex-end;margin-left:auto!important;padding:5px 12px!important;min-height:0!important;font-size:13px!important;background:#fff!important;color:#b42318!important;border:1px solid #f1b4ae!important;border-radius:999px!important;box-shadow:none!important}
 .slsec [data-act="ddel"]::before,.kdsec [data-act="ddel"]::before{content:"🗑 "}</style>
 <style>#ffCalc.going{background:#fff7e0!important;color:#7a4b00!important;border:1px solid #f0d49a;padding:5px 10px!important;border-radius:10px;font-size:15px!important;min-height:0!important;text-align:center}#ffCalc.going .ur{font-family:"Jameel Noori",serif;font-size:16px}</style>
+
+<style>/* v1.26.22 sale: rate double-tap, date gap, driver notes, auto fill */
+tr.hpgap td{height:12px;padding:0!important;border:0!important;background:transparent!important}
+td.hprt{cursor:pointer}
+html:not(.hpro) td.hprt,html.hprw td.hprt{text-decoration:underline dotted #8aa4bd;text-underline-offset:3px}
+td.hprted{text-decoration:none!important}
+.hprte{display:inline-flex;gap:3px;align-items:center;justify-content:flex-end}
+.hprte input{width:70px;padding:4px 5px;border:2px solid #1f7a3a;border-radius:6px;font:inherit;text-align:right;background:#fff;color:#0f1d2b}
+.hprte button{border:0;border-radius:6px;padding:4px 8px;font-weight:700;font-size:14px}.hprte .ok{background:#1f7a3a;color:#fff}.hprte .x{background:#e2e8ee;color:#333}
+#hpRtT{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#1f7a3a;color:#fff;padding:8px 16px;border-radius:999px;z-index:9999;font:700 14px "Segoe UI",Roboto,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#hpRtT.err{background:#c62828}#hpRtT[hidden]{display:none}
+.hpauto,label.hpautol{background:#eaf6ee!important;border-color:#8cc9a2!important}label.hpautol input,label.hpautol select{background:transparent!important}
+.sugw.hpnw{position:relative;display:block}.sugw.hpnw>input{padding-right:40px!important}
+.hpnb{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;background:transparent;font-size:17px;padding:3px 5px;line-height:1;cursor:pointer;z-index:2}
+.hpnb.has::after{content:"";position:absolute;top:-1px;right:0;width:9px;height:9px;border-radius:50%;background:#d32f2f;border:2px solid #fff}
+.hpdn{border:0;background:none;padding:0 3px;font-size:14px;cursor:pointer;vertical-align:baseline}
+#hpNote{position:fixed;z-index:9998;width:min(300px,calc(100vw - 24px));background:#fff3b0;border:1.5px solid #e0b400;border-radius:12px;padding:10px 12px;box-shadow:0 6px 20px rgba(0,0,0,.25);color:#1b2733}
+#hpNote[hidden]{display:none}
+#hpNote .nh{font:700 13.5px "Segoe UI",Roboto,sans-serif}
+#hpNote .ur{font-family:"Jameel Noori","Segoe UI",serif;direction:rtl;text-align:right;font-size:19px;line-height:1.7;white-space:pre-wrap}
+#hpNote textarea{width:100%;box-sizing:border-box;height:72px;border:2px solid #c9a227;border-radius:8px;padding:6px 8px;font-family:"Jameel Noori","Segoe UI",serif;font-size:18px;direction:rtl;margin-top:6px;background:#fff;color:#0f1d2b}
+#hpNote .nr{display:flex;gap:6px;margin-top:8px}#hpNote .nr[hidden]{display:none}
+#hpNote .nr button{border-radius:8px;padding:6px 12px;font:700 14px "Segoe UI",Roboto,sans-serif;border:1px solid #bbb;background:#fff;color:#333}
+#hpNote .nr .sv{background:#1f7a3a;border-color:#1f7a3a;color:#fff}#hpNote .nr .dl{margin-left:auto;border-color:#d33;color:#c62828}
+#hpAskDv{position:fixed;inset:0;z-index:9999;background:rgba(15,29,43,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+#hpAskDv[hidden]{display:none}
+#hpAskDv .bx{background:#fff;border-radius:16px;padding:14px 16px;width:min(360px,100%);box-shadow:0 10px 30px rgba(0,0,0,.3);color:#1b2733}
+#hpAskDv .ur{font-family:"Jameel Noori","Segoe UI",serif;direction:rtl;text-align:right;font-size:20px;line-height:1.8}
+#hpAskDv .en{font:600 13px "Segoe UI",Roboto,sans-serif;color:#4a5d70;margin:2px 0 6px}
+#hpAskDv .nums{font:700 16px "Segoe UI",Roboto,sans-serif;color:#b5520b;margin:4px 0 6px;word-break:break-word}
+#hpAskDv .bt{display:flex;gap:8px;margin-top:10px}
+#hpAskDv .bt button{flex:1;border-radius:10px;padding:8px;font:19px "Jameel Noori","Segoe UI",serif;border:1px solid #bbb;background:#fff;color:#333}
+#hpAskDv .bt .y{background:#c62828;border-color:#c62828;color:#fff}
+</style>
+<script>/* v1.26.22 sale: rate double-tap, bill asks to delete not-arrived numbers, auto fill from vehicle number, driver notes */
+(function(){
+const $=i=>document.getElementById(i);
+const RO=()=>document.documentElement.classList.contains("hpro");
+const canRate=()=>RO()?document.documentElement.classList.contains("hprw"):!!canWrite;
+const farmW=()=>!!canWrite&&!RO();
+const nowI=()=>new Date().toISOString();
+const nv=v=>String(v||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+let tst;function say(m,e){let b=$("hpRtT");if(!b){b=document.createElement("div");b.id="hpRtT";b.setAttribute("role","status");document.body.appendChild(b)}b.textContent=m;b.className=e?"err":"";b.hidden=false;clearTimeout(tst);tst=setTimeout(()=>b.hidden=true,2600)}
+/* ---------- 1. rate (and cash received) by double tap on the date Total line ---------- */
+let busy=false,pend=false;
+const _rs=renderSale;renderSale=function(){if(busy){pend=true;return}return _rs.apply(this,arguments)};
+const _rk=renderKanda;renderKanda=function(){if(busy){pend=true;return}return _rk.apply(this,arguments)};
+const rer=()=>{busy=false;pend=false;try{renderSale()}catch(e){}try{if(view==="main")renderMain()}catch(e){}};
+const cur=(t,a,b)=>t==="v"?slRate(a,b):t==="r"?slRecv(a,b):kdRateOf(a,b);
+let lk="",lt=0;
+document.addEventListener("click",e=>{if(busy&&!e.target.closest("td.hprted")){rer();return}const td=e.target.closest("td.hprt");if(!td||td.classList.contains("hprted"))return;
+  const now=Date.now(),k=td.dataset.rt;if(lk===k&&now-lt<550){lk="";openRt(td)}else{lk=k;lt=now}});
+function openRt(td){
+  if(!canRate()){say(RO()?"Only a Main with the Set sale rates right can set rates.":"You can only view this.",1);return}
+  const [t,a,b]=td.dataset.rt.split("|"),v=cur(t,a,b);busy=true;
+  td.classList.add("hprted");td.innerHTML=`<span class="hprte"><input inputmode="decimal" value="${v?v:""}" placeholder="${t==="r"?"Received":"Rate"}" aria-label="${t==="r"?"Received":"Rate"} ${dmy(b)}"><button type="button" class="ok" aria-label="Save">✓</button><button type="button" class="x" aria-label="Cancel">✕</button></span>`;
+  const i=td.querySelector("input");setTimeout(()=>{i.focus();i.select()},30);
+  const go=async()=>{const r=mNum(i.value)||null;if((r||0)===(v||0)){rer();return}
+    td.querySelector(".ok").disabled=true;let ok=false;
+    try{if(t==="v"||t==="r"){const old=srates.find(x=>x.dealer===a&&x.date===b);
+        ok=await write(db.doc("salerate/"+(old?old.id:a+"_"+b)),{...noId(old),dealer:a,date:b,rate:t==="v"?r:(old&&old.rate||null),recv:t==="r"?r:(old&&old.recv||null),shed:"s1",flock:old&&old.flock?old.flock:flockId,updatedAt:nowI()})}
+      else{const old=krates.find(x=>x.dk===a&&x.date===b),nm=(kdDealerList().find(d=>d.dk===a)||{}).name||a;
+        ok=await write(db.doc("kandarate/"+(old?old.id:encodeURIComponent(a).replace(/[.%]/g,"_")+"_"+b)),{...noId(old),dk:a,dealer:old&&old.dealer?old.dealer:nm,date:b,rate:r,shed:"s1",flock:old&&old.flock?old.flock:flockId,updatedAt:nowI()})}}catch(e){ok=false}
+    rer();say(ok?(t==="r"?"Received":"Rate")+(r?" saved ✓ ":" removed · ")+dmy(b):"Could not save. Please try again.",!ok)};
+  td.querySelector(".ok").addEventListener("click",ev=>{ev.stopPropagation();go()});
+  td.querySelector(".x").addEventListener("click",ev=>{ev.stopPropagation();rer()});
+  i.addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();go()}else if(ev.key==="Escape")rer()});
+  i.addEventListener("click",ev=>ev.stopPropagation());
+}
+/* ---------- 3. a day bill asks to delete that dealer's numbers that never came ---------- */
+function ask(list,del,name,date){if(!list||!list.length)return;
+  let m=$("hpAskDv");if(!m){m=document.createElement("div");m.id="hpAskDv";m.hidden=true;m.setAttribute("role","dialog");document.body.appendChild(m)}
+  m.innerHTML=`<div class="bx"><div class="ur">یہ گاڑیاں نہیں آئیں:</div><div class="en">${esc(name)} · ${dmy(date)}</div><div class="nums">${list.map(x=>esc(x.veh)).join(" · ")}</div><div class="ur">کیا انہیں لسٹ سے ڈیلیٹ کر دیں؟</div><div class="bt"><button type="button" class="y">ہاں، ڈیلیٹ کریں</button><button type="button" class="n">نہیں، رہنے دیں</button></div></div>`;
+  m.hidden=false;
+  m.querySelector(".n").onclick=()=>{m.hidden=true};
+  m.querySelector(".y").onclick=async ev=>{ev.target.disabled=true;const n=await del(list.map(x=>x.id));m.hidden=true;say(n+" number"+(n===1?"":"s")+" deleted ✓")}}
+const _sb=saleBill;saleBill=function(d,date){const r=_sb.apply(this,arguments);
+  if(r&&date&&farmW()&&window.hpDvOpen)Promise.resolve(r).then(()=>ask(window.hpDvOpen(d.id,date),window.hpDvDel,d.name,date)).catch(()=>{});return r};
+const _kb=kdDealerBill;kdDealerBill=function(d,date){const r=_kb.apply(this,arguments);
+  if(r&&date&&farmW()&&window.hpKvOpen)Promise.resolve(r).then(()=>ask(window.hpKvOpen(d.dk,date),window.hpKvDel,d.name,date)).catch(()=>{});return r};
+/* ---------- 4. a vehicle number we know fills driver, mobile and dealer; last empty weight as a hint ---------- */
+const recs=()=>[...(RAW.salev||svehs||[]),...(RAW.kandav||kvehs||[]),...((window.hpWvAll&&window.hpWvAll())||[])];
+const by=A=>A.sort((x,y)=>((x.date||"")+(x.createdAt||"")).localeCompare((y.date||"")+(y.createdAt||"")))[A.length-1]||null;
+const lastRec=veh=>{const n=nv(veh);return n?by(recs().filter(x=>nv(x.veh)===n)):null};
+const lastEmpty=veh=>{const n=nv(veh);if(!n)return 0;const x=by(recs().filter(x=>nv(x.veh)===n&&x.empty));return x?x.empty:0};
+const lastDl=veh=>{const n=nv(veh);if(!n)return null;return by([...(RAW.saledv||[]),...((window.hpDvAll&&window.hpDvAll())||[]),...(RAW.salev||svehs||[])].filter(x=>nv(x.veh)===n&&x.dealer&&sdealers.some(d=>d.id===x.dealer)))};
+const lastKd=veh=>{const n=nv(veh);if(!n)return null;return by([...((window.hpKvAll&&window.hpKvAll())||[]),...(RAW.kandav||kvehs||[])].filter(x=>nv(x.veh)===n&&x.dealer))};
+function forms(){const L=[{v:$("wvVeh"),d:$("wvDrv"),m:$("wvMob"),e:$("wvEmpty")},{v:$("kdV"),d:$("kdD"),m:$("kdM"),kd:$("kdDl")},{v:$("dvVeh"),sel:$("dvDl")},{v:$("kvVeh"),kd:$("kvDl")}];
+  document.querySelectorAll(".slsec").forEach(el=>{const k=CSS.escape(el.dataset.sd);L.push({v:el.querySelector("#slV_"+k),d:el.querySelector("#slD_"+k),m:el.querySelector("#slM_"+k),e:el.querySelector('[data-f="empty"]')})});
+  return L.filter(f=>f.v)}
+const tg=(i,on)=>{i.classList.toggle("hpauto",on);const l=i.closest("label");if(l)l.classList.toggle("hpautol",on)};
+const setA=(i,val)=>{if(!i||!val)return;if(String(i.value).trim()&&i.dataset.hpa!=="1")return;i.value=val;i.dataset.hpa="1";tg(i,true)};
+const unA=i=>{if(i&&i.dataset.hpa==="1"){if(i.tagName!=="SELECT")i.value="";i.dataset.hpa="";tg(i,false)}};
+function onVeh(e){const f=forms().find(x=>x.v===e.target);
+  if(!f){const t=e.target;if(t&&t.dataset&&t.dataset.hpa==="1"&&e.isTrusted){t.dataset.hpa="";tg(t,false)}dots();return}
+  const vv=e.target.value,x=lastRec(vv);
+  if(f.e){if(f.e.dataset.ph0==null)f.e.dataset.ph0=f.e.placeholder;const le=lastEmpty(vv);f.e.placeholder=le?"last time "+F(le):f.e.dataset.ph0}
+  [f.d,f.m].forEach(i=>{if(!x)unA(i)});
+  if(x){setA(f.d,x.drv);setA(f.m,x.mob)}
+  if(f.kd){const k=lastKd(vv);if(k)setA(f.kd,k.dealer);else unA(f.kd)}
+  if(f.sel){const k=lastDl(vv);if(k&&(!f.sel.value||f.sel.dataset.hpa==="1")){f.sel.value=k.dealer;f.sel.dataset.hpa="1";tg(f.sel,true)}else if(!k)unA(f.sel)}
+  dots()}
+document.addEventListener("input",onVeh);document.addEventListener("change",onVeh);
+/* ---------- 5. driver notes (kept with the driver's mobile number, or his name) ---------- */
+let NOTES=[];
+const mk=(nm,mb)=>{const d=String(mb||"").replace(/\D/g,"");if(d.length>=7)return "m"+d.slice(-10);const n=String(nm||"").trim().toLowerCase().replace(/\s+/g," ").replace(/[\/.#$\[\]]/g,"");return n?"n_"+n.replace(/ /g,"_"):""};
+const noteFor=(nm,mb)=>{const a=mk("",mb),b=mk(nm,"");return (a&&NOTES.find(x=>x.id===a))||(b&&NOTES.find(x=>x.id===b))||null};
+function dots(){
+  forms().forEach(f=>{if(!f.d)return;const w=f.d.parentElement;if(!w||!w.classList.contains("sugw"))return;
+    let b=w.querySelector(".hpnb");if(!b){w.classList.add("hpnw");b=document.createElement("button");b.type="button";b.className="hpnb";b.textContent="📝";b.setAttribute("aria-label","Note about this driver");w.appendChild(b);b._f=f}
+    b._f=f;b.classList.toggle("has",!!noteFor(f.d.value,f.m&&f.m.value))});
+  forms().forEach(f=>[f.d,f.m,f.kd,f.sel,f.e].forEach(i=>{if(i&&i.classList.contains("hpauto")&&!String(i.value).trim()){tg(i,false);i.dataset.hpa=""}}));
+  // record tables: small 📝 beside a driver who has a note
+  document.querySelectorAll(".sltab tr[data-sv],.sltab tr[data-kv]").forEach(tr=>{const td=tr.querySelector("td.drvc");if(!td)return;
+    const x=tr.dataset.sv?svehs.find(y=>y.id===tr.dataset.sv):kvehs.find(y=>y.id===tr.dataset.kv);const n=x&&(x.drv||x.mob)?noteFor(x.drv,x.mob):null,old=td.querySelector(".hpdn");
+    if(!n){if(old)old.remove();return}if(old)return;
+    const dv=td.querySelector("div")||td,b=document.createElement("button");b.type="button";b.className="hpdn";b.textContent="📝";b.setAttribute("aria-label","Note about "+(x.drv||"driver"));b.dataset.nm=x.drv||"";b.dataset.mb=x.mob||"";
+    if(dv.firstChild&&dv.firstChild.nextSibling)dv.insertBefore(b,dv.firstChild.nextSibling);else dv.appendChild(b)})}
+const _rs2=renderSale;renderSale=function(){const r=_rs2.apply(this,arguments);try{dots()}catch(e){}return r};
+function box(){let m=$("hpNote");if(!m){m=document.createElement("div");m.id="hpNote";m.hidden=true;m.setAttribute("role","dialog");document.body.appendChild(m)}return m}
+function openNote(anchor,nm,mb,edit){const m=box(),n=noteFor(nm,mb),key=(n&&n.id)||mk(nm,mb),w=farmW();
+  if(!key){say("Write the driver name or mobile first.",1);return}
+  const who=esc(nm||(n&&n.name)||"")+(mb?" · "+esc(mb):"");
+  m.innerHTML=`<div class="nh">📝 ${who||"Driver"}</div><div class="ur nv">${n?esc(n.note):""}</div><textarea aria-label="Note about the driver" hidden></textarea>
+    <div class="nr vw"${w?"":" hidden"}><button type="button" class="ed">✏ Edit</button><button type="button" class="cl">✕</button></div>
+    <div class="nr ew" hidden><button type="button" class="sv">✓ Save</button><button type="button" class="cl">✕</button>${n?'<button type="button" class="dl">Delete note</button>':""}</div>`;
+  const ta=m.querySelector("textarea"),ed=on=>{m.querySelector(".nv").hidden=on;ta.hidden=!on;m.querySelector(".vw").hidden=on||!w;m.querySelector(".ew").hidden=!on;if(on){ta.value=n?n.note:"";setTimeout(()=>ta.focus(),30)}};
+  ed(!!(edit&&w)&&true);if(!n&&!w){m.querySelector(".nv").textContent="..."}
+  m.querySelectorAll(".cl").forEach(b=>b.onclick=()=>m.hidden=true);
+  const e1=m.querySelector(".ed");if(e1)e1.onclick=()=>ed(true);
+  m.querySelector(".sv").onclick=async()=>{const t=ta.value.trim();let ok;
+    if(!t){if(!n){m.hidden=true;return}try{await db.doc("drvnote/"+key).delete();ok=true}catch(e){ok=false}}
+    else ok=await write(db.doc("drvnote/"+key),{name:nm||(n&&n.name)||"",mob:mb||(n&&n.mob)||"",note:t,updatedAt:nowI()});
+    m.hidden=true;say(ok?(t?"Note saved ✓":"Note deleted"):"Could not save. Please try again.",!ok)};
+  const dl=m.querySelector(".dl");if(dl)dl.onclick=async()=>{if(dl.textContent!=="Yes, delete"){dl.textContent="Yes, delete";return}let ok=true;try{await db.doc("drvnote/"+key).delete()}catch(e){ok=false}m.hidden=true;say(ok?"Note deleted":"Could not delete.",!ok)};
+  m.hidden=false;const r=anchor.getBoundingClientRect(),W=m.offsetWidth,H=m.offsetHeight;
+  let x=Math.min(Math.max(12,r.right-W),innerWidth-W-12),y=r.bottom+6;if(y+H>innerHeight-12)y=Math.max(12,r.top-H-6);m.style.left=x+"px";m.style.top=y+"px"}
+document.addEventListener("click",e=>{
+  const b=e.target.closest(".hpnb,.hpdn");
+  if(b){e.stopPropagation();e.preventDefault();if(b.classList.contains("hpnb")){const f=b._f;openNote(b,f.d.value.trim(),f.m?f.m.value.trim():"",true)}else openNote(b,b.dataset.nm,b.dataset.mb,false);return}
+  const m=$("hpNote");if(m&&!m.hidden&&!e.target.closest("#hpNote"))m.hidden=true},true);
+const sub=()=>{if(!db){setTimeout(sub,400);return}db.collection("drvnote").onSnapshot(q=>{NOTES=q.docs.map(d=>({id:d.id,...d.data()}));try{dots()}catch(e){}},e=>{})};sub();
+setInterval(()=>{if(typeof view!=="undefined"&&view==="sale")try{dots()}catch(e){}},1500);
+})();
+</script>
 
 </body>
 </html>

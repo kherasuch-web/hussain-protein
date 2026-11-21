@@ -1,11 +1,11 @@
 {
- "ver": "1.26.21",
- "note": "Daily sale average weight is now written in grams (e.g. 2025)",
- "noteUr": "روزانہ رپورٹ میں سیل کا ایوریج وزن اب گرام میں لکھیں (مثلاً 2025)",
+ "ver": "1.26.22",
+ "note": "Sale: set rate by double-tap on date Total, dealer vehicle lists date-wise, bill asks to delete vehicles that never came, vehicle number fills driver, driver notes; page break shows entry count",
+ "noteUr": "سیل: Total لائن پر ڈبل ٹیپ سے ریٹ، گاڑیوں کی لسٹ تاریخ وار، بل پر نہ آنے والی گاڑیاں ڈیلیٹ کا سوال، گاڑی نمبر سے ڈرائیور خود، ڈرائیور نوٹ 📝؛ پیج بریک میں انٹریز کی گنتی",
  "android": {
-  "zip": "android-1.26.21.zip",
+  "zip": "android-1.26.22.zip",
   "minBuild": 27,
-  "sha256": "dcb4888438c66272bb180aecb325f4d1fcb0c76fe9f4c1885da058cb7fb96eaa"
+  "sha256": "56636585d59f9285c83bba5bb469b9f0a8b83243055aed2ebf48226f1345cd05"
  },
  "windows": {
   "files": [
