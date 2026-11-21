@@ -1,11 +1,11 @@
 {
- "ver": "1.26.24",
- "note": "Supervisor reminder in clear Urdu with 'write now' button; dealer total line has no average rate; Main average rate uses only rated weight",
- "noteUr": "سپروائزر ریمائنڈر صاف اردو میں + ابھی لکھیں بٹن؛ ڈیلر ٹوٹل سے ایوریج ریٹ ہٹا؛ مین ایوریج صرف ریٹ لگے وزن سے",
+ "ver": "1.26.25",
+ "note": "Feed warning: average from last 3 complete days, tidy layout; feed chart shows unfinished day dashed",
+ "noteUr": "فیڈ ریمائنڈر: اوسط صرف مکمل دنوں سے، نئی ترتیب؛ گراف میں ادھورا دن ڈیش لائن",
  "android": {
-  "zip": "android-1.26.24.zip",
+  "zip": "android-1.26.25.zip",
   "minBuild": 27,
-  "sha256": "f9ab15865d5aaab3c5d01c8537f877f5dbcb1b59b66f51320d2fb72df168cb14"
+  "sha256": "40c87ecf95203d579f4e80ebdf996ae108ca122e80b3c9a6667e7ca5a5d25839"
  },
  "windows": {
   "files": [

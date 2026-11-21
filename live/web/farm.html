@@ -3718,7 +3718,7 @@ setInterval(plan,30000);document.addEventListener("visibilitychange",()=>{if(doc
 #hpChart svg{display:block;width:100%;height:auto;direction:ltr}
 #hpChart .bar{fill:#9cb8d3;cursor:pointer}#hpChart .bar.hi{fill:#d64545}#hpChart .bar:hover{fill:#1c5d93}#hpChart .bar.hi:hover{fill:#a82b2b}
 #hpChart .ax{font:10px ui-monospace,monospace;fill:#8a99a8}#hpChart .gl{stroke:#eef2f6}
-#hpChart .fl{fill:none;stroke:#e08a1e;stroke-width:2.2}#hpChart .fa{fill:rgba(224,138,30,.12)}#hpChart .dot{fill:#e08a1e;cursor:pointer}
+#hpChart .fl{fill:none;stroke:#e08a1e;stroke-width:2.2}#hpChart .fpart{stroke-dasharray:5 4;opacity:.6}#hpChart .fa{fill:rgba(224,138,30,.12)}#hpChart .dot{fill:#e08a1e;cursor:pointer}
 #hpChartInfo{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;background:#f1f6fb;border:1px solid #d6e3ef;border-radius:12px;padding:8px 12px;margin:8px 0 2px;font-size:15px;color:#173f66}#hpChartInfo b{font-family:"Segoe UI",Roboto,sans-serif}#hpChartInfo .dt{font-family:ui-monospace,monospace;font-size:12.5px;color:#6b7b8b}#hpChartInfo small{color:#6b7b8b;font-size:12.5px}
 #hpChart .bar.sel{fill:#1c5d93}#hpChart .bar.hi.sel{fill:#a82b2b}#hpChart .dot.sel{r:5;fill:#b8650a}
 #hpChart .lg{display:flex;gap:14px;font-size:12.5px;color:#5b6b7b;margin-top:4px}#hpChart .lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:5px;vertical-align:-1px}
@@ -3726,15 +3726,25 @@ setInterval(plan,30000);document.addEventListener("visibilitychange",()=>{if(doc
 .hpFeedWarn.yel{background:#fffbe6;border-color:#f1dc7a;color:#6b5600;box-shadow:0 2px 8px rgba(200,170,30,.12)}
 .hpFeedWarn.red{background:#fde8e8;border-color:#ef9a9a;color:#8a1c1c}.hpFeedWarn i{font-style:normal;font-size:22px}.hpFeedWarn b{font-family:"Segoe UI",Roboto,sans-serif}
 .hpFeedWarn small{display:block;font-size:12.5px;opacity:.8}
+/* v1.26.25: tidy feed warning */
+.hpFeedWarn{padding:8px 14px;gap:12px}.hpFeedWarn>i{font-size:26px;line-height:1}
+.hpFeedWarn .fwt{flex:1;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 12px;min-width:0}
+.hpFeedWarn .fwt b{font-family:"Jameel Noori","Segoe UI",serif;font-size:21px;font-weight:400}
+.hpFeedWarn .fwt span{font-size:17px}
+.hpFeedWarn bdi{font:700 15px "Segoe UI",Roboto,sans-serif;padding:0 2px}
+.hpFeedWarn .fwa{flex:none;text-align:center;font-size:15px;line-height:1.35;background:rgba(255,255,255,.65);border-radius:12px;padding:5px 12px}
+.hpFeedWarn .fwa small{font-size:13px}
+@media (min-width:1000px){#main #vMain>#hpFWMain#hpFWMain{margin-inline:72px 0;grid-column:1/-1!important}#vMain>#hpFWMain .hpFeedWarn{margin:0 0 10px;min-height:58px;box-sizing:border-box}}
+@media (max-width:420px){.hpFeedWarn .fwa{padding:4px 8px;font-size:14px}}
 @media (min-width:1000px){#main #vDaily>#hpFWDaily#hpFWDaily#hpFWDaily{grid-column:1/-1!important}#hpFWDaily .hpFeedWarn{margin:0 0 14px}#hpChart{margin:14px 0}}
 </style>
 <script>(function(){
 const $=id=>document.getElementById(id);const LIMIT=3;let key="";
 const N=n=>Math.round(n).toLocaleString("en-US");
 function rows(){try{return compute(days)}catch(e){return []}}
-function warnHTML(h){if(!h.length)return "";const last=h[h.length-1],eat=h.slice(-3).map(r=>r.f24).filter(v=>v>0);if(!eat.length)return "";
+function warnHTML(h){if(!h.length)return "";const last=h[h.length-1],eat=h.filter(r=>r.fd>0&&r.fn>0).slice(-3).map(r=>r.f24);if(!eat.length)return "";
  const avg=eat.reduce((a,v)=>a+v,0)/eat.length,store=Math.max(0,last.fRem),left=store/avg;if(left>=LIMIT)return "";
- const lv=left<1?"red":left<2?"":"yel";return `<div class="hpFeedWarn ${lv}" role="alert"><i>⚠️</i><div><b>اسٹور میں ${N(store)} بیگ، تقریباً ${left<1?"1 دن سے کم":Math.max(1,Math.round(left))+" دن"} کی فیڈ۔ فیڈ منگوا لیں</b><small>روز کی اوسط کھپت ${N(avg)} بیگ (پچھلے ${eat.length} دن)</small></div></div>`}
+ const lv=left<1?"red":left<2?"":"yel";return `<div class="hpFeedWarn ${lv}" role="alert"><i>⚠️</i><div class="fwt"><b>فیڈ منگوا لیں</b><span>اسٹور میں <bdi>${N(store)}</bdi> بیگ · تقریباً ${left<1?"<bdi>1</bdi> دن سے&nbsp;کم":"<bdi>"+Math.max(1,Math.round(left))+"</bdi>&nbsp;دن"}&nbsp;کی&nbsp;فیڈ</span></div><div class="fwa">روز کی اوسط <bdi>${N(avg)}</bdi> بیگ<small>پچھلے ${eat.length} مکمل دن</small></div></div>`}
 function chartHTML(h){if(h.length<2)return "";
  const W=640,H=120,P=22,n=h.length,bw=(W-P)/n,mx=Math.max(...h.map(r=>r.m24),1),fx=Math.max(...h.map(r=>r.f24),1);
  const hi=h.map((r,i)=>{const p=h.slice(Math.max(0,i-7),i).map(x=>x.m24);if(p.length<3)return false;const a=p.reduce((s,v)=>s+v,0)/p.length;return r.m24>=Math.max(10,a*1.8)});
@@ -3744,14 +3754,15 @@ function chartHTML(h){if(h.length<2)return "";
  h.forEach((r,i)=>{const bh=Math.max(1,r.m24/mx*(H-6));m+=`<rect class="bar${hi[i]?" hi":""}" data-day="${r.day}" x="${P+i*bw+bw*.15}" y="${H-bh}" width="${bw*.7}" height="${bh}" rx="2"><title>دن ${r.day}: ${N(r.m24)}</title></rect>${lab(i)}`});m+="</svg>";
  const pt=(r,i)=>[P+i*bw+bw/2,H-(r.f24/fx)*(H-8)];const pts=h.map(pt);
  let f=`<svg viewBox="0 0 ${W} ${H+16}" role="img" aria-label="روز کی فیڈ">${grid(4)}${grid(H/2)}${grid(H)}<text class="ax" x="0" y="10">${N(fx)}</text><text class="ax" x="0" y="${H}">0</text>`;
- f+=`<path class="fa" d="M${pts[0][0]},${H} L${pts.map(p=>p.join(",")).join(" L")} L${pts[n-1][0]},${H} Z"/><path class="fl" d="M${pts.map(p=>p.join(",")).join(" L")}"/>`;
+ const part=n>1&&!(h[n-1].fd>0&&h[n-1].fn>0),fp=part?pts.slice(0,-1):pts;
+ f+=`<path class="fa" d="M${fp[0][0]},${H} L${fp.map(p=>p.join(",")).join(" L")} L${fp[fp.length-1][0]},${H} Z"/><path class="fl" d="M${fp.map(p=>p.join(",")).join(" L")}"/>${part?`<path class="fl fpart" d="M${pts[n-2].join(",")} L${pts[n-1].join(",")}"/>`:""}`;
  h.forEach((r,i)=>{f+=`<circle class="dot" data-day="${r.day}" cx="${pts[i][0]}" cy="${pts[i][1]}" r="${n>30?2.2:3}"><title>دن ${r.day}: ${N(r.f24)} بیگ</title></circle>${lab(i)}`});f+="</svg>";
  const last=h[h.length-1];
  return `<h3>روز کا حال</h3><div class="sub">کسی دن پر ٹیپ کریں تو اس دن کی تفصیل نیچے آئے گی</div>
  <div class="gt"><span>روز کی مورٹیلٹی</span><b>آخری دن: <span style="font-family:ui-monospace,monospace">${N(last.m24)}</span></b></div>${m}
  <div class="lg"><span><i style="background:#9cb8d3"></i>عام دن</span><span><i style="background:#d64545"></i>عام سے بہت زیادہ</span></div>
  <div id="hpChartInfo" hidden></div>
- <div class="gt"><span>روز کی کھائی گئی فیڈ (بیگ)</span><b>آخری دن: <span style="font-family:ui-monospace,monospace">${N(last.f24)}</span></b></div>${f}`}
+ <div class="gt"><span>روز کی کھائی گئی فیڈ (بیگ)</span><b>${(()=>{const c=h.filter(r=>r.fd>0&&r.fn>0),lc=c[c.length-1];return lc&&lc!==last?`آخری مکمل دن (${lc.day}): <span style="font-family:ui-monospace,monospace">${N(lc.f24)}</span>`:`آخری دن: <span style="font-family:ui-monospace,monospace">${N(last.f24)}</span>`})()}</b></div>${f}${h.length>1&&!(last.fd>0&&last.fn>0)?`<div class="lg"><span><i style="background:none;border-top:2px dashed #e08a1e;height:0;margin-top:4px"></i>دن ${last.day} ابھی ادھورا (رات کی فیڈ باقی)</span></div>`:""}`}
 function up(){try{
  if(typeof flock==="undefined"||!flock||!Array.isArray(days))return;
  const h=rows(),k=[flockId,oldView,h.length,h.length?h[h.length-1].fRem+"|"+h[h.length-1].m24+"|"+h[h.length-1].f24:""].join("~");if(k===key)return;key=k;
