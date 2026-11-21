@@ -1,11 +1,11 @@
 {
- "ver": "1.26.26",
- "note": "Windows Main: one column, charts full width, cards one below another in fixed order",
- "noteUr": "ونڈوز مین: گراف پوری چوڑائی میں، خانے ایک کے نیچے ایک مقررہ ترتیب سے",
+ "ver": "1.26.27",
+ "note": "Dealer Vehicles: waiting vehicle shows Load pending only on its newest line",
+ "noteUr": "ڈیلر گاڑیاں: انتظار والی گاڑی صرف نئی لائن پر Load pending دکھائے گی",
  "android": {
-  "zip": "android-1.26.26.zip",
+  "zip": "android-1.26.27.zip",
   "minBuild": 27,
-  "sha256": "b97f4e7da59c9e605505c6ad3fb31220d283d141b2f2a9c28da2e76bcf33163a"
+  "sha256": "51d7b799308ae02a59f787663f4bea18ea1132ea9d832988beb98cb315e0e11a"
  },
  "windows": {
   "files": [

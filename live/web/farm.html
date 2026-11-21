@@ -3979,7 +3979,9 @@ const nowI=()=>new Date().toISOString();
 const sd=d=>d?d.slice(8,10)+"/"+d.slice(5,7):"...";
 const dn=id=>{const d=sdealers.find(x=>x.id===id);return d?d.name:"..."};
 const dvL=()=>DV.filter(inF),wvL=()=>WV.filter(inF);
-const st=x=>{const n=nv(x.veh);if(wvL().some(w=>nv(w.veh)===n&&w.dealer===x.dealer))return"p";if(svehs.some(v=>nv(v.veh)===n&&v.dealer===x.dealer&&v.date>=x.date))return"s";return"n"};
+// v1.26.27: a waiting vehicle belongs ONLY to the NEWEST dealer-list line of that number+dealer, not to older lines
+const own=(x,w)=>{const n=nv(x.veh);if(nv(w.veh)!==n||w.dealer!==x.dealer)return false;const S=dvL().filter(y=>nv(y.veh)===n&&y.dealer===x.dealer).sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:0);return S[0]&&S[0].id===x.id};
+const st=x=>{const n=nv(x.veh);if(wvL().some(w=>own(x,w)))return"p";if(svehs.some(v=>nv(v.veh)===n&&v.dealer===x.dealer&&v.date>=x.date))return"s";return"n"};
 const tt=(id,m,e)=>{const b=$(id);b.textContent=m||"";b.classList.toggle("err",!!e)};
 function opts(sel,keep){const v=keep!=null?keep:sel.value;sel.innerHTML='<option value="">Choose dealer</option>'+sdealers.slice().sort((a,b)=>(a.seq||0)-(b.seq||0)).map(d=>`<option value="${esc(d.id)}">${esc(d.name)}</option>`).join("");sel.value=v}
 // which dealer list line matches this number (not yet in sale)
