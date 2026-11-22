@@ -1,11 +1,11 @@
 {
- "ver": "1.26.27",
- "note": "Dealer Vehicles: waiting vehicle shows Load pending only on its newest line",
- "noteUr": "ڈیلر گاڑیاں: انتظار والی گاڑی صرف نئی لائن پر Load pending دکھائے گی",
+ "ver": "1.26.28",
+ "note": "Sale: all dealers bill (vehicle + kanda), one day or complete, in logo sheet",
+ "noteUr": "سیل: سب ڈیلرز کا اکٹھا بل (گاڑی + کنڈا)، ایک دن یا مکمل",
  "android": {
-  "zip": "android-1.26.27.zip",
+  "zip": "android-1.26.28.zip",
   "minBuild": 27,
-  "sha256": "51d7b799308ae02a59f787663f4bea18ea1132ea9d832988beb98cb315e0e11a"
+  "sha256": "113d60ff552e0e956f86a004a89d860d4a358739951bb3e322d6c22272affd1b"
  },
  "windows": {
   "files": [

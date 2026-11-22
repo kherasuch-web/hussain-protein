@@ -150,6 +150,7 @@ button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 .billpg .binfo{margin-bottom:14px}.billpg .binfo td{padding:3px 0;border:0}.billpg .binfo td:first-child{width:130px;color:#555}.billpg .binfo td:last-child{font-weight:600}
 .billpg .btab th,.billpg .btab td{border:1px solid #888;padding:6px 7px;text-align:left;vertical-align:top}
 .billpg .btab th{background:#e9e9e9;font-size:13.5px}.billpg .btab .r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.billpg .bsec{margin:22px 0 6px;font-size:16px;font-weight:700;border-bottom:2px solid #333;padding-bottom:3px}.billpg .bsec+.btab{margin-top:0}
 .billpg .btab tr.bd td{background:#f4f4f4;font-weight:600}.billpg .btab tr.bt td{background:#ddd;font-weight:700}
 .billpg .bsum{margin-top:16px;width:60%;margin-left:auto}.billpg .bsum td{border:1px solid #888;padding:6px 8px}.billpg .bsum td:last-child{text-align:right;font-weight:700}
 label.chk{display:flex;flex-direction:row;align-items:center;gap:10px;font-weight:600}label.chk input{width:22px;height:22px;min-height:0;flex:0 0 auto;margin:0}
@@ -1421,7 +1422,7 @@ async function billPdf(o,toast){
   box.className="billpg";box.style.cssText=`position:fixed;left:-20000px;top:0;width:${W}px;background:#fff;color:#111;padding:${PY}px ${PX}px;box-sizing:border-box`;
   box.innerHTML=`<div class="blogo"><img src="img/logo-1024.png" alt=""></div><div class="bh1">Hussain Protein</div>${shedNm?`<div class="bh2">${esc(shedNm)}</div>`:""}<div class="bh3">${esc(o.title)}</div>
     <table class="binfo"><tbody>${o.info.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("")}</tbody></table>
-    <table class="btab${o.fit?" fit":""}">${o.table}</table>${o.sum?`<table class="bsum"><tbody>${o.sum.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("")}</tbody></table>`:""}
+    <table class="btab${o.fit?" fit":""}">${o.table}</table>${o.sum?`<table class="bsum"><tbody>${o.sum.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("")}</tbody></table>`:""}${(o.more||[]).map(m=>`<div class="bsec">${esc(m.h)}</div><table class="btab">${m.table}</table>`).join("")}
     <div class="bfoot">Hussain Protein · Bill made on ${dmy(todayISO())}</div>`;
   // text cells keep a fixed width: long name lists go to the next line after a comma, never off the page
   box.querySelectorAll(".btab td:not(.r)").forEach(td=>{if(td.textContent.length>14&&!td.hasAttribute("colspan")){td.classList.add("bw");const w=document.createTreeWalker(td,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode())n.nodeValue=n.nodeValue.replace(/,(?=\S)/g,",\u200B")}});
@@ -1464,6 +1465,39 @@ function saleBill(d,date,toast,withRate){
     sum.push(["Total Price","Rs "+F(Math.round(price))]);if(C)sum.push(["Received","Rs "+F(Math.round(recv))],["Remaining","Rs "+F(Math.round(price-recv))])}
   return billPdf({title:d.name,info:[["Bill",date?"Sale of "+dmy(date)+" (one day)":"Complete sale ("+dmy(gs[0].date)+" to "+dmy(gs[gs.length-1].date)+")"],["Bill Date",dmy(todayISO())]],
     table:h+"</tbody>",sum,file:"Sale Bill - "+d.name+" - "+(date?dmy(date).replace(/\//g,"-"):"Complete")},toast);
+}
+// v1.26.28: ALL dealers bill (vehicle + kanda), one day or complete: page 1 summary, then every dealer's detail
+let allRate=true;
+function allSaleDates(){return [...new Set(svehs.map(x=>x.date).concat(kvehs.map(x=>x.date)).filter(Boolean))].sort().reverse()}
+function allBill(date,toast){
+  const M=allRate,dot=v=>v?F(v):"...",pick=T=>date?T.groups.filter(g=>g.date===date):T.groups;
+  const V=sdealers.slice().sort((a,b)=>(a.seq||0)-(b.seq||0)).map(d=>({d,gs:pick(slTotals(d.id)),C:M&&slCash(d.id)})).filter(x=>x.gs.length);
+  const K=kdDealerList().map(d=>({d,gs:pick(kdTotals(d.dk))})).filter(x=>x.gs.length);
+  if(!V.length&&!K.length){toast("No sale"+(date?" on "+dmy(date):"")+" yet.",true);return}
+  const tot=gs=>({kg:r2(gs.reduce((a,g)=>a+g.kg,0)),rkg:r2(gs.filter(g=>g.rate).reduce((a,g)=>a+g.kg,0)),price:r2(gs.reduce((a,g)=>a+g.price,0)),recv:r2(gs.reduce((a,g)=>a+(g.recv||0),0)),n:gs.reduce((a,g)=>a+g.v.length,0)});
+  const anyC=V.some(x=>x.C);let sr=0;const G={kg:0,price:0,recv:0,n:0,rem:0};
+  const rateTxt=(t,gs)=>date?dot(gs[0].rate):(t.rkg&&t.price?F(r2(t.price/t.rkg)):"...");
+  const row=(x,type)=>{const t=tot(x.gs);G.kg+=t.kg;G.price+=t.price;G.n+=t.n;if(x.C){G.recv+=t.recv;G.rem+=t.price-t.recv}
+    return `<tr><td>${++sr}</td><td>${esc(x.d.name)}</td><td>${type}</td><td class="r">${F(t.n)}</td><td class="r">${F(t.kg)}</td>${M?`<td class="r">${rateTxt(t,x.gs)}</td><td class="r">${t.price?F(t.price):"..."}</td>`:""}${anyC?(x.C?`<td class="r">${F(t.recv)}</td><td class="r">${F(r2(t.price-t.recv))}</td>`:"<td></td><td></td>"):""}</tr>`};
+  let h=`<thead><tr><th>Sr</th><th>Dealer</th><th>Sale</th><th class="r">Vehicles</th><th class="r">Weight (kg)</th>${M?`<th class="r">${date?"Rate":"Avg Rate"}</th><th class="r">Total Price</th>`:""}${anyC?'<th class="r">Received</th><th class="r">Remaining</th>':""}</tr></thead><tbody>`;
+  h+=V.map(x=>row(x,"Vehicle")).join("")+K.map(x=>row(x,"Kanda")).join("");
+  h+=`<tr class="bt"><td colspan="3">Total · All Dealers</td><td class="r">${F(G.n)}</td><td class="r">${F(r2(G.kg))}</td>${M?`<td></td><td class="r">${F(r2(G.price))}</td>`:""}${anyC?`<td class="r">${F(r2(G.recv))}</td><td class="r">${F(r2(G.rem))}</td>`:""}</tr></tbody>`;
+  const more=[];
+  V.forEach(({d,gs,C})=>{let n=0,t=tot(gs);let b=`<thead><tr><th>Sr</th><th>Date</th><th>Vehicle No</th><th class="r">Empty (kg)</th><th class="r">Load (kg)</th><th class="r">Saafi (kg)</th>${M?'<th class="r">Rate</th><th class="r">Total Price</th>':""}${C?'<th class="r">Received</th><th class="r">Remaining</th>':""}</tr></thead><tbody>`;
+    gs.forEach(g=>{b+=g.v.map(x=>`<tr><td>${++n}</td><td>${dmy(x.date)}</td><td>${x.veh?esc(x.veh):"..."}</td><td class="r">${F(x.empty)}</td><td class="r">${F(x.load)}</td><td class="r">${F(slSaafi(x))}</td>${M?"<td></td><td></td>":""}${C?"<td></td><td></td>":""}</tr>`).join("");
+      b+=`<tr class="bd"><td colspan="5">${dmy(g.date)} · Total (${F(g.v.length)} vehicle${g.v.length>1?"s":""})</td><td class="r">${F(g.kg)}</td>${M?`<td class="r">${dot(g.rate)}</td><td class="r">${g.rate?F(g.price):"..."}</td>`:""}${C?`<td class="r">${dot(g.recv)}</td><td class="r">${g.rate?F(g.rem):"..."}</td>`:""}</tr>`});
+    if(gs.length>1)b+=`<tr class="bt"><td colspan="5">Grand Total · ${esc(d.name)}</td><td class="r">${F(t.kg)}</td>${M?`<td class="r">${t.rkg&&t.price?F(r2(t.price/t.rkg)):""}</td><td class="r">${F(t.price)}</td>`:""}${C?`<td class="r">${F(t.recv)}</td><td class="r">${F(r2(t.price-t.recv))}</td>`:""}</tr>`;
+    more.push({h:d.name+" · Vehicle Sale",table:b+"</tbody>"})});
+  K.forEach(({d,gs})=>{let n=0,t=tot(gs);let b=`<thead><tr><th>Sr</th><th>Date</th><th>Vehicle No</th><th class="r">Total Weight (kg)</th>${M?'<th class="r">Rate</th><th class="r">Total Price</th>':""}</tr></thead><tbody>`;
+    gs.forEach(g=>{b+=g.v.map(x=>`<tr><td>${++n}</td><td>${dmy(x.date)}</td><td>${x.veh?esc(x.veh):"..."}</td><td class="r">${F(kdTot(x))}</td>${M?"<td></td><td></td>":""}</tr>`).join("");
+      b+=`<tr class="bd"><td colspan="3">${dmy(g.date)} · Total (${F(g.v.length)} vehicle${g.v.length>1?"s":""})</td><td class="r">${F(g.kg)}</td>${M?`<td class="r">${dot(g.rate)}</td><td class="r">${g.rate?F(g.price):"..."}</td>`:""}</tr>`});
+    if(gs.length>1)b+=`<tr class="bt"><td colspan="3">Grand Total · ${esc(d.name)}</td><td class="r">${F(t.kg)}</td>${M?`<td class="r">${t.rkg&&t.price?F(r2(t.price/t.rkg)):""}</td><td class="r">${F(t.price)}</td>`:""}</tr>`;
+    more.push({h:d.name+" · Kanda Sale",table:b+"</tbody>"})});
+  const ds=[...V,...K].flatMap(x=>x.gs.map(g=>g.date)).sort();
+  const sum=[["Dealers",F(V.length+K.length)],["Vehicles",F(G.n)],["Total Weight",F(r2(G.kg))+" kg"]];
+  if(M){sum.push(["Total Price","Rs "+F(Math.round(G.price))]);if(anyC)sum.push(["Received (cash dealers)","Rs "+F(Math.round(G.recv))],["Remaining (cash dealers)","Rs "+F(Math.round(G.rem))])}
+  return billPdf({title:"All Dealers · Sale Bill",info:[["Bill",date?"Sale of "+dmy(date)+" (one day)":"Complete sale ("+dmy(ds[0])+" to "+dmy(ds[ds.length-1])+")"],["Bill Date",dmy(todayISO())]],
+    table:h,sum,more,file:"Sale Bill - All Dealers - "+(date?dmy(date).replace(/\//g,"-"):"Complete")},toast);
 }
 // ---------- Kanda sale: birds weighed on the farm scale (kanda), no vehicle empty/load weight ----------
 // a weight written with minus (−12) is taken away from the vehicle total
@@ -2711,6 +2745,7 @@ function pdfItems(){
     const sec=[...document.querySelectorAll("#slDealers .slsec")].map(e=>[e,"Sale"]).concat([...document.querySelectorAll("#kdDealers .kdsec")].map(e=>[e,"Kanda"]));
     const has=e=>{const o=[...e.querySelectorAll('[data-f="pdfday"] option')].filter(o=>o.value);return o.length>0};
     const ok=sec.filter(([e])=>has(e));
+    if(allSaleDates().length){L.push({g:"سب ڈیلرز"});it("","#173f66","سب ڈیلرز کا بل","گاڑی + کنڈا · خلاصہ اور ہر ڈیلر کی تفصیل",null,{opt:"all"})}
     if(ok.length)L.push({g:"ڈیلر بل"});
     ok.forEach(([e,kind])=>it("","#1c5d93",txt(e,".mbdname").replace(/^Edit · /,""),kind+" · "+txt(e,".mbdtot"),null,{av:1,opt:"dealer",sec:e}));
   }
@@ -2753,6 +2788,13 @@ function pdfCard(x,i){
     const r=$("kdVRate");op.innerHTML=tg(r.dataset.on==="1","ریٹ بل میں")+`<button type="button" class="ch on" data-go>${PDOWN} Vehicle Bill</button>`+msg;
     const t=op.querySelector(".tg");t.onclick=()=>{r.click();t.classList.toggle("on",r.dataset.on==="1")};
     op.querySelector("[data-go]").onclick=()=>go(x.run,op.querySelector(".dmsg"),w);
+  }
+  if(x.opt==="all"){
+    op.innerHTML=`<button type="button" class="ch on" data-a="all">${PDOWN} مکمل بل</button>`+tg(allRate,"ریٹ بل میں")+
+      `<div style="display:flex;gap:8px;flex-basis:100%;align-items:center"><select aria-label="دن">${allSaleDates().map(d=>`<option value="${d}">${dmy(d)}</option>`).join("")}</select><button type="button" class="ch" data-a="day">📅 ایک دن کا بل</button></div>`+msg;
+    const t=op.querySelector(".tg");t.onclick=()=>{allRate=!allRate;t.classList.toggle("on",allRate)};
+    const s2=op.querySelector("select");
+    op.querySelectorAll("[data-a]").forEach(c=>c.onclick=()=>go(m=>allBill(c.dataset.a==="day"?s2.value:null,m),op.querySelector(".dmsg"),w));
   }
   if(x.opt==="dealer"){
     const e=x.sec,sel=e.querySelector('[data-f="pdfday"]'),rb=e.querySelector('[data-act="pdfrate"]'),tst=e.querySelector('[data-box="pdf"] .pdftoast');
