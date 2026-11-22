@@ -1,11 +1,11 @@
 {
- "ver": "1.26.28",
- "note": "Sale: all dealers bill (vehicle + kanda), one day or complete, in logo sheet",
- "noteUr": "سیل: سب ڈیلرز کا اکٹھا بل (گاڑی + کنڈا)، ایک دن یا مکمل",
+ "ver": "1.26.29",
+ "note": "Feed: company bills (In + Out + balance, by source), all companies bill, one-day Feed Report; Medicine Report one day",
+ "noteUr": "فیڈ: کمپنی بل (اِن + آؤٹ + حساب)، سب کمپنیوں کا بل، ایک دن کی فیڈ رپورٹ؛ میڈیسن رپورٹ ایک دن",
  "android": {
-  "zip": "android-1.26.28.zip",
+  "zip": "android-1.26.29.zip",
   "minBuild": 27,
-  "sha256": "113d60ff552e0e956f86a004a89d860d4a358739951bb3e322d6c22272affd1b"
+  "sha256": "cc30125e2f1d068f0643aa5f3cfa0a780dd8b6dd8836df23e90cb160e241f125"
  },
  "windows": {
   "files": [

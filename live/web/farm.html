@@ -1634,19 +1634,20 @@ function medBill(d,toast){
     table:h+"</tbody>",sum:[["Items",F(list.length)],["Total Amount","Rs "+F(Math.round(tot))]],file:"Medicine Bill - "+d.name},toast);
 }
 // v1.22: Medicine Report = one combined bill of ALL dealers (+ Previous Store), each dealer with its own total
-function medReport(toast){
-  const ds=[MB_WFN,MB_STORE,...dealers.slice().sort((a,b)=>(a.seq||0)-(b.seq||0))], all=medbuys.slice().sort(byDate), dot=v=>v?esc(v):"...";
-  const parts=ds.map(d=>{const isSt=d.id===MB_STORE.id,list=all.filter(x=>x.dealer===d.id);return {d,isSt,list,tot:isSt?storeTot():r2(list.reduce((a,x)=>a+(x.price||0),0))}}).filter(p=>p.list.length||p.tot);
-  if(!parts.length){toast("No medicine yet.",true);return}
+function medReport(toast,day){
+  const ds=[MB_WFN,MB_STORE,...dealers.slice().sort((a,b)=>(a.seq||0)-(b.seq||0))], all=medbuys.filter(x=>!day||x.date===day).sort(byDate), dot=v=>v?esc(v):"...";
+  // v1.26.29: one-day bill leaves out the written Store Total (it is not of one day)
+  const parts=ds.map(d=>{const isSt=d.id===MB_STORE.id,list=all.filter(x=>x.dealer===d.id);return {d,isSt,list,tot:isSt?(day?0:storeTot()):r2(list.reduce((a,x)=>a+(x.price||0),0))}}).filter(p=>p.list.length||p.tot);
+  if(!parts.length){toast("No medicine"+(day?" on "+dmy(day):"")+" yet.",true);return}
   let h=`<thead><tr><th>Sr</th><th>Date</th><th>Medicine Name</th><th>Traditional Name</th><th>Quantity</th><th class="r">Rate</th><th class="r">Total Price</th></tr></thead><tbody>`,n=0;
   parts.forEach(p=>{h+=`<tr class="bd"><td colspan="7">${esc(p.d.name)}</td></tr>`;
     h+=p.list.map(x=>`<tr><td>${++n}</td><td>${dmy(x.date)}</td><td>${esc(x.name)}${x.src&&mbSelf(p.d)&&!mbNoTrad(p.d)?`<br><small>From: ${esc(x.src)}</small>`:""}</td><td>${mbNoTrad(p.d)?(x.src?"From: "+esc(x.src):"..."):dot(x.trad)}</td><td>${dot(x.qty)}</td><td class="r">${p.isSt?"":x.rate?F(x.rate):"..."}</td><td class="r">${p.isSt?"":x.price?F(x.price):"..."}</td></tr>`).join("");
     h+=`<tr class="bt"><td colspan="6">Total (Rs) · ${esc(p.d.name)}</td><td class="r">${p.tot?F(Math.round(p.tot)):"..."}</td></tr>`});
   const grand=Math.round(parts.reduce((a,p)=>a+p.tot,0)), ds2=all.map(x=>x.date).filter(Boolean);
   const sum=parts.map(p=>[p.d.name,"Rs "+F(Math.round(p.tot))]);sum.push(["Grand Total (all dealers)","Rs "+F(grand)]);
-  const mdW=flock&&flock.raw&&flock.raw.medTotal;if(mdW)sum.push(["Medicine (written total)","Rs "+F(Math.round(mdW))]);
-  return billPdf({title:"Medicine Report",info:[["Dealers",F(parts.filter(p=>!p.isSt).length)],["Dates",ds2.length?dmy(ds2[0])+" to "+dmy(ds2[ds2.length-1]):"..."],["Report Date",dmy(todayISO())]],
-    table:h+"</tbody>",sum,file:"Medicine Report - "+dmy(todayISO()).replace(/\//g,"-")},toast);
+  const mdW=!day&&flock&&flock.raw&&flock.raw.medTotal;if(mdW)sum.push(["Medicine (written total)","Rs "+F(Math.round(mdW))]);
+  return billPdf({title:"Medicine Report",info:[["Dealers",F(parts.filter(p=>!p.isSt).length)],day?["Bill","Medicine of "+dmy(day)+" (one day)"]:["Dates",ds2.length?dmy(ds2[0])+" to "+dmy(ds2[ds2.length-1]):"..."],["Report Date",dmy(todayISO())]],
+    table:h+"</tbody>",sum,file:"Medicine Report - "+(day?dmy(day):dmy(todayISO())).replace(/\//g,"-")},toast);
 }
 // ---------- full farm report (Main tab button; farm and main login) ----------
 async function dailyPdf(toast){
@@ -2177,7 +2178,8 @@ function fdTypeRows(ins,outs){const all=ins.concat(outs),types=[...new Set(all.m
   t+=types.map(ty=>{const fi=ins.filter(x=>(x.type||"")===ty),fo=outs.filter(x=>(x.type||"")===ty),i=fdBags(fi),o=fdBags(fo);return `<tr><td colspan="3">${ty?esc(ty):"..."}</td><td class="r">${F(i)}</td><td class="r">${F(o)}</td><td class="r">${F(r2(i-o))}</td><td class="r">${F(fdRs(fi))}</td><td class="r">${F(fdRs(fo))}</td></tr>`}).join("");
   t+=`<tr class="bt"><td colspan="3">Total</td><td class="r">${F(fdBags(ins))}</td><td class="r">${F(fdBags(outs))}</td><td class="r">${F(r2(fdBags(ins)-fdBags(outs)))}</td><td class="r">${F(fdRs(ins))}</td><td class="r">${F(fdRs(outs))}</td></tr>`;
   return t+"</tbody>"}
-function fdPdf(kind,tt,f){const t=typeof tt==="function"?tt:(m,e)=>toast(kind==="q"?"fqToast":"fdToast",m,e),all=fdSorted();
+function fdPdf(kind,tt,f,day){const t=typeof tt==="function"?tt:(m,e)=>toast(kind==="q"?"fqToast":"fdToast",m,e),all=fdSorted().filter(x=>!day||x.date===day);
+  if(day&&!all.length){t("No feed on "+dmy(day)+".",true);return}
   if(kind==="q"){f=f||fqFilter();if(!f){t("Write a name or pick dates first.",true);return}if(!f.inn.length&&!f.out.length){t("Nothing found.",true);return}}
   const ins=kind==="q"?f.inn:all.filter(x=>x.kind==="in"),outs=kind==="q"?f.out:all.filter(x=>x.kind==="out");
   if(kind==="in"&&!ins.length){t("No In Feed entries yet.",true);return}if(kind==="out"&&!outs.length){t("No Out Feed entries yet.",true);return}if(!ins.length&&!outs.length){t("No feed entries yet.",true);return}
@@ -2189,8 +2191,38 @@ function fdPdf(kind,tt,f){const t=typeof tt==="function"?tt:(m,e)=>toast(kind===
   const title=kind==="q"?((useOut&&!useIn?"Out Feed":"In Feed")+(f.q?" - "+f.q:"")):kind==="in"?"In Feed":kind==="out"?"Out Feed":"Feed Report";
   const sum=[];if(useIn)sum.push(["In Feed",F(fdBags(ins))+" bags · Rs "+F(Math.round(fdRs(ins)))]);if(useOut)sum.push(["Out Feed",F(fdBags(outs))+" bags · Rs "+F(Math.round(fdRs(outs)))]);
   if(kind==="all")sum.push(["Balance",F(r2(fdBags(ins)-fdBags(outs)))+" bags"]);
-  const info=(kind==="q"?[[f.q?"Search":"Dates chosen",f.q||f.lab]]:[]).concat([["Dates",fdDates(used)],["Report Date",dmy(todayISO())]]);
-  return billPdf({title,info,table:tb,sum,file:(kind==="q"?(useOut&&!useIn?"Out Feed - ":"In Feed - ")+f.file:title+" - "+dmy(todayISO()).replace(/\//g,"-")),fit:1},t)}
+  const info=(kind==="q"?[[f.q?"Search":"Dates chosen",f.q||f.lab]]:[]).concat([[day?"Bill":"Dates",day?"Feed of "+dmy(day)+" (one day)":fdDates(used)],["Report Date",dmy(todayISO())]]);
+  return billPdf({title,info,table:tb,sum,file:(kind==="q"?(useOut&&!useIn?"Out Feed - ":"In Feed - ")+f.file:title+" - "+(day?dmy(day):dmy(todayISO())).replace(/\//g,"-")),fit:1},t)}
+// v1.26.29: feed PARTY bills. A party = C/S Name (In) or Name (Out); both kinds of one name come in ONE bill with the balance
+// her rule: the COMPANY is the name before the bracket; the bracket is the source, e.g. Chenab(Ahsan) -> company Chenab, source Ahsan
+const fdCo=n=>String(n||"").split("(")[0].trim(),fdSrc=n=>{const m=String(n||"").match(/\(([^)]*)\)/);return m?m[1].trim():""};
+const fdPk=n=>fdCo(n).toLowerCase().replace(/\s+/g," ");
+function fdParties(){const m=new Map();fdSorted().forEach(x=>{const k=fdPk(x.name);if(k&&!m.has(k))m.set(k,fdCo(x.name))});return [...m].map(([k,name])=>({k,name})).sort((a,b)=>a.name.localeCompare(b.name))}
+const fdDays=l=>[...new Set(l.map(x=>x.date).filter(Boolean))].sort().reverse();
+function fdPart(k,day){const L=fdSorted().filter(x=>fdPk(x.name)===k&&(!day||x.date===day));const ins=L.filter(x=>x.kind==="in"),outs=L.filter(x=>x.kind==="out");
+  return {L,ins,outs,ib:fdBags(ins),ir:fdRs(ins),ob:fdBags(outs),or:fdRs(outs)}}
+// balance words: In from the party = farm pays; Out to the party = party pays
+const fdBal=P=>{const d=Math.round(P.ir-P.or),b=r2(P.ib-P.ob),bg=b>0?F(b)+" bags more In":F(-b)+" bags more Out";
+  if(d>0)return "Farm pays Rs "+F(d);if(d<0)return "Company pays Rs "+F(-d);if(!b)return "Settled ✓";return (P.ir||P.or?"Rs settled · ":"Rate not written · ")+bg};
+// by source (bracket name): one line each, only when the company has more than one source
+function fdSrcRows(P){const m=new Map();P.L.forEach(x=>{const k=fdSrc(x.name)||"(no source)";const o=m.get(k)||{ib:0,ir:0,ob:0,or:0};if(x.kind==="in"){o.ib+=x.bags||0;o.ir+=x.price||0}else{o.ob+=x.bags||0;o.or+=x.price||0}m.set(k,o)});
+  if(m.size<2)return "";return fdHd("By Source (name in bracket)")+`<thead><tr><th>Sr</th><th colspan="2">Source</th><th class="r">In (bags)</th><th class="r">In (Rs)</th><th class="r">Out (bags)</th><th class="r" colspan="2">Out (Rs)</th></tr></thead>`+
+  [...m].sort((a,b)=>a[0].localeCompare(b[0])).map(([k,o],i)=>`<tr><td>${i+1}</td><td colspan="2">${esc(k)}</td><td class="r">${o.ib?F(r2(o.ib)):""}</td><td class="r">${o.ir?F(Math.round(o.ir)):""}</td><td class="r">${o.ob?F(r2(o.ob)):""}</td><td class="r" colspan="2">${o.or?F(Math.round(o.or)):""}</td></tr>`).join("")}
+const fdPartTab=P=>[P.ins.length?fdHd("In Feed (came from this company)")+fdTab(P.ins,true,1):"",P.outs.length?fdHd("Out Feed (went to this company)")+fdTab(P.outs,false,1):"",fdSrcRows(P)].filter(Boolean).join(fdGap).replace(/<\/?tbody>/g,"");
+const fdPartSum=P=>[["In Feed",F(P.ib)+" bags · Rs "+F(Math.round(P.ir))],["Out Feed",F(P.ob)+" bags · Rs "+F(Math.round(P.or))],["Bags (In − Out)",F(r2(P.ib-P.ob))],["Balance",fdBal(P)]];
+function fdPartyBill(k,day,t){const p=fdParties().find(x=>x.k===k),P=fdPart(k,day);if(!p||!P.L.length){t("No feed"+(day?" on "+dmy(day):"")+" for this company.",true);return}
+  return billPdf({title:p.name,info:[["Bill",day?"Feed of "+dmy(day)+" (one day)":"Complete ("+fdDates(P.L)+")"],["Bill Date",dmy(todayISO())]],table:fdPartTab(P),sum:fdPartSum(P),fit:1,
+    file:"Feed Bill - "+p.name+" - "+(day?dmy(day).replace(/\//g,"-"):"Complete")},t)}
+function fdAllBill(day,t){const ps=fdParties().map(p=>({p,P:fdPart(p.k,day)})).filter(x=>x.P.L.length);
+  if(!ps.length){t("No feed"+(day?" on "+dmy(day):"")+" yet.",true);return}
+  const G={ib:0,ir:0,ob:0,or:0};ps.forEach(({P})=>{G.ib+=P.ib;G.ir+=P.ir;G.ob+=P.ob;G.or+=P.or});
+  let h=`<thead><tr><th>Sr</th><th>Company</th><th class="r">In (bags)</th><th class="r">In (Rs)</th><th class="r">Out (bags)</th><th class="r">Out (Rs)</th><th>Balance</th></tr></thead><tbody>`+
+    ps.map(({p,P},i)=>`<tr><td>${i+1}</td><td>${esc(p.name)}</td><td class="r">${P.ib?F(P.ib):""}</td><td class="r">${P.ir?F(Math.round(P.ir)):""}</td><td class="r">${P.ob?F(P.ob):""}</td><td class="r">${P.or?F(Math.round(P.or)):""}</td><td>${esc(fdBal(P))}</td></tr>`).join("")+
+    `<tr class="bt"><td colspan="2">Total · All Companies</td><td class="r">${F(r2(G.ib))}</td><td class="r">${F(Math.round(G.ir))}</td><td class="r">${F(r2(G.ob))}</td><td class="r">${F(Math.round(G.or))}</td><td></td></tr></tbody>`;
+  const all=ps.flatMap(x=>x.P.L);
+  return billPdf({title:"All Companies · Feed Bill",info:[["Bill",day?"Feed of "+dmy(day)+" (one day)":"Complete ("+fdDates(all)+")"],["Bill Date",dmy(todayISO())]],table:h,
+    sum:[["Companies",F(ps.length)],["In Feed",F(r2(G.ib))+" bags · Rs "+F(Math.round(G.ir))],["Out Feed",F(r2(G.ob))+" bags · Rs "+F(Math.round(G.or))]],
+    more:ps.map(({p,P})=>({h:p.name+" · "+fdBal(P),table:fdPartTab(P)})),file:"Feed Bill - All Companies - "+(day?dmy(day).replace(/\//g,"-"):"Complete")},t)}
 // v1.26.4: Supervisor Advance search (name or 📅 dates), same as General Spendings
 let suDateOn=false;
 function suFilter(){const L=sups.filter(x=>x.type!=="break");
@@ -2727,7 +2759,7 @@ function pdfItems(){
   }
   if(view==="med"){
     const mf=mqFilter(),mq=mf?(mf.q||mf.lab):"";if(mq)it("q","#0f6b73","Medicine · "+mq,mf.q?"تلاش والی میڈیسن کی PDF (اِن + آؤٹ)":"ان تاریخوں کی میڈیسن کی PDF (اِن + آؤٹ)",mqPdf);
-    it("m","#b3412e","Medicine Report ⭐","سب ڈیلرز کا ایک مشترکہ بل",medReport,{star:1});
+    it("m","#b3412e","Medicine Report ⭐","سب ڈیلرز کا ایک مشترکہ بل",null,{star:1,opt:"days",days:()=>fdDays(medbuys),run2:(d,m)=>medReport(m,d)});
     if(medouts.length)it("o","#8a5a12","Out Medicine","باہر دی گئی میڈیسن کی لسٹ",moPdf);
     const ds=[...document.querySelectorAll("#mbDealers .mbsec")].filter(e=>{const t=txt(e,".mbdtot");return e.querySelector(".mbtab tr[data-mb]")||(t&&t!=="Rs 0")});
     if(ds.length)L.push({g:"ڈیلر بل"});
@@ -2735,9 +2767,11 @@ function pdfItems(){
   }
   if(view==="feed"){
     const ff=fqFilter(),fq=ff?(ff.q||ff.lab):"";if(fq)it("q","#0f6b73","Feed · "+fq,ff.q?"تلاش والی فیڈ کی PDF (اِن + آؤٹ)":"ان تاریخوں کی فیڈ کی PDF (اِن + آؤٹ)",pt=>fdPdf("q",pt));
-    it("r","#b3412e","Feed Report ⭐","In Feed + Out Feed + Feed by Type، ایک PDF میں",pt=>fdPdf("all",pt),{star:1});
+    it("r","#b3412e","Feed Report ⭐","In Feed + Out Feed + Feed by Type، ایک PDF میں",null,{star:1,opt:"days",days:()=>fdDays(feeds),run2:(d,m)=>fdPdf("all",m,null,d)});
+    const fps=fdParties();if(fps.length){it("","#173f66","سب کمپنیوں کا بل","کمپنی وار · اِن، آؤٹ اور فرق",null,{opt:"days",days:()=>fdDays(feeds),run2:(d,m)=>fdAllBill(d,m)})}
     if(feeds.some(x=>x.kind==="in"))it("i","#1f7a4d","In Feed","آنے والی فیڈ کی لسٹ",pt=>fdPdf("in",pt));
     if(feeds.some(x=>x.kind==="out"))it("o","#8a5a12","Out Feed","باہر جانے والی فیڈ کی لسٹ",pt=>fdPdf("out",pt));
+    if(fps.length){L.push({g:"کمپنی بل"});fps.forEach(p=>{const P=fdPart(p.k);it("","#1c5d93",p.name,(P.ins.length?"In "+F(P.ib):"")+(P.ins.length&&P.outs.length?" · ":"")+(P.outs.length?"Out "+F(P.ob):"")+" bags"+(P.ir||P.or?" · "+fdBal(P):""),null,{av:1,opt:"days",days:()=>fdDays(P.L),run2:(d,m)=>fdPartyBill(p.k,d,m)})})}
   }
   if(view==="sale"){
     it("g","#0f6b73","General Sale PDF","جنرل سیل کی پوری لسٹ",gsPdf);
@@ -2788,6 +2822,11 @@ function pdfCard(x,i){
     const r=$("kdVRate");op.innerHTML=tg(r.dataset.on==="1","ریٹ بل میں")+`<button type="button" class="ch on" data-go>${PDOWN} Vehicle Bill</button>`+msg;
     const t=op.querySelector(".tg");t.onclick=()=>{r.click();t.classList.toggle("on",r.dataset.on==="1")};
     op.querySelector("[data-go]").onclick=()=>go(x.run,op.querySelector(".dmsg"),w);
+  }
+  if(x.opt==="days"){const dd=x.days();
+    op.innerHTML=`<button type="button" class="ch on" data-a="all">${PDOWN} مکمل بل</button>`+(dd.length?`<div style="display:flex;gap:8px;flex-basis:100%;align-items:center"><select aria-label="دن">${dd.map(d=>`<option value="${d}">${dmy(d)}</option>`).join("")}</select><button type="button" class="ch" data-a="day">📅 ایک دن کا بل</button></div>`:"")+msg;
+    const s2=op.querySelector("select");
+    op.querySelectorAll("[data-a]").forEach(c=>c.onclick=()=>go(m=>x.run2(c.dataset.a==="day"?s2.value:null,m),op.querySelector(".dmsg"),w));
   }
   if(x.opt==="all"){
     op.innerHTML=`<button type="button" class="ch on" data-a="all">${PDOWN} مکمل بل</button>`+tg(allRate,"ریٹ بل میں")+
