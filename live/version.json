@@ -1,11 +1,11 @@
 {
- "ver": "1.26.31",
- "note": "Main Flock: Live Weight (birds alive x newest average weight)",
- "noteUr": "مین فلاک: Live Weight (زندہ برڈ × سب سے نیا ایوریج وزن)",
+ "ver": "1.26.32",
+ "note": "TEST (Bagrianwala, flock 1, farm only): Medicine Usage page beside Supervisor Data",
+ "noteUr": "ٹیسٹ (باگڑیانوالہ، فلاک 1، صرف فارم): سپروائزر ڈیٹا کے ساتھ Medicine Usage پیج",
  "android": {
-  "zip": "android-1.26.31.zip",
+  "zip": "android-1.26.32.zip",
   "minBuild": 27,
-  "sha256": "b8b1062ce458d99040e560143e569e9cce7a02260df97ef2e0389f8dcae8392d"
+  "sha256": "14be600c8bb1a507cdba2126a6f45600dc06ce5a81c34596007e982b737b13e2"
  },
  "windows": {
   "files": [
@@ -17,7 +17,6 @@
   "minDesk": "1.26.0"
  },
  "to": [
-  "main",
   "farm"
  ]
 }
