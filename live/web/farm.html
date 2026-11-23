@@ -1157,6 +1157,8 @@ function compute(list){
 const entry=()=>({medD:$("iMedD").value.trim(),medN:$("iMedN").value.trim(),in:fNum($("iIn").value),out:fNum($("iOut").value),fd:bNum($("iFDay").value,fNum),fn:bNum($("iFNight").value,fNum),md:bNum($("iMDay").value,mNumZ),mn:bNum($("iMNight").value,mNumZ),zibD:zibOf($("iMDay").value),zibN:zibOf($("iMNight").value),water:bNum($("iWater").value,fNum),...saleEntry()});
 // the sale box saves the average weight and the counted birds; without an average weight the old typed number stays
 const avgKg=()=>{const v=fNum($("iAvgW").value);return v>0?(v>=20?v/1000:v):0};
+// v1.26.30: a day with NOTHING written (blank form saved, e.g. by Enter key) is not a day: not shown, not saved
+const dayEmpty=e=>!e||(!e.in&&!e.out&&!e.sold&&!e.medD&&!e.medN&&["fd","fn","md","mn","water"].every(k=>e[k]==null));
 const saleEntry=()=>{const a=avgKg();if(a>0)return {avgW:a,sold:Math.round(saleKgOn(dayISO(editDay??nextDay()))/a)};return {avgW:null,sold:iNum($("iSold").value)}};
 const bNum=(v,f)=>String(v).trim()===""?null:f(v);
 const dayDone=d=>d.fd>0&&d.fn>0&&d.md!=null&&d.mn!=null;
@@ -1715,7 +1717,7 @@ async function fullReport(withMoney,toast){
     <h3>Final FCR (Complete Flock)</h3>${T("ffTable")}
     <h3>Spendings</h3>${T("spTable")}
     <h3>Supervisor Advance</h3>${T("suTable")}
-    <h3>Salary</h3>${T("saTable")}${T("saFinal")}
+    <h3>Salary</h3>${T("saTable").replace(/<t[hd][^>]*\bd1\b[^>]*>[\s\S]*?<\/t[hd]>/g,"")}${T("saFinal")}
     <h3>Feed · In</h3>${T("fdTable")}<h3>Feed · Out</h3>${T("fdTableOut")}<h3>Feed by Type</h3>${T("fdTypeTable")}
     <h3>Medicine · ${esc($("mbAll").textContent)}</h3>${secs("#mbDealers .mbsec")}${medouts.length?`<h3>Out Medicine · ${esc($("moAllT").textContent)}</h3>${T("moTable")}`:""}
     ${withMoney?`<h3>Sale · ${esc($("slAll").textContent)}</h3>${secs("#slDealers .slsec")||"<p>No sale yet.</p>"}${kvehs.length?`<h3>Kanda Sale · ${esc($("kdAll").textContent)}</h3>${secs("#kdDealers .kdsec")}`:""}${gsales.length?`<h3>General Sale · ${esc($("gsAll").textContent)}</h3>${T("gsTable")}`:""}`:""}
@@ -1834,6 +1836,9 @@ function salaryPdf(toast){
     file:"Salary - "+dmy(till).replace(/\//g,"-")},toast);
 }
 const pbN=n=>"Page Break · "+n+" entr"+(n===1?"y":"ies");
+// v1.26.30: running page after the last break
+const tpN=n=>"This Page · "+n+" entr"+(n===1?"y":"ies");
+const tpInfo=l=>{const k=l.map(y=>y.type).lastIndexOf("break");if(k<0)return null;const r=l.slice(k+1).filter(y=>y.type!=="break");return r.length?{n:r.length,t:r.reduce((a,y)=>a+(y.amount||0),0)}:null};
 function supPdf(toast){
   const list=dateOrder(sups), items=list.filter(x=>x.type!=="break");
   if(!items.length){toast("No supervisor payments yet.",true);return}
@@ -1841,6 +1846,7 @@ function supPdf(toast){
   let run=0,pg=0,n=0,h=`<thead><tr><th>Sr</th><th>Date</th><th class="r">Amount Given</th><th>Counterpart</th><th>Via</th></tr></thead><tbody>`;
   let pc=0;h+=list.map(x=>{if(x.type==="break"){const t=run-pg,c=pc;pg=run;pc=0;return `<tr class="bd"><td colspan="2" style="text-align:left">${pbN(c)}</td><td class="r">${F(r2(run))}</td><td colspan="2" style="text-align:center;font-style:normal;font-weight:700">Total: ${F(r2(t))}</td></tr>`}
     run+=x.amount||0;pc++;return `<tr><td>${++n}</td><td>${dmy(x.date)}</td><td class="r">${x.amount?F(x.amount):"..."}</td><td>${dot(x.cp)}</td><td>${dot(x.via)}</td></tr>`}).join("");
+  {const tp=tpInfo(list);if(tp)h+=`<tr class="bd"><td colspan="2" style="text-align:left">${tpN(tp.n)}</td><td class="r">${F(r2(run))}</td><td colspan="2" style="text-align:center;font-style:normal;font-weight:700">Total: ${F(r2(tp.t))}</td></tr>`;}
   h+=`<tr class="bt"><td colspan="2">Total (Rs)</td><td class="r">${F(tot)}</td><td colspan="2"></td></tr>`;
   return billPdf({title:"Supervisor Advance",info:[["Dates",ds.length?dmy(ds[0])+" to "+dmy(ds[ds.length-1]):"..."],["Report Date",dmy(todayISO())]],
     table:h+"</tbody>",sum:[["Entries",F(items.length)],["Total Given","Rs "+F(Math.round(tot))]],file:"Supervisor Advance - "+dmy(todayISO()).replace(/\//g,"-")},toast);
@@ -1890,6 +1896,7 @@ function renderSpend(){
   let run=0;
   h+=list.map(x=>{if(x.type!=="break")run+=x.amount||0;return x;}).map((x,i,arr)=>x.type==="break"?`<tr class="brk" data-sp="${esc(x.id)}"><td class="pbl">${pbN(arr.slice(arr.slice(0,i).map(y=>y.type).lastIndexOf("break")+1,i).filter(y=>y.type!=="break").length)}</td><td colspan="3" class="pbt">Total: ${F(r2(arr.slice(arr.slice(0,i).map(y=>y.type).lastIndexOf("break")+1,i).filter(y=>y.type!=="break").reduce((a,y)=>a+(y.amount||0),0)))}</td><td class="num amt">${F(r2(arr.slice(0,i).filter(y=>y.type!=="break").reduce((a,y)=>a+(y.amount||0),0)))}</td></tr>`:
     `<tr data-sp="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="dsc"><div>${esc(x.desc)}</div></td><td>${esc(dot(x.qty))}</td><td class="cpc">${esc(dot(x.cp))}</td><td class="num amt">${x.amount?F(x.amount):"..."}</td></tr>`).join("");
+  {const tp=tpInfo(list);if(tp)h+=`<tr class="brk tp"><td class="pbl">${tpN(tp.n)}</td><td colspan="3" class="pbt">Total: ${F(r2(tp.t))}</td><td class="num amt">${F(r2(run))}</td></tr>`;}
   if(items.length)h+=`<tr class="tot"><td colspan="4">Total (Rs)</td><td class="num amt">${F(tot)}</td></tr>`;
   else h+=`<tr><td colspan="5" class="empty">No spendings yet. Add the first one above.</td></tr>`;
   $("spTable").innerHTML=h+"</tbody>";
@@ -2249,6 +2256,7 @@ function renderSup(){
   else{
   let pcS=0;h+=list.map(x=>{if(x.type==="break"){const t=run-pgS,c=pcS;pgS=run;pcS=0;return `<tr class="brk" data-su="${esc(x.id)}"><td class="pbl">${pbN(c)}</td><td colspan="2" class="pbt">Total: ${F(r2(t))}</td><td class="num amt">${F(r2(run))}</td></tr>`}
     run+=x.amount||0;pcS++;return `<tr data-su="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="num amt">${x.amount?F(x.amount):"..."}</td><td class="w"><div>${dot(x.cp)}</div></td><td class="w"><div>${dot(x.via)}</div></td></tr>`}).join("");
+  {const tp=tpInfo(list);if(tp)h+=`<tr class="brk tp"><td class="pbl">${tpN(tp.n)}</td><td colspan="2" class="pbt">Total: ${F(r2(tp.t))}</td><td class="num amt">${F(r2(run))}</td></tr>`;}
   h+=items.length?`<tr class="tot"><td>Total (Rs)</td><td class="num amt">${F(tot)}</td><td colspan="2"></td></tr>`:`<tr><td colspan="4" class="empty">No supervisor payments yet. Add the first one above.</td></tr>`;}
   $("suTable").innerHTML=h+"</tbody>";
   const uniq=k=>[...new Set(items.map(x=>x[k]).filter(Boolean))].sort();
@@ -2289,10 +2297,11 @@ function renderSal(){
   const tSal=r2(people.reduce((a,x)=>a+saTotal(x),0)), adv=Math.round(sups.filter(x=>x.type!=="break").reduce((a,x)=>a+(x.amount||0),0));
   const X=saX(), cach=X.caching||0, feed=saFeedCalc().amt, bird=X.birdfee||0, gross=Math.round(tSal+cach+feed+bird), net=Math.round(gross-adv);
   $("saTot").textContent=rs(tSal);$("saAdv").textContent=rs(adv);$("saNet").textContent=rs(net);
-  let h=`<thead><tr><th>Name &amp; Work</th><th>Joining Date</th><th class="amt">Salary</th><th class="amt">Days</th><th class="amt">Extra</th><th class="amt">Total Salary</th></tr></thead><tbody>`;
+  let h=`<thead><tr><th>Name &amp; Work</th><th>Joining Date</th><th class="amt">Salary</th><th class="amt d1">1 Day</th><th class="amt">Days</th><th class="amt">Extra</th><th class="amt">Total Salary</th></tr></thead><tbody>`;
+  const d1=x=>x.salary?Math.round(x.salary/30):0,d1T=people.filter(x=>!x.leave).reduce((a,x)=>a+d1(x),0);
   const till=saPayDate()||todayISO();h=h.replace("<th class=\"amt\">Days</th>","<th class=\"amt\">Days<br><small style=\"font-weight:400\">till "+dmy(till).slice(0,5)+"</small></th>");
-  h+=people.map(x=>`<tr data-sa="${esc(x.id)}"${x.leave?' class="left"':""}><td class="w"><div>${esc(x.name)}${saLeftTag(x)}</div></td><td class="num">${x.join?dmy(x.join).slice(0,5):"..."}</td><td class="num amt">${F(x.salary)}</td><td class="num amt">${saDays(x)==null?"...":F(saDays(x))}</td><td class="num amt">${saEx(x)}</td><td class="num amt">${saDays(x)==null&&!x.extra?"...":F(saTotal(x))}</td></tr>`).join("");
-  h+=people.length?`<tr class="tot"><td colspan="5">Total Salaries (Rs)</td><td class="num amt">${F(tSal)}</td></tr>`:`<tr><td colspan="6" class="empty">No salaries yet. Add the first person above.</td></tr>`;
+  h+=people.map(x=>`<tr data-sa="${esc(x.id)}"${x.leave?' class="left"':""}><td class="w"><div>${esc(x.name)}${saLeftTag(x)}</div></td><td class="num">${x.join?dmy(x.join).slice(0,5):"..."}</td><td class="num amt">${F(x.salary)}</td><td class="num amt d1">${d1(x)?F(d1(x)):"..."}</td><td class="num amt">${saDays(x)==null?"...":F(saDays(x))}</td><td class="num amt">${saEx(x)}</td><td class="num amt">${saDays(x)==null&&!x.extra?"...":F(saTotal(x))}</td></tr>`).join("");
+  h+=people.length?`<tr class="tot"><td colspan="3">Total Salaries (Rs)</td><td class="num amt d1" title="All working staff, one day">${F(d1T)}</td><td colspan="2"></td><td class="num amt">${F(tSal)}</td></tr>`:`<tr><td colspan="7" class="empty">No salaries yet. Add the first person above.</td></tr>`;
   $("saTable").innerHTML=h+"</tbody>";
   const row=(l,v,c)=>`<tr${c?` class="${c}"`:""}><td>${l}</td><td class="num amt">${v}</td></tr>`;
   $("saFinal").innerHTML=`<thead><tr><th>Item</th><th class="amt">Rs</th></tr></thead><tbody>`+row("Total Salaries",F(tSal))+row("Caching",F(cach))+row("Feed",F(feed))+row("Bird Fee",F(bird))+row("Total",F(gross),"tot")+row("Less: Advance (Supervisor)","− "+F(adv))+row("Net Salary",F(net),"tot")+"</tbody>";
@@ -2557,7 +2566,7 @@ function watchFlock(id){
     setStatus(""); showMain(); loadEntry(); render();
   },e=>setStatus("ریکارڈ لوڈ نہیں ہو سکا۔ صفحہ دوبارہ کھولیں۔",true));
   unDays=ref.collection("days").onSnapshot(s=>{
-    days=s.docs.map(d=>d.data()).filter(d=>d&&d.day).sort((a,b)=>a.day-b.day);
+    days=s.docs.map(d=>d.data()).filter(d=>d&&d.day&&!dayEmpty(d)).sort((a,b)=>a.day-b.day);
     if(flock){loadEntry();render();if(view==="main")renderMain()}
   },e=>setStatus("ریکارڈ لوڈ نہیں ہو سکا۔ صفحہ دوبارہ کھولیں۔",true));
   unWeeks=ref.collection("weeks").onSnapshot(s=>{
@@ -2601,6 +2610,10 @@ $("save").addEventListener("click",async()=>{
   if(!db||!flockId||busy)return;
   const day=editDay??nextDay(); const e=entry();
   if(HPMODE==="sup"&&day>todayDay()){toast("toast","آنے والے دن کا ڈیٹا ابھی نہیں لکھ سکتے۔",true);return}
+  if(dayEmpty(e)){if(editDay==null||!days.some(d=>d.day===day)){toast("toast","کچھ لکھا نہیں گیا، اس لیے محفوظ نہیں کیا۔",true);return}
+    // emptying a saved day removes it
+    busy=true;render();let okD=true;try{await db.doc("flocks/"+flockId+"/days/"+pad(day)).delete()}catch(x){okD=false}busy=false;
+    toast("toast",okD?"دن "+day+" خالی تھا، ہٹا دیا گیا۔":"ہٹایا نہیں جا سکا، دوبارہ کوشش کریں۔",!okD);if(okD)editDay=null;render();return}
   busy=true;render();
   const ok=await write(db.doc("flocks/"+flockId+"/days/"+pad(day)),{day,...e,savedAt:new Date().toISOString()});
   busy=false;
@@ -2870,7 +2883,7 @@ $("saFCalcBtn").addEventListener("click",()=>{saFOpen=!saFOpen;try{localStorage.
 $("saFRate").addEventListener("input",saFeedShow);
 $("saFMan").addEventListener("click",()=>{saFManUI=!saFManOn();if(saFManUI&&!$("saFHand").value){const a=saFeedCalc().amt;if(a)$("saFHand").value=a}saFeedShow()});
 $("spQPdf").addEventListener("click",async()=>{const b=$("spQPdf"),t=$("spQToast"),pt=(m,e)=>{t.textContent=m;t.classList.toggle("err",!!e)};b.disabled=true;try{await spSearchPdf(pt)}finally{b.disabled=false}});
-$("plBtn").addEventListener("click",e=>{e.stopPropagation();showPL=!showPL;try{localStorage.setItem("hpg-pl",showPL?"1":"0")}catch(x){}renderMain()});
+$("plBtn").addEventListener("click",e=>{e.stopPropagation();showPL=!showPL;try{localStorage.setItem("hpg-pl",showPL?"1":"0")}catch(x){}const y=scrollY;renderMain();scrollTo(0,y);requestAnimationFrame(()=>scrollTo(0,y));setTimeout(()=>scrollTo(0,y),200)});
 $("rpGo").addEventListener("click",async()=>{const b=$("rpGo"),t=$("rpToast"),pt=(m,e)=>{t.textContent=m;t.classList.toggle("err",!!e)};b.disabled=true;try{await fullReport(moneyOK(),pt)}finally{b.disabled=false}});
 $("vMain").addEventListener("click",ev=>{const tr=ev.target.closest("tr[data-go]");if(!tr)return;const [v,part]=tr.dataset.go.split(":");if(part)spPart=part;setView(v);scrollTo({top:0,behavior:"smooth"})});
 $("navSpend").addEventListener("click",()=>setView("spend"));
@@ -3403,12 +3416,11 @@ mq.addEventListener("change",place);if(document.readyState==="loading")document.
  #vMain>.mncol{display:flex;flex-direction:column;gap:16px;min-width:0}
  #vMain>.mncol>*{margin:0!important}
  html{overflow-x:clip}
- #vMain>.mncol{grid-column:1/-1}#vMain>.mncol[hidden]{display:none}
- #vMain>.mncol>section.card:not(#hpChart){max-width:760px;width:100%;margin:0 auto!important}
+ #vMain>.mncol[hidden]{display:none}#vMain>#hpChart{grid-column:1/-1}
 }
 </style>
 <script>(function(){const mq=matchMedia("(min-width:1000px)");let L=null,busy=false;
-function lay(){const m=document.getElementById("vMain");if(!m||busy)return;busy=true;
+function lay(){const m=document.getElementById("vMain");if(!m||busy)return;busy=true;const y0=scrollY;
  if(!L)L=[...m.querySelectorAll(":scope>section.card")].filter(c=>c.id!=="supCard");
  let cols=[...m.querySelectorAll(":scope>.mncol")];
  if(mq.matches){if(cols.length<2){cols=[0,1].map(()=>{const d=document.createElement("div");d.className="mncol";m.appendChild(d);return d})}
@@ -3416,13 +3428,17 @@ function lay(){const m=document.getElementById("vMain");if(!m||busy)return;busy=
   L.filter(c=>!V.includes(c)).forEach(c=>{if(c.parentElement!==cols[0])cols[0].appendChild(c)});
   // v1.26.3: every card goes under the shorter column, so both sides stay level (no big empty space)
   // v1.26.26 (her ask): ONE column, big cards one below another, fixed order (no jumping / gaps)
-  const ch=document.getElementById("hpChart");if(ch&&cols[0].firstChild!==ch)cols[0].prepend(ch);
-  const RK=["Flock","Feed Summary","Income","Expenses","Result"],rk=c=>{const t=(c.querySelector("h2")||{}).textContent||"";const i=RK.findIndex(x=>t.includes(x));return i<0?99:i};
-  V.slice().sort((x,y)=>rk(x)-rk(y)).forEach(c=>cols[0].appendChild(c));cols[1].hidden=true}
+  // v1.26.30 (her pick): chart full width on top, then TWO FIXED columns: 1 Flock | 2 Feed Summary, 3 Income | 4 Expenses, 5 Result (right)
+  const ch=document.getElementById("hpChart");if(ch&&ch.nextElementSibling!==cols[0])m.insertBefore(ch,cols[0]);
+  const RK=[["Flock",0],["Feed Summary",1],["Income",0],["Expenses",1],["Result",1]],rk=c=>{const t=(c.querySelector("h2")||{}).textContent||"";const i=RK.findIndex(x=>t.includes(x[0]));return i<0?[99,0]:[i,RK[i][1]]};
+  const S=V.slice().sort((x,y)=>rk(x)[0]-rk(y)[0]),noInc=!S.some(c=>rk(c)[0]===2),side=c=>noInc&&rk(c)[0]===1?0:noInc&&rk(c)[0]===3?1:rk(c)[1];
+  [0,1].forEach(k=>{const want=S.filter(c=>side(c)===k),now=[...cols[k].children].filter(c=>S.includes(c));if(want.length!==now.length||want.some((c,i)=>now[i]!==c))want.forEach(c=>cols[k].appendChild(c))});
+  cols[1].hidden=false}
  else if(cols.length){for(const c of L)m.insertBefore(c,cols[0]);const ch=document.getElementById("hpChart"),t=document.getElementById("mnTiles");if(ch&&t)t.after(ch);cols.forEach(d=>d.remove())}
+ if(scrollY!==y0)scrollTo(0,y0);
  setTimeout(()=>{busy=false},0)}
 mq.addEventListener("change",lay);
-const go=()=>{lay();const m=document.getElementById("vMain");if(!m)return;new MutationObserver(lay).observe(m,{subtree:true,attributes:true,attributeFilter:["hidden","style"]});
+const go=()=>{lay();const m=document.getElementById("vMain");if(!m)return;new MutationObserver(lay).observe(m,{subtree:true,attributes:true,attributeFilter:["hidden","style"]});new MutationObserver(lay).observe(m,{childList:true});
  let t=0;const ro=new ResizeObserver(()=>{clearTimeout(t);t=setTimeout(lay,120)});(L||[]).forEach(c=>ro.observe(c))};
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go()})();</script>
 <script>(function(){if(new URLSearchParams(location.search).has("ro"))document.documentElement.classList.add("hpro");

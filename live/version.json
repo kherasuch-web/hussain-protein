@@ -1,11 +1,11 @@
 {
- "ver": "1.26.29",
- "note": "Feed: company bills (In + Out + balance, by source), all companies bill, one-day Feed Report; Medicine Report one day",
- "noteUr": "فیڈ: کمپنی بل (اِن + آؤٹ + حساب)، سب کمپنیوں کا بل، ایک دن کی فیڈ رپورٹ؛ میڈیسن رپورٹ ایک دن",
+ "ver": "1.26.30",
+ "note": "Spendings: 'This Page' row after last page break; Main 2 columns; chart/scroll fixes; empty day fix; salary 1 Day; Sale & Profit on by default; updates only to phones they are for",
+ "noteUr": "اخراجات: آخری پیج بریک کے بعد 'This Page' لائن؛ مین دو کالم؛ گراف اور سکرول ٹھیک؛ خالی دن والی غلطی ٹھیک؛ تنخواہ ایک دن؛ سیل اینڈ پرافٹ پہلے سے آن؛ آگے سے اپڈیٹ صرف ضرورت والے فون پر",
  "android": {
-  "zip": "android-1.26.29.zip",
+  "zip": "android-1.26.30.zip",
   "minBuild": 27,
-  "sha256": "cc30125e2f1d068f0643aa5f3cfa0a780dd8b6dd8836df23e90cb160e241f125"
+  "sha256": "b1b6a7771f4c93870fa0537b9341fd3feb1c3e33c711f50f169970e628e864b9"
  },
  "windows": {
   "files": [
