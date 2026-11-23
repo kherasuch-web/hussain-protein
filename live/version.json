@@ -1,11 +1,11 @@
 {
- "ver": "1.26.30",
- "note": "Spendings: 'This Page' row after last page break; Main 2 columns; chart/scroll fixes; empty day fix; salary 1 Day; Sale & Profit on by default; updates only to phones they are for",
- "noteUr": "اخراجات: آخری پیج بریک کے بعد 'This Page' لائن؛ مین دو کالم؛ گراف اور سکرول ٹھیک؛ خالی دن والی غلطی ٹھیک؛ تنخواہ ایک دن؛ سیل اینڈ پرافٹ پہلے سے آن؛ آگے سے اپڈیٹ صرف ضرورت والے فون پر",
+ "ver": "1.26.31",
+ "note": "Main Flock: Live Weight (birds alive x newest average weight)",
+ "noteUr": "مین فلاک: Live Weight (زندہ برڈ × سب سے نیا ایوریج وزن)",
  "android": {
-  "zip": "android-1.26.30.zip",
+  "zip": "android-1.26.31.zip",
   "minBuild": 27,
-  "sha256": "b1b6a7771f4c93870fa0537b9341fd3feb1c3e33c711f50f169970e628e864b9"
+  "sha256": "b8b1062ce458d99040e560143e569e9cce7a02260df97ef2e0389f8dcae8392d"
  },
  "windows": {
   "files": [
@@ -15,5 +15,9 @@
    "farm.js"
   ],
   "minDesk": "1.26.0"
- }
+ },
+ "to": [
+  "main",
+  "farm"
+ ]
 }

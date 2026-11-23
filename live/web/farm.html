@@ -1951,7 +1951,7 @@ function renderMain(){
   const sold=days.reduce((a,d)=>a+(d.sold||0),0), mort=last?last.mTot:0, alive=last?last.bRem:flock.placed;
   const wk=weekRows(hist).filter(r=>r.fcr!=null).pop();
   $("mnFlock").innerHTML="<tbody>"+row("Shed",'<span class="urf">'+esc($("shedName").textContent)+"</span>")+row("Flock Start",dateFor(1))+row("Day",last?F(last.day):dot)+row("Chicks Placed",F(flock.placed))+
-    row("Total Mortality",F(mort)+(flock.placed?" ("+(mort/flock.placed*100).toFixed(2)+"%)":""))+row("Birds Sold",F(sold))+row("Birds Alive",F(alive),{c:"tot"})+
+    row("Total Mortality",F(mort)+(flock.placed?" ("+(mort/flock.placed*100).toFixed(2)+"%)":""))+row("Birds Sold",F(sold))+row("Birds Alive",F(alive),{c:"tot"})+(()=>{if(!(alive>0)||(wExtra&&wExtra.finalEnd))return "";const w=costKg(alive,0);return row("Live Weight",w.kg?F(w.kg)+" kg"+`<div class="lwsub">avg ${F(w.g)} g · ${esc(w.src)}</div>`:"...")})()+
     row("FCR"+(wk?" (week "+wk.w+")":""),wk?wk.fcr.toFixed(2):dot)+"</tbody>";
   const fIn=r2(flock.openFeed+days.reduce((a,d)=>a+(d.in||0),0)), fOut=r2(days.reduce((a,d)=>a+(d.out||0),0));
   $("mnFeed").innerHTML="<tbody>"+row("Feed In (with opening store)",F(fIn),{go:"daily"})+row("Feed Eaten",F(last?last.fTot:0),{go:"daily"})+row("Feed Out",F(fOut),{go:"daily"})+row("Feed In Store",F(last?last.fRem:flock.openFeed),{c:"tot",go:"daily",neg:last&&last.fRem<0})+"</tbody>";
@@ -4270,6 +4270,7 @@ try{hl()}catch(e){}
 })();
 </script>
 <style>/* v1.26.10 page break: label at line start, that page's total in the middle */
+.lwsub{font-size:10.5px;font-weight:400;color:var(--muted);white-space:nowrap}
 table tr.brk td.pbl{text-align:left!important;white-space:nowrap}
 table tr.brk td.pbt{text-align:center!important;font-style:normal!important;font-weight:700;color:var(--fg)!important;font-size:12.5px!important}
 </style>
