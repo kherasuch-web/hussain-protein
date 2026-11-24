@@ -1,11 +1,11 @@
 {
- "ver": "1.26.36",
- "note": "TEST Medicine Usage: list shows only medicines present on that day; stock details open on double click, close after save",
- "noteUr": "ٹیسٹ Medicine Usage: اس دن موجود دوائیاں ہی لسٹ میں، تفصیل ڈبل کلک سے",
+ "ver": "1.26.37",
+ "note": "TEST Medicine Usage: day closes to summary after save; Test Medicine tab shows traditional names",
+ "noteUr": "ٹیسٹ Medicine Usage: محفوظ دن بند خلاصہ، ٹیسٹ میڈیسن ٹیب میں ٹریڈیشنل نام",
  "android": {
-  "zip": "android-1.26.36.zip",
+  "zip": "android-1.26.37.zip",
   "minBuild": 27,
-  "sha256": "1af56785912332cef63b495583863837569b0e6cfae585b0aa4fcb52f1849ea4"
+  "sha256": "207993e9001d788acf31eabfdf1d13f95108b84ad48db8a75725de1676a6236f"
  },
  "windows": {
   "files": [
