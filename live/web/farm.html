@@ -205,6 +205,7 @@ textarea.txt{display:block;resize:none;overflow:hidden;line-height:1.35;min-heig
 input.txt,textarea.txt{font-family:"Segoe UI",Roboto,Arial,sans-serif;font-size:16px;direction:ltr;text-align:left}
 td.medt{white-space:normal;text-align:left;direction:ltr;vertical-align:top}
 td.medt>div{width:150px;white-space:normal;overflow-wrap:anywhere;line-height:1.35}
+td.medt>div.mu3{width:auto;white-space:nowrap;overflow-wrap:normal}
 .en{font-family:"IBM Plex Sans","Segoe UI",Roboto,Arial,sans-serif}
 [hidden]{display:none!important}
 .spend h2.en{font-family:"IBM Plex Sans","Segoe UI",Arial,sans-serif;font-size:17px;line-height:1.6;font-weight:600}
@@ -4931,8 +4932,8 @@ setInterval(()=>{if(typeof view!=="undefined"&&view==="sale")try{dots()}catch(e)
 #muPage .x{background:none;border:0;color:#b42318;font-size:20px;font-weight:700;cursor:pointer;padding:6px 0}
 #muPage .list{grid-column:1/-1;background:#fff;border:1px solid var(--accent,#1c5d93);border-radius:10px;box-shadow:0 6px 16px #0003;max-height:300px;overflow:auto}
 #muPage .list button{display:flex;width:100%;justify-content:space-between;gap:8px;background:none;border:0;border-bottom:1px solid var(--line,#c5d3e0);padding:9px 10px;font:14.5px "Segoe UI",Roboto,Arial,sans-serif;text-align:left;cursor:pointer;color:var(--fg,#0f1d2b)}
-#muPage .list .musq{position:sticky;top:0;width:100%;border:0;border-bottom:2px solid var(--accent,#1c5d93);padding:10px;font:16px "Segoe UI",Roboto,Arial,"Jameel Noori",sans-serif;outline:none;background:#fff;color:#0f1d2b}#muPage .list button[hidden]{display:none}#muPage .muem{padding:10px;color:#4a5d70;text-align:center}
-#muPage .mutr{font-style:normal;color:#6b7d8f;font-size:12px}#muPage .muchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}#muPage .much{border:1px solid #b9d3ea;background:#eef5fc;color:#1c5d93;border-radius:14px;padding:4px 10px;font:13px "Segoe UI",Roboto,Arial,sans-serif;cursor:pointer}#muPage .list small{color:#2e7d4f;white-space:nowrap}#muPage .list .na,#muPage .list .na small{color:#98a6b3}#muPage .muhd{padding:4px 10px;font-size:13px;color:#4a5d70;background:#f4f8fc;text-align:right}#muPage .list .lo small{color:#a06a00}#muPage .list .ov,#muPage .list .ov small{color:#b42318}
+#muPage .list .musq{position:sticky;top:0;width:100%;border:0;border-bottom:2px solid var(--accent,#1c5d93);padding:10px;font:16px "Segoe UI",Roboto,Arial,"Jameel Noori",sans-serif;outline:none;background:#fff;color:#0f1d2b}#muPage .list button[hidden]{display:none}#muPage .list button.hl{background:#dcebf9;outline:2px solid #1c5d93;outline-offset:-2px}#muPage .muem{padding:10px;color:#4a5d70;text-align:center}
+#muPage .mutr{font-style:normal;color:#6b7d8f;font-size:12px}#muPage .muchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}#muPage .much.mur{background:#e9f6ee;border-color:#9fd3b2;color:#1f6b3a}#muPage .nmb,#muStock tr.det .u{font-family:"Jameel Noori",serif!important;font-size:16px}#muPage .nmb{background:#fff4e5;border:1px solid #f0c27a;color:#8a5200;border-radius:8px;padding:6px 10px;cursor:pointer}#muStock tr.nmh td{background:#f6f8fb}#muStock #muNmT{background:none;border:0;color:#8a5200;font-size:15px;cursor:pointer;padding:4px}#muStock tr.nmr td{color:#6b7d8f;display:table-cell}#muStock .unm{background:#eef5fc;border:1px solid #b9d3ea;color:#1c5d93;border-radius:8px;padding:3px 8px;margin-inline-start:8px;cursor:pointer}#muPage .much{border:1px solid #b9d3ea;background:#eef5fc;color:#1c5d93;border-radius:14px;padding:4px 10px;font:13px "Segoe UI",Roboto,Arial,sans-serif;cursor:pointer}#muPage .list small{color:#2e7d4f;white-space:nowrap}#muPage .list .na,#muPage .list .na small{color:#98a6b3}#muPage .muhd{padding:4px 10px;font-size:13px;color:#4a5d70;background:#f4f8fc;text-align:right}#muPage .list .lo small{color:#a06a00}#muPage .list .ov,#muPage .list .ov small{color:#b42318}
 #muPage .warn[hidden]{display:none}#muPage .warn{grid-column:1/-1;background:#fde8e6;color:#b42318;border-radius:8px;padding:4px 9px;font-size:13.5px;direction:rtl}
 #muPage .add{background:none;border:0;color:var(--accent,#1c5d93);font:inherit;font-weight:700;font-size:15px;padding:4px 2px;cursor:pointer}
 #muPage .save{width:100%;margin-top:6px}
@@ -4972,9 +4973,9 @@ html body #histSec#histSec>.histhd:has(#muOpen:not([hidden])){display:flex!impor
   <div class="muin">
     <div class="mucard g">
       <div class="daysel"><button type="button" id="muPrev">◀</button><div class="d" id="muDay"></div><button type="button" id="muNext">▶</button></div>
-      <div class="ro" id="muRo" hidden></div><div id="muSum" hidden></div><div id="muForm"><label class="wat">💧 Water (Ltr)<input id="muWater" inputmode="decimal" autocomplete="off"></label>
+      <div class="ro" id="muRo" hidden></div><div id="muSum" hidden></div><div id="muForm">
       <button type="button" class="mbtn" id="muCopy"></button>
-      <div id="muRows"></div>
+      <div id="muRows"></div><label class="wat">💧 Water (Ltr)<input id="muWater" inputmode="decimal" enterkeyhint="done" autocomplete="off"></label>
             <button type="button" class="save" id="muSave"></button>
       </div>
       <div class="mumt" id="muMsg" role="status"></div>
@@ -5003,7 +5004,7 @@ const normConv=c=>{if(!c)return c;const x=normU(c.u);return {n:(Number(c.n)||0)*
 const qn=v=>{const t=String(v==null?"":v).trim().replace(/,/g,".");return t===""?null:(/^\d*\.?\d+$/.test(t)?parseFloat(t):NaN)};
 const nk=s=>String(s||"").toLowerCase().replace(/\s+/g," ").trim();
 const fq=x=>Number(x).toLocaleString("en-US",{maximumFractionDigits:2});
-let CFG={merge:{},conv:{}};
+let CFG={merge:{},conv:{},nm:{}},muNmOpen=false;
 const resK=k=>{let n=0;while(CFG.merge&&CFG.merge[k]&&n<6){k=CFG.merge[k];n++}return k};
 const isoFor=day=>{const d=new Date(flock.start+"T12:00:00");d.setDate(d.getDate()+day-1);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const nrm=p=>{if(!p)return p;if(p.u==="g")return {n:p.n/1000,u:"kg"};if(p.u==="ml")return {n:p.n/1000,u:"Ltr"};return p};
@@ -5021,8 +5022,9 @@ function stock(upTo){
   const uOf=k=>{const c=cv(k),b=base.get(k);return c?c.u:(b?b.su:String(k).split("|")[1])};
   base.forEach(b=>{const c=cv(b.k),f=c?c.n:1;let fk=resK(b.k);if(uOf(fk)!==uOf(b.k))fk=b.k;const G=grp(fk);G.inn+=b.inn*f;G.out+=b.out*f;(b.trad||[]).forEach(t=>G.trad.add(t));G.members.push({k:b.k,name:b.name,su:b.su,conv:c||null})});
   MU.forEach(d=>{if(upTo&&d.day>upTo)return;(d.items||[]).forEach(it=>{const u=uq(it);grp(u.k).use+=u.q})});
-  const l=[...g.values()].map(r=>({...r,rem:Math.round((r.inn-r.out-r.use)*1000)/1000,trad:[...r.trad].join(", ")})).sort((a,b)=>a.name.localeCompare(b.name));
-  return {l,bad,base}}
+  const l0=[...g.values()].map(r=>({...r,rem:Math.round((r.inn-r.out-r.use)*1000)/1000,trad:[...r.trad].join(", ")})).sort((a,b)=>a.name.localeCompare(b.name));
+  const nmL=l0.filter(x=>(CFG.nm||{})[x.k]),l=l0.filter(x=>!(CFG.nm||{})[x.k]);
+  return {l,bad,base,nmL}}
 // a saved usage line in the unit its medicine is shown in now (after merge / packing change)
 function muMatch(n,v){if(!v)return true;const z=t=>t.replace(/[^a-z0-9]/g,"");if(n.includes(v)||z(n).includes(z(v)))return true;const a=z(v);if(a.length<4)return false;return n.split(/[\s,·\/()-]+/).some(w=>z(w).startsWith(a.slice(0,4)))}
 function uq(it){let ik=String(it.k||""),q=Number(it.q)||0,iu=it.unit;if(/\|g$/.test(ik)){ik=ik.slice(0,-2)+"|kg";q/=1000;iu="kg"}else if(/\|ml$/.test(ik)){ik=ik.slice(0,-3)+"|Ltr";q/=1000;iu="Ltr"}{const x=normU(iu);if(x.f!==1){q*=x.f}iu=x.u}it={...it,k:ik,unit:iu};const k=resK(it.k);const c=(CFG.conv||{})[it.k]||(CFG.conv||{})[k];if(c&&it.unit&&it.unit!==c.u&&it.unit===String(it.k).split("|")[1])q*=c.n;return {k,q}}
@@ -5045,12 +5047,12 @@ function draw(){
   if(document.activeElement!==$m("muWater")&&!muWDirty)$m("muWater").value=wv();
   const prev=dl[i-1];$m("muCopy").textContent=prev?`⧉ پچھلے دن (Day ${prev.day}) والی کاپی کریں`:"⧉ پچھلا دن نہیں ہے";$m("muCopy").disabled=!prev||!muDoc(prev.day);
   $m("muSave").textContent=r?`Save Day ${r.day}`:"Save";$m("muSave").className="save en";$m("muSave").disabled=!r;
-  const chips=t=>[...new Set(String(r?(t==="d"?r.medD:r.medN)||"":"").split(/[,،\/]+/).map(x=>x.trim()).filter(Boolean))].map(x=>`<button type="button" class="much" data-ch="${esc(x)}" data-t="${t}">${esc(x)}</button>`).join("");
+  const chips=t=>[...new Set(String(r?(t==="d"?r.medD:r.medN)||"":"").split(/[,،\/]+/).map(x=>x.trim()).filter(Boolean))].map(x=>`<button type="button" class="much" data-ch="${esc(x)}" data-t="${t}">${esc(x)}</button>`).join("")+recent(t);
   let h="";
   ["d","n"].forEach(t=>{h+=`<div class="part ${t}"><b>${t==="d"?"☀ Day Medicine":"🌙 Night Medicine"}</b>${chips(t)?`<div class="muchips" style="margin:0 0 8px">${chips(t)}</div>`:""}`;
   muRows.forEach((x,j)=>{if(x.t!==t)return;const rm=x.k?remFor(sd,x.k):null,gu=rm?rm.unit:x.unit,eu=x.u||gu;
     h+=`<div class="row"><button type="button" class="pick${x.k?"":" empty"}" data-p="${j}">${x.k?esc(x.name)+" ▼"+(rm?`<small dir="rtl">باقی <bdi dir="ltr">${fqu(rm.rem,rm.unit)}</bdi></small>`:""):"دوائی چُنیں ▼"}</button>
-      <div class="q"><input inputmode="decimal" data-q="${j}" value="${esc(x.q)}" placeholder="Qty"></div>${SUB[gu]?`<div class="ut">${[gu,SUB[gu]].map(u=>`<button type="button" data-u="${j}" data-uv="${u}" class="${eu===u?"on":""}">${u}</button>`).join("")}</div>`:`<span class="ut1">${esc(gu||"")}</span>`}<button type="button" class="x" data-x="${j}" aria-label="ہٹائیں">✕</button>`;
+      <div class="q"><input inputmode="decimal" enterkeyhint="next" data-q="${j}" value="${esc(x.q)}" placeholder="Qty"></div>${SUB[gu]?`<div class="ut">${[gu,SUB[gu]].map(u=>`<button type="button" data-u="${j}" data-uv="${u}" class="${eu===u?"on":""}">${u}</button>`).join("")}</div>`:`<span class="ut1">${esc(gu||"")}</span>`}<button type="button" class="x" data-x="${j}" aria-label="ہٹائیں">✕</button>`;
     if(muPickOpen===j)h+=`<div class="list"><input type="search" class="musq" placeholder="🔍 Medicine" autocomplete="off">${sd.l.filter(s=>s.inn>0||s.use>0).sort((a,b)=>(a.rem<=0)-(b.rem<=0)).map(s=>`<button type="button" class="${s.inn<=0&&!s.use?"na":cls(s)==="out"?"ov":cls(s)==="low"?"lo":""}" data-k="${esc(s.k)}" data-n="${esc(nk(s.name+" "+s.trad))}"><span>${esc(s.name)}${s.trad&&nk(s.trad)!==nk(s.name)?`<i class="mutr"> · ${esc(s.trad)}</i>`:""}</span><small dir="rtl">${s.inn<=0&&!s.use?"ابھی نہیں آئی":`باقی <bdi dir="ltr">${fqu(s.rem,s.unit)}</bdi>`}</small></button>`).join("")||'<button type="button" disabled>اس دن تک کوئی دوائی نہیں آئی تھی</button>'}</div>`;
     h+=`<div class="warn" data-w="${j}" hidden></div>`;
     h+=`</div>`});
@@ -5070,7 +5072,9 @@ function draw(){
       <div class="mucfg">${x.members.map(m=>`<div class="cv" data-m="${esc(m.k)}"><span dir="ltr"><b class="u" dir="rtl">${x.members.length>1?`<bdi dir="ltr">${esc(m.name)}</bdi>: `:""}1 <bdi dir="ltr">${esc(m.su)}</bdi> میں کتنے؟</b> <input inputmode="decimal" class="cvn" value="${m.conv?m.conv.n:""}" placeholder="100"> <select class="cvu">${[...new Set(["Pcs","Sachet","Bottle","Tab","Vial","Packet",...(m.conv&&m.conv.u?[m.conv.u]:[])])].map(u=>`<option${m.conv&&m.conv.u===u?" selected":""}>${esc(u)}</option>`).join("")}</select> <button type="button" class="cvs">Save</button>${m.conv?' <button type="button" class="cvx u">ہٹائیں</button>':""}</span></div>`).join("")}
       <div class="mg" dir="rtl"><b class="u">اس دوائی کو ملائیں:</b> ${others.length?`<select class="mgs" dir="ltr"><option value="">— Medicine —</option>${others.map(y=>`<option value="${esc(y.k)}">${esc(y.name)} (${fqu(y.rem,y.unit)})</option>`).join("")}</select>`:'<small class="u">اسی پیمانے کی کوئی اور دوائی نہیں</small>'}</div>
       ${x.members.length>1?`<div class="mg">${x.members.filter(m=>m.k!==x.k).map(m=>`<button type="button" class="mgx" data-m="${esc(m.k)}">✕ <span class="u">الگ کریں:</span> ${esc(m.name)}</button>`).join(" ")}</div>`:""}
+      <div class="mg"><button type="button" class="nmb" data-nm="${esc(x.k)}">📦 <span class="u">یہ دوائی نہیں، سامان ہے</span></button></div>
       <div class="mumt" id="muCMsg"></div></div></td></tr>`}});
+  if(st.nmL.length){t+=`<tr class="nmh"><td colspan="${anyOut?5:4}"><button type="button" id="muNmT" class="u">📦 سامان (${st.nmL.length}) ${muNmOpen?"▲":"▼"}</button></td></tr>`;if(muNmOpen)st.nmL.forEach(x=>{t+=`<tr class="nmr"><td colspan="${anyOut?5:4}"><span>${esc(x.name)}</span> <button type="button" class="unm u" data-unm="${esc(x.k)}">↩ دوائی ہے</button></td></tr>`})}
   if(!st.l.length)t+=`<tr><td colspan="5" class="u">Medicine سیکشن میں اس فلاک کی کوئی دوائی نہیں۔</td></tr>`;else if(!shown)t+=`<tr><td colspan="5" class="u">اس نام کی کوئی دوائی نہیں</td></tr>`;
   $m("muStock").innerHTML=t+"</tbody></table>";
   $m("muNote").innerHTML=st.bad.length?`⚠ No Quantity in Medicine section: ${st.bad.map(esc).join(", ")}`:"";
@@ -5084,7 +5088,7 @@ function warnRow(j,st){const el=document.querySelector(`#muRows [data-w="${j}"]`
 let muDirty=false,muNavOk=false,muWDirty=false,muEdit=true;
 function navGuard(){if(!muDirty||muNavOk){muNavOk=false;return true}muNavOk=true;msg("⚠ یہ دن ابھی محفوظ نہیں ہوا۔ Save دبائیں، یا تبدیلی چھوڑنے کیلئے دوبارہ دبائیں۔",true);setTimeout(()=>{muNavOk=false},6000);return false}
 function goDay(n){muDirty=false;muWDirty=false;muNavOk=false;muDayN=n;muEdit=!muDoc(n);muRows=fill(rowsFrom(n));muPickOpen=-1;msg("");$m("muWater").value="";draw()}
-function sub(){if(muSub||!db)return;muSub=true;db.collection("medusage").onSnapshot(s=>{const all=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.flock===flockId&&x.test);MU=all.filter(x=>x.kind!=="cfg");if(typeof tab!=="undefined"&&tab==="tmed")try{render()}catch(e){}const c=all.find(x=>x.kind==="cfg");CFG=c?{merge:c.merge||{},conv:Object.fromEntries(Object.entries(c.conv||{}).map(([k,v])=>[k,normConv(v)]))}:{merge:{},conv:{}};if(document.activeElement&&document.activeElement.closest&&document.activeElement.closest(".mucfg"))return;draw()},e=>{})}
+function sub(){if(muSub||!db)return;muSub=true;db.collection("medusage").onSnapshot(s=>{const all=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.flock===flockId&&x.test);MU=all.filter(x=>x.kind!=="cfg");if(typeof tab!=="undefined"&&tab==="tmed")try{render()}catch(e){}const c=all.find(x=>x.kind==="cfg");CFG=c?{merge:c.merge||{},nm:c.nm||{},conv:Object.fromEntries(Object.entries(c.conv||{}).map(([k,v])=>[k,normConv(v)]))}:{merge:{},conv:{},nm:{}};if(document.activeElement&&document.activeElement.closest&&document.activeElement.closest(".mucfg"))return;draw()},e=>{})}
 window.muOpenPage=function(){if(!muOn())return;sub();$m("muPage").hidden=false;const dl=dayList();
   const free=dl.find(r=>!muDoc(r.day));goDay((free||dl[dl.length-1]||{}).day||null);$m("muPage").scrollTop=0};
 function close(){$m("muPage").hidden=true;muPickOpen=-1;muWipeSure=false}
@@ -5093,9 +5097,9 @@ const btn=document.createElement("button");btn.type="button";btn.className="svbt
 $m("svOpen").before(btn);btn.addEventListener("click",()=>window.muOpenPage());
 const tb=document.createElement("button");tb.type="button";tb.setAttribute("role","tab");tb.id="tTMed";tb.className="en";tb.hidden=true;tb.setAttribute("aria-selected","false");tb.textContent="Test Medicine";$m("tMed").before(tb);
 tb.addEventListener("click",()=>{if(!muOn())return;sub();tab="tmed";["tFeed","tBird","tMed"].forEach(i=>$m(i).setAttribute("aria-selected","false"));tb.setAttribute("aria-selected","true");render()});
-const nm=(d,tm)=>t=>{const a=[...new Set((d?d.items||[]:[]).filter(i=>(i.t==="n"?"n":"d")===t).map(i=>tm[resK(uq(i).k)]||String(i.name||"").trim()))].map(esc);return a.length?a.join("<br>"):"—"};
+const nm=(d,tm)=>t=>{const a=[...new Set((d?d.items||[]:[]).filter(i=>(i.t==="n"?"n":"d")===t).map(i=>tm[resK(uq(i).k)]||String(i.name||"").trim()))].map(esc);const c=a.map(x=>x.trim().split(/\s+/).map((w,i)=>i?w.charAt(0).toUpperCase()+w.slice(1):w).join("")),n=Math.ceil(c.length/3),L=Array.from({length:n},()=>({a:[],w:0}));c.slice().sort((x,y)=>y.length-x.length).forEach(x=>{const l=L.filter(l=>l.a.length<3).sort((p,q)=>p.w-q.w)[0];l.a.push(x);l.w+=x.length});return n?L.map(l=>l.a.join(",")).join("<br>"):"—"};
 const or=render;render=function(){const r=or.apply(this,arguments);if(tab==="tmed"){tb.setAttribute("aria-selected","true");const hist=dayList(),tm={};stock().l.forEach(x=>{const t=String(x.trad||"").split(",")[0].trim();if(t)tm[x.k]=t});
-  $m("hist").innerHTML=`<thead><tr><th class="en">Date</th><th class="en">Day</th><th class="en">Day Medicine</th><th class="en">Night Medicine</th><th class="en">Water (Ltr)</th></tr></thead><tbody>`+hist.map(r=>{const d=muDoc(r.day),f=nm(d,tm),w=d&&d.water!=null?d.water:r.water;return `<tr data-mu="${r.day}"><td class="num">${r.date}</td><td class="num">${r.day}</td><td class="medt"><div class="en">${f("d")}</div></td><td class="medt"><div class="en">${f("n")}</div></td><td class="num">${w!=null?F(w):"—"}</td></tr>`}).join("")+"</tbody>";try{hpHistCut()}catch(e){}}else tb.setAttribute("aria-selected","false");return r};
+  $m("hist").innerHTML=`<thead><tr><th class="en">Date</th><th class="en">Day</th><th class="en">Day Medicine</th><th class="en">Night Medicine</th><th class="en">Water (Ltr)</th></tr></thead><tbody>`+hist.map(r=>{const d=muDoc(r.day),f=nm(d,tm),w=d&&d.water!=null?d.water:r.water;return `<tr data-mu="${r.day}"><td class="num">${r.date}</td><td class="num">${r.day}</td><td class="medt"><div class="en mu3">${f("d")}</div></td><td class="medt"><div class="en mu3">${f("n")}</div></td><td class="num">${w!=null?F(w):"—"}</td></tr>`}).join("")+"</tbody>";try{hpHistCut()}catch(e){}}else tb.setAttribute("aria-selected","false");return r};
 $m("hist").addEventListener("click",e=>{const t=e.target.closest("tr[data-mu]");if(!t||tab!=="tmed")return;e.stopPropagation();window.muOpenPage();goDay(+t.dataset.mu)},true);
 setInterval(()=>{const on=muOn();if(btn.hidden===on)btn.hidden=!on;if(tb.hidden===on)tb.hidden=!on;if(!on&&tab==="tmed"){tab="med";try{setTab("med")}catch(e){}}if(on)sub();if(!on&&!$m("muPage").hidden)close()},700);
 $m("muBack").addEventListener("click",()=>{if(navGuard())close()});
@@ -5103,15 +5107,38 @@ const ob=window.hpBack;window.hpBack=function(){if(!$m("muPage").hidden){if(navG
 $m("muPrev").addEventListener("click",()=>{if(!navGuard())return;const dl=dayList(),i=dl.findIndex(r=>r.day===muDayN);if(i>0)goDay(dl[i-1].day)});
 $m("muNext").addEventListener("click",()=>{if(!navGuard())return;const dl=dayList(),i=dl.findIndex(r=>r.day===muDayN);if(i>=0&&i<dl.length-1)goDay(dl[i+1].day)});
 $m("muCopy").addEventListener("click",()=>{const dl=dayList(),i=dl.findIndex(r=>r.day===muDayN),p=dl[i-1];if(!p)return;const r=rowsFrom(p.day);if(!r.length){msg("پچھلے دن کا کوئی استعمال محفوظ نہیں۔",true);return}muRows=fill(r);muDirty=true;muPickOpen=-1;msg("کاپی ہو گیا۔ مقدار دیکھ لیں، پھر Save دبائیں۔");draw()});
+function recent(t){const sd=stock(muDayN),have=new Set(muRows.filter(x=>x.t===t&&x.k).map(x=>resK(x.k))),seen=new Set(),out=[];
+ MU.filter(d=>d.kind!=="cfg"&&d.flock===flockId&&d.day<muDayN).sort((a,b)=>b.day-a.day).forEach(d=>(d.items||[]).forEach(i=>{if((i.t==="n"?"n":"d")!==t||out.length>=8)return;const k=resK(uq(i).k);if(seen.has(k)||have.has(k))return;seen.add(k);const st=sd.l.find(y=>resK(y.k)===k);if(!st||st.rem<=0)return;out.push(st)}));
+ return out.map(st=>`<button type="button" class="much mur" data-rk="${esc(st.k)}" data-t="${t}" title="${esc(st.name)}">${esc(st.trad||st.name)}</button>`).join("")}
 const lastU=k=>{k=resK(k);let best=null;MU.forEach(d=>(d.items||[]).forEach(i=>{if(i.eu&&resK(uq(i).k)===k&&(!best||d.day>best.day||(d.day===best.day)))best={day:d.day,u:i.eu}}));return best?best.u:""};
 const addRow=t=>{muRows.push(ER(t));return muRows.length-1};
 $m("muRows").addEventListener("click",e=>{const p=e.target.closest("[data-p]"),k=e.target.closest("[data-k]"),x=e.target.closest("[data-x]"),ad=e.target.closest("[data-add]"),ut=e.target.closest("[data-uv]"),ch=e.target.closest("[data-ch]");
   if(ad){muPickOpen=addRow(ad.dataset.add);draw();const q=document.querySelector("#muRows .musq");if(q)q.focus();return}
   if(ut){const j=+ut.dataset.u;muRows[j].u=ut.dataset.uv;muDirty=true;ut.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===ut));warnRow(j);return}
+  const rk=e.target.closest("[data-rk]");if(rk){const t=rk.dataset.t,s=stock().l.find(y=>y.k===rk.dataset.rk);if(!s)return;let j=muRows.findIndex(y=>y.t===t&&!y.k);if(j<0)j=addRow(t);Object.assign(muRows[j],{k:s.k,name:s.name,unit:s.unit,u:lastU(s.k)||SUB[remFor(stock(muDayN),s.k)?remFor(stock(muDayN),s.k).unit:s.unit]||""});muDirty=true;muPickOpen=-1;draw();const i=document.querySelector(`#muRows [data-q="${j}"]`);if(i)i.focus();return}
   if(ch){const t=ch.dataset.t;let j=muRows.findIndex(y=>y.t===t&&!y.k);if(j<0)j=addRow(t);muPickOpen=j;draw();const q=document.querySelector("#muRows .musq");if(q){q.value=ch.dataset.ch;q.dispatchEvent(new Event("input",{bubbles:true}));q.scrollIntoView({block:"center"})}return}
   if(p){const j=+p.dataset.p;muPickOpen=muPickOpen===j?-1:j;draw();const q=document.querySelector("#muRows .musq");if(q)q.focus();return}
-  if(k&&muPickOpen>=0){const s=stock().l.find(y=>y.k===k.dataset.k);if(s){Object.assign(muRows[muPickOpen],{k:s.k,name:s.name,unit:s.unit,u:lastU(s.k)});muDirty=true;const j=muPickOpen;muPickOpen=-1;draw();const i=document.querySelector(`#muRows [data-q="${j}"]`);if(i)i.focus()}return}
+  if(k&&muPickOpen>=0){const s=stock().l.find(y=>y.k===k.dataset.k);if(s){Object.assign(muRows[muPickOpen],{k:s.k,name:s.name,unit:s.unit,u:lastU(s.k)||SUB[remFor(stock(muDayN),s.k)?remFor(stock(muDayN),s.k).unit:s.unit]||""});muDirty=true;const j=muPickOpen;muPickOpen=-1;draw();const i=document.querySelector(`#muRows [data-q="${j}"]`);if(i)i.focus()}return}
   if(x){muDirty=true;muRows.splice(+x.dataset.x,1);muRows=fill(muRows);muPickOpen=-1;draw()}});
+{const Q=sel=>document.querySelector("#muRows "+sel),rowsOf=t=>muRows.map((x,j)=>x.t===t?j:-1).filter(j=>j>=0),
+ fp=j=>{const b=Q(`[data-p="${j}"]`);if(b)b.focus()},fq=j=>{const i=Q(`[data-q="${j}"]`);if(i){i.focus();i.select()}},
+ openPick=(j,ch)=>{muPickOpen=j;draw();const q=Q(".musq");if(q){q.focus();if(ch){q.value=ch;q.dispatchEvent(new Event("input",{bubbles:true}))}q.scrollIntoView({block:"nearest"})}},
+ toPart=t=>{const l=rowsOf(t);if(l.length){const j=l[0];muRows[j].k?fq(j):fp(j);(Q(`[data-p="${j}"]`)||{}).scrollIntoView&&Q(`[data-p="${j}"]`).scrollIntoView({block:"center"})}else openPick(addRow(t))};
+ $m("muPage").addEventListener("keydown",e=>{if($m("muForm").hidden)return;const t=e.target,K=e.key;
+  if(t.id==="muWater"){if(K==="Enter"){e.preventDefault();e.stopPropagation();$m("muSave").click()}return}
+  const sq=t.closest&&t.closest(".musq");
+  if(sq){const bs=[...sq.parentNode.querySelectorAll("button[data-k]:not([hidden])")];let i=bs.findIndex(b=>b.classList.contains("hl"));
+   if(K==="ArrowDown"||K==="ArrowUp"){e.preventDefault();e.stopPropagation();if(!bs.length)return;bs.forEach(b=>b.classList.remove("hl"));i=K==="ArrowDown"?Math.min(i+1,bs.length-1):Math.max(i-1,0);bs[i].classList.add("hl");bs[i].scrollIntoView({block:"nearest"})}
+   else if(K==="Enter"){e.preventDefault();e.stopPropagation();const b=bs[i>=0?i:0];if(b)b.click()}
+   else if(K==="Escape"){e.preventDefault();e.stopPropagation();const j=muPickOpen;muPickOpen=-1;draw();fp(j)}return}
+  const pb=t.closest&&t.closest("[data-p]"),qi=t.closest&&t.closest("[data-q]");if(!pb&&!qi)return;
+  const j=+(pb?pb.dataset.p:qi.dataset.q),tp=muRows[j].t,l=rowsOf(tp),at=l.indexOf(j);
+  if(K==="ArrowRight"&&pb){e.preventDefault();e.stopPropagation();fq(j)}
+  else if(K==="ArrowLeft"&&qi){e.preventDefault();e.stopPropagation();fp(j)}
+  else if(K==="ArrowDown"){e.preventDefault();e.stopPropagation();if(at<l.length-1){const n=l[at+1];qi&&muRows[n].k?fq(n):fp(n)}else if(muRows[j].k)openPick(addRow(tp));else openPick(j)}
+  else if(K==="ArrowUp"){e.preventDefault();e.stopPropagation();if(at>0){const n=l[at-1];qi?fq(n):fp(n)}}
+  else if(K==="Enter"){e.preventDefault();e.stopPropagation();if(tp==="d")toPart("n");else{const w=$m("muWater");w.focus();w.select();w.scrollIntoView({block:"center"})}}
+  else if(pb&&K.length===1&&!e.ctrlKey&&!e.altKey&&!e.metaKey&&K!==" "){e.preventDefault();e.stopPropagation();openPick(j,K)}});}
 $m("muSum").addEventListener("click",e=>{if(!e.target.closest("#muEdit"))return;muEdit=true;muRows=fill(rowsFrom(muDayN));msg("");draw()});
 $m("muWater").addEventListener("input",()=>{muWDirty=true;muDirty=true});
 $m("muSQ").addEventListener("input",()=>draw());$m("muSQx").addEventListener("click",()=>{$m("muSQ").value="";draw()});
@@ -5125,7 +5152,7 @@ $m("muSave").addEventListener("click",async()=>{const r=dayList().find(x=>x.day=
   const ref=db.doc("medusage/"+flockId+"_"+pad(r.day));$m("muSave").disabled=true;
   const wSave=muWDirty?wq:(muDoc(r.day)||{}).water;try{if(items.length||wSave!=null)await ref.set({test:true,flock:flockId,shed:"s1",day:r.day,date:r.date||"",items,water:wSave==null?null:wSave,updatedAt:new Date().toISOString()});else if(had)await ref.delete();muDirty=false;muWDirty=false;muEdit=!(items.length||wSave!=null);if(!muEdit)muRows=fill(rowsFrom(r.day));msg(items.length||wSave!=null?"✓ Day "+r.day+" محفوظ ہو گیا۔":had?"Day "+r.day+" کا استعمال ہٹا دیا۔":"کوئی دوائی نہیں لکھی۔")}
   catch(e){msg("محفوظ نہیں ہو سکا، دوبارہ کوشش کریں۔",true)}$m("muSave").disabled=false;draw()});
-async function saveCfg(m){const ref=db.doc("medusage/cfg_"+flockId);try{await ref.set({test:true,kind:"cfg",flock:flockId,shed:"s1",merge:CFG.merge||{},conv:CFG.conv||{},updatedAt:new Date().toISOString()});const el=$m("muCMsg");if(el)el.textContent=m||"✓ محفوظ";muDetail=null}catch(e){const el=$m("muCMsg");if(el){el.textContent="محفوظ نہیں ہو سکا۔";el.classList.add("err")}}draw()}
+async function saveCfg(m){const ref=db.doc("medusage/cfg_"+flockId);try{await ref.set({test:true,kind:"cfg",flock:flockId,shed:"s1",merge:CFG.merge||{},conv:CFG.conv||{},nm:CFG.nm||{},updatedAt:new Date().toISOString()});const el=$m("muCMsg");if(el)el.textContent=m||"✓ محفوظ";muDetail=null}catch(e){const el=$m("muCMsg");if(el){el.textContent="محفوظ نہیں ہو سکا۔";el.classList.add("err")}}draw()}
 $m("muStock").addEventListener("change",e=>{const s=e.target.closest(".mgs");if(!s||!s.value||!muDetail)return;CFG.merge={...(CFG.merge||{}),[muDetail]:s.value};muDetail=s.value;saveCfg("✓ دوائیاں مل گئیں۔")});
 $m("muStock").addEventListener("click",e=>{
   const cs=e.target.closest(".cvs"),cx=e.target.closest(".cvx"),mx=e.target.closest(".mgx");
@@ -5133,6 +5160,10 @@ $m("muStock").addEventListener("click",e=>{
     CFG.conv={...(CFG.conv||{}),[r.dataset.m]:normConv({n,u})};saveCfg("✓ پیمانہ محفوظ ہو گیا۔");return}
   if(cx){const r=cx.closest(".cv"),c={...(CFG.conv||{})};delete c[r.dataset.m];CFG.conv=c;saveCfg("پیمانہ ہٹا دیا۔");return}
   if(mx){const m={...(CFG.merge||{})};delete m[mx.dataset.m];CFG.merge=m;saveCfg("الگ کر دیا۔");return}
+  const nb=e.target.closest(".nmb"),ub=e.target.closest(".unm");
+  if(nb){CFG.nm={...(CFG.nm||{}),[nb.dataset.nm]:true};saveCfg("📦 سامان میں چلا گیا۔");return}
+  if(ub){const m={...(CFG.nm||{})};delete m[ub.dataset.unm];CFG.nm=m;saveCfg("واپس دوائی بن گئی۔");return}
+  if(e.target.closest("#muNmT")){muNmOpen=!muNmOpen;draw();return}
   if(e.target.closest(".mucfg"))return;
 });
 $m("muStock").addEventListener("dblclick",e=>{if(e.target.closest(".mucfg"))return;const t=e.target.closest("tr.st");if(!t)return;muDetail=muDetail===t.dataset.s?null:t.dataset.s;draw()});

@@ -1,11 +1,11 @@
 {
- "ver": "1.26.37",
- "note": "TEST Medicine Usage: day closes to summary after save; Test Medicine tab shows traditional names",
- "noteUr": "ٹیسٹ Medicine Usage: محفوظ دن بند خلاصہ، ٹیسٹ میڈیسن ٹیب میں ٹریڈیشنل نام",
+ "ver": "1.26.38",
+ "note": "TEST Medicine Usage: 3 names per line, keyboard navigation, water below, small unit default, recent medicines, non-medicine items",
+ "noteUr": "ٹیسٹ Medicine Usage: ایک لائن میں 3 نام، کی بورڈ، پانی نیچے، چھوٹا یونٹ، پچھلی دوائیاں، سامان",
  "android": {
-  "zip": "android-1.26.37.zip",
+  "zip": "android-1.26.38.zip",
   "minBuild": 27,
-  "sha256": "207993e9001d788acf31eabfdf1d13f95108b84ad48db8a75725de1676a6236f"
+  "sha256": "f30df5a985001c60157f030b179752a7ea1a5425e6ec20909d8791fcaa7f7916"
  },
  "windows": {
   "files": [
