@@ -4900,8 +4900,8 @@ setInterval(()=>{if(typeof view!=="undefined"&&view==="sale")try{dots()}catch(e)
 
 <!-- v1.26.32 TEST: Medicine Usage (farm login, باگڑیانوالہ, flock 1 only). Own collection medusage; nothing else changes. -->
 <style>
-#muOpen{background:#1f7a4d;margin-inline-start:auto}
-#muPage{position:fixed;inset:0;z-index:90;background:var(--bg,#eef3f8);overflow:auto;-webkit-overflow-scrolling:touch;padding:0 0 40px}
+#muOpen{background:#1f7a4d;margin-inline-start:auto;white-space:nowrap}@media(max-width:400px){#muOpen{font-size:13px;padding:6px 9px}}
+#muPage{--bg:#eef3f8;--surface:#fff;--fg:#0f1d2b;--line:#c5d3e0;--accent:#1c5d93;--head:#173f66;color:#0f1d2b;color-scheme:light;position:fixed;inset:0;z-index:90;background:var(--bg,#eef3f8);overflow:auto;-webkit-overflow-scrolling:touch;padding:0 0 40px}
 #muPage[hidden]{display:none}
 #muPage .mubar{position:sticky;top:0;z-index:2;background:#1f6b3f;color:#fff;display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 10px) 14px 10px}
 #muPage .mubar b{flex:1;font-size:17px}
@@ -4932,8 +4932,8 @@ setInterval(()=>{if(typeof view!=="undefined"&&view==="sale")try{dots()}catch(e)
 #muPage .list{grid-column:1/-1;background:#fff;border:1px solid var(--accent,#1c5d93);border-radius:10px;box-shadow:0 6px 16px #0003;max-height:300px;overflow:auto}
 #muPage .list button{display:flex;width:100%;justify-content:space-between;gap:8px;background:none;border:0;border-bottom:1px solid var(--line,#c5d3e0);padding:9px 10px;font:14.5px "Segoe UI",Roboto,Arial,sans-serif;text-align:left;cursor:pointer;color:var(--fg,#0f1d2b)}
 #muPage .list .musq{position:sticky;top:0;width:100%;border:0;border-bottom:2px solid var(--accent,#1c5d93);padding:10px;font:16px "Segoe UI",Roboto,Arial,"Jameel Noori",sans-serif;outline:none;background:#fff;color:#0f1d2b}#muPage .list button[hidden]{display:none}#muPage .muem{padding:10px;color:#4a5d70;text-align:center}
-#muPage .list small{color:#2e7d4f;white-space:nowrap}#muPage .list .lo small{color:#a06a00}#muPage .list .ov,#muPage .list .ov small{color:#b42318}
-#muPage .warn{grid-column:1/-1;background:#fde8e6;color:#b42318;border-radius:8px;padding:4px 9px;font-size:13.5px;direction:rtl}
+#muPage .mutr{font-style:normal;color:#6b7d8f;font-size:12px}#muPage .muchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}#muPage .much{border:1px solid #b9d3ea;background:#eef5fc;color:#1c5d93;border-radius:14px;padding:4px 10px;font:13px "Segoe UI",Roboto,Arial,sans-serif;cursor:pointer}#muPage .list small{color:#2e7d4f;white-space:nowrap}#muPage .list .na,#muPage .list .na small{color:#98a6b3}#muPage .muhd{padding:4px 10px;font-size:13px;color:#4a5d70;background:#f4f8fc;text-align:right}#muPage .list .lo small{color:#a06a00}#muPage .list .ov,#muPage .list .ov small{color:#b42318}
+#muPage .warn[hidden]{display:none}#muPage .warn{grid-column:1/-1;background:#fde8e6;color:#b42318;border-radius:8px;padding:4px 9px;font-size:13.5px;direction:rtl}
 #muPage .add{background:none;border:0;color:var(--accent,#1c5d93);font:inherit;font-weight:700;font-size:15px;padding:4px 2px;cursor:pointer}
 #muPage .save{width:100%;margin-top:6px}
 #muPage .mumt{font-size:14px;margin-top:6px;min-height:1em}#muPage .mumt.err{color:#b42318}
@@ -4953,6 +4953,15 @@ setInterval(()=>{if(typeof view!=="undefined"&&view==="sale")try{dots()}catch(e)
 #muPage .mucfg select{max-width:100%;border:1px solid var(--line,#c5d3e0);border-radius:7px;padding:4px;font:14px "Segoe UI",Roboto,Arial,sans-serif}
 #muPage .mucfg button{border:1px solid #1f6b3f;background:#fff;color:#1f6b3f;border-radius:7px;padding:3px 10px;font:inherit;cursor:pointer}
 #muPage th{position:static!important;top:auto!important}
+#muPage .part{border-radius:12px;padding:10px;margin-bottom:10px}#muPage .part.d{background:#fff8e6;border:1px solid #f0d48a}#muPage .part.n{background:#eef1fb;border:1px solid #b9c3ea}
+#muPage .part>b{display:block;font:700 16px "Segoe UI",Roboto,Arial,sans-serif;margin-bottom:6px;direction:ltr;text-align:left}
+#muPage .row{grid-template-columns:1fr 64px auto 26px}
+#muPage .ut{display:flex;border:1.5px solid var(--accent,#1c5d93);border-radius:9px;overflow:hidden;min-height:40px}#muPage .ut button{border:0;background:#fff;color:var(--accent,#1c5d93);font:13px "Segoe UI",Roboto,Arial,sans-serif;padding:0 8px;cursor:pointer}#muPage .ut button.on{background:var(--accent,#1c5d93);color:#fff}
+#muPage .ut1{display:grid;place-items:center;font:13px "Segoe UI",Roboto,Arial,sans-serif;color:#4a5d70;padding:0 4px;min-height:40px}
+#muPage .q{padding:0 4px}#muPage .q input{text-align:center}
+#muPage .wat{display:flex;align-items:center;gap:8px;direction:ltr;margin-bottom:10px;background:#eaf6fb;border:1px solid #a9d6ea;border-radius:10px;padding:6px 10px;font:700 15px "Segoe UI",Roboto,Arial,sans-serif}#muPage .wat input{flex:1;min-width:0;border:1px solid var(--line,#c5d3e0);border-radius:8px;padding:7px;font:16px "Segoe UI",Roboto,Arial,sans-serif;text-align:center;background:#fff;color:#0f1d2b}
+#muPage .msq{display:flex;align-items:center;gap:6px;border:2px solid var(--accent,#1c5d93);border-radius:10px;padding:0 8px;margin-bottom:8px;background:#fff;direction:ltr}#muPage .msq input{flex:1;min-width:0;border:0;outline:none;font:16px "Segoe UI",Roboto,Arial,sans-serif;padding:9px 2px;background:none;color:#0f1d2b}#muPage .msq button{border:0;background:none;color:#7a8a99;font-size:18px;cursor:pointer}#muPage .msq button[hidden]{display:none}
+#muPage .part>.add{display:block;width:100%;text-align:right;direction:rtl}#muPage .ut button{border-radius:0!important;margin:0}#muPage label.wat{flex-direction:row!important;align-items:center!important}#muPage label.wat input{max-width:none}#muSQ{direction:ltr;text-align:left}#muSQ::-webkit-search-cancel-button{display:none;-webkit-appearance:none}#muNote{direction:ltr;text-align:left}#muPage td small.tr{display:block;color:#6b7d8f;font-size:11.5px}
 #muPage td{text-align:right}#muPage td:first-child{text-align:left;white-space:normal;word-break:break-word}#muPage tr.det td{text-align:left}
 #muPage table{font-size:13px}
 html body #histSec#histSec>.histhd:has(#muOpen:not([hidden])){display:flex!important}
@@ -4963,15 +4972,15 @@ html body #histSec#histSec>.histhd:has(#muOpen:not([hidden])){display:flex!impor
   <div class="muin">
     <div class="mucard g">
       <div class="daysel"><button type="button" id="muPrev">◀</button><div class="d" id="muDay"></div><button type="button" id="muNext">▶</button></div>
-      <div class="ro" id="muRo"></div>
+      <div class="ro" id="muRo" hidden></div><label class="wat">💧 Water (Ltr)<input id="muWater" inputmode="decimal" autocomplete="off"></label>
       <button type="button" class="mbtn" id="muCopy"></button>
       <div id="muRows"></div>
-      <button type="button" class="add" id="muAdd">+ اور دوائی</button>
-      <button type="button" class="save" id="muSave"></button>
+            <button type="button" class="save" id="muSave"></button>
       <div class="mumt" id="muMsg" role="status"></div>
     </div>
     <div class="mucard">
       <h3>💊 باقی اسٹاک <span class="tag">TEST</span></h3>
+      <div class="msq"><span>🔍</span><input type="search" id="muSQ" placeholder="Medicine" autocomplete="off"><button type="button" id="muSQx" hidden aria-label="clear">✕</button></div>
       <div class="tablewrap" id="muStock"></div>
       <div class="note" id="muNote"></div>
       <button type="button" class="wipe" id="muWipe">🗑 ٹیسٹ ڈیٹا مٹائیں</button>
@@ -4984,91 +4993,129 @@ html body #histSec#histSec>.histhd:has(#muOpen:not([hidden])){display:flex!impor
 const $m=id=>document.getElementById(id);
 let MU=[], muDayN=null, muRows=[], muPickOpen=-1, muWipeSure=false, muDetail=null, muSub=false;
 const muOn=()=>HPMODE==="farm"&&/گڑیانوال|bagri/i.test(typeof shedNm!=="undefined"?shedNm:"")&&!!flockId&&flockId!==liveFlock&&(f1=>!!f1&&flockId===f1.id)(allFlocks.find(f=>f.no==1)||allFlocks[0]);
-const UNITS=[[/^(l|ltr|ltrs|lt|liter|liters|litre|litres|لیٹر)$/,"Ltr"],[/^(ml|mls)$/,"ml"],[/^(kg|kgs|kilo|کلو)$/,"kg"],[/^(g|gm|gms|gram|grams|گرام)$/,"g"],[/^(bottle|bottles|btl|btls|bot|بوتل|بوتلیں)$/,"Bottle"],[/^(packet|packets|pkt|pkts|pack|packs|پیکٹ)$/,"Packet"],[/^(sachet|sachets|ساشے)$/,"Sachet"],[/^(box|boxes|ڈبہ|ڈبے|daby|dabay|dabba|dabbay|dabe)$/,"Daby"],[/^(vial|vials|vile|viles)$/,"Vial"],[/^(tab|tabs|tablet|tablets|tblt|tblts)$/,"Tab"],[/^(bag|bags|بوری)$/,"Bag"],[/^(cotton|cottons|carton|cartons|کاٹن)$/,"Cotton"],[/^(balty|balty|balti|bucket|buckets|بالٹی)$/,"Balty"],[/^(dose|doses)$/,"Dose"],[/^(pcs|pc|piece|pieces|عدد)$/,"Pcs"]];
+const UNITS=[[/^(l|ltr|ltrs|lt|liter|liters|litre|litres|لیٹر)$/,"Ltr"],[/^(ml|mls)$/,"ml"],[/^(kg|kgs|kilo|کلو)$/,"kg"],[/^(g|gm|gms|gram|grams|گرام)$/,"g"],[/^(bottle|bottles|btl|btls|bot|بوتل|بوتلیں)$/,"Bottle"],[/^(packet|packets|pkt|pkts|pckt|pckts|pkct|pack|packs|پیکٹ)$/,"Packet"],[/^(peti|petti|pети|پیٹی)$/,"Peti"],[/^(sachet|sachets|ساشے)$/,"Sachet"],[/^(box|boxes|ڈبہ|ڈبے|daby|dabay|dabba|dabbay|dabe)$/,"Daby"],[/^(vial|vials|vile|viles)$/,"Vial"],[/^(tab|tabs|tablet|tablets|tblt|tblts)$/,"Tab"],[/^(bag|bags|بوری)$/,"Bag"],[/^(cotton|cottons|carton|cartons|کاٹن)$/,"Cotton"],[/^(balty|balty|balti|bucket|buckets|بالٹی)$/,"Balty"],[/^(dose|doses)$/,"Dose"],[/^(pcs|pc|piece|pieces|عدد)$/,"Pcs"]];
 function pq(s){s=String(s||"").replace(/,/g,"").trim().replace(/(\d+(?:\.\d+)?)\s*k\s+(?=[a-z])/i,(m,n)=>String(parseFloat(n)*1000)+" ");const m=s.match(/(\d+(?:\.\d+)?)\s*([A-Za-z؀-ۿ]+)?/);if(!m)return null;
   let u=(m[2]||"").toLowerCase().replace(/\.$/,"");for(const [re,v] of UNITS)if(re.test(u)){u=v;break}return {n:parseFloat(m[1]),u}}
+const qn=v=>{const t=String(v==null?"":v).trim().replace(/,/g,".");return t===""?null:(/^\d*\.?\d+$/.test(t)?parseFloat(t):NaN)};
 const nk=s=>String(s||"").toLowerCase().replace(/\s+/g," ").trim();
 const fq=x=>Number(x).toLocaleString("en-US",{maximumFractionDigits:2});
 let CFG={merge:{},conv:{}};
 const resK=k=>{let n=0;while(CFG.merge&&CFG.merge[k]&&n<6){k=CFG.merge[k];n++}return k};
-function stock(){
-  const base=new Map(), bad=[];
-  const add=(x,sign)=>{const p=pq(x.qty);if(!x.name||!String(x.name).trim())return;if(!p){bad.push(x.name+(x.qty?" ("+x.qty+")":""));return}
-    const k=nk(x.name)+"|"+p.u;let r=base.get(k);if(!r){r={k,name:String(x.name).trim(),su:p.u,inn:0,out:0};base.set(k,r)}
-    if(sign>0)r.inn+=p.n;else r.out+=p.n};
+const isoFor=day=>{const d=new Date(flock.start+"T12:00:00");d.setDate(d.getDate()+day-1);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const nrm=p=>{if(!p)return p;if(p.u==="g")return {n:p.n/1000,u:"kg"};if(p.u==="ml")return {n:p.n/1000,u:"Ltr"};return p};
+const SUB={kg:"g",Ltr:"ml"};
+const fqu=(n,u)=>(SUB[u]&&n&&Math.abs(n)<1)?fq(n*1000)+" "+SUB[u]:fq(n)+" "+u;
+const toBase=(q,eu,gu)=>SUB[gu]&&eu===SUB[gu]?q/1000:q;
+function stock(upTo){
+  const base=new Map(), bad=[], cut=upTo&&flock&&flock.start?isoFor(upTo):null;
+  const add=(x,sign)=>{const p=nrm(pq(x.qty));if(cut&&x.date&&x.date>cut&&p&&base.has(nk(x.name)+"|"+p.u))return;if(!x.name||!String(x.name).trim())return;if(!p){bad.push(x.name+(x.qty?" ("+x.qty+")":""));return}
+    const k=nk(x.name)+"|"+p.u;let r=base.get(k);if(!r){r={k,name:String(x.name).trim(),su:p.u,inn:0,out:0,trad:new Set()};base.set(k,r)}if(x.trad&&String(x.trad).trim())r.trad.add(String(x.trad).trim());
+    if(cut&&x.date&&x.date>cut)return;if(sign>0)r.inn+=p.n;else r.out+=p.n};
   (medbuys||[]).forEach(x=>add(x,1));(typeof medouts!=="undefined"?medouts:[]).forEach(x=>add(x,-1));
   const g=new Map(), cv=k=>(CFG.conv||{})[k];
-  const grp=fk=>{let r=g.get(fk);if(!r){const b=base.get(fk)||{k:fk,name:fk.split("|")[0],su:fk.split("|")[1]||""},c=cv(fk);r={k:fk,name:b.name,unit:c?c.u:b.su,inn:0,out:0,use:0,members:[]};g.set(fk,r)}return r};
-  base.forEach(b=>{const c=cv(b.k),f=c?c.n:1,G=grp(resK(b.k));G.inn+=b.inn*f;G.out+=b.out*f;G.members.push({k:b.k,name:b.name,su:b.su,conv:c||null})});
-  MU.forEach(d=>(d.items||[]).forEach(it=>{const u=uq(it);grp(u.k).use+=u.q}));
-  const l=[...g.values()].map(r=>({...r,rem:Math.round((r.inn-r.out-r.use)*1000)/1000})).sort((a,b)=>a.name.localeCompare(b.name));
+  const grp=fk=>{let r=g.get(fk);if(!r){const b=base.get(fk)||{k:fk,name:fk.split("|")[0],su:fk.split("|")[1]||""},c=cv(fk);r={k:fk,name:b.name,unit:c?c.u:b.su,inn:0,out:0,use:0,members:[],trad:new Set()};g.set(fk,r)}return r};
+  const uOf=k=>{const c=cv(k),b=base.get(k);return c?c.u:(b?b.su:String(k).split("|")[1])};
+  base.forEach(b=>{const c=cv(b.k),f=c?c.n:1;let fk=resK(b.k);if(uOf(fk)!==uOf(b.k))fk=b.k;const G=grp(fk);G.inn+=b.inn*f;G.out+=b.out*f;(b.trad||[]).forEach(t=>G.trad.add(t));G.members.push({k:b.k,name:b.name,su:b.su,conv:c||null})});
+  MU.forEach(d=>{if(upTo&&d.day>upTo)return;(d.items||[]).forEach(it=>{const u=uq(it);grp(u.k).use+=u.q})});
+  const l=[...g.values()].map(r=>({...r,rem:Math.round((r.inn-r.out-r.use)*1000)/1000,trad:[...r.trad].join(", ")})).sort((a,b)=>a.name.localeCompare(b.name));
   return {l,bad,base}}
 // a saved usage line in the unit its medicine is shown in now (after merge / packing change)
-function uq(it){const k=resK(it.k);let q=Number(it.q)||0;const c=(CFG.conv||{})[it.k]||(CFG.conv||{})[k];if(c&&it.unit&&it.unit!==c.u&&it.unit===String(it.k).split("|")[1])q*=c.n;return {k,q}}
+function muMatch(n,v){if(!v)return true;const z=t=>t.replace(/[^a-z0-9]/g,"");if(n.includes(v)||z(n).includes(z(v)))return true;const a=z(v);if(a.length<4)return false;return n.split(/[\s,·\/()-]+/).some(w=>z(w).startsWith(a.slice(0,4)))}
+function uq(it){let ik=String(it.k||""),q=Number(it.q)||0,iu=it.unit;if(/\|g$/.test(ik)){ik=ik.slice(0,-2)+"|kg";q/=1000;iu="kg"}else if(/\|ml$/.test(ik)){ik=ik.slice(0,-3)+"|Ltr";q/=1000;iu="Ltr"}it={...it,k:ik,unit:iu};const k=resK(it.k);const c=(CFG.conv||{})[it.k]||(CFG.conv||{})[k];if(c&&it.unit&&it.unit!==c.u&&it.unit===String(it.k).split("|")[1])q*=c.n;return {k,q}}
 const cls=r=>r.rem<0?"out":(r.inn>0&&r.rem<=r.inn*0.2)?"low":"";
 const dayList=()=>{try{return compute(days)}catch(e){return []}};
 const muDoc=n=>MU.find(d=>d.day===n);
 const remFor=(st,k)=>{k=resK(k);const r=st.l.find(x=>x.k===k);if(!r)return null;const own=(muDoc(muDayN)||{items:[]}).items.map(uq).filter(i=>i.k===k).reduce((a,i)=>a+i.q,0);return {rem:r.rem+own,unit:r.unit}};
-function rowsFrom(n){const d=muDoc(n);return d?(d.items||[]).map(i=>({k:i.k,name:i.name,unit:i.unit,q:String(i.q)})):[]}
+const ER=t=>({t,k:"",name:"",unit:"",u:"",q:""});
+function rowsFrom(n){const d=muDoc(n);return d?(d.items||[]).map(i=>{const x=uq(i);return {t:i.t==="n"?"n":"d",k:x.k,name:i.name,unit:i.unit,u:i.eu||"",q:String(i.eq!=null?i.eq:i.q)}}):[]}
+const fill=r=>{["d","n"].forEach(t=>{if(!r.some(x=>x.t===t))r.push(ER(t))});return r};
 function msg(t,e){$m("muMsg").textContent=t||"";$m("muMsg").classList.toggle("err",!!e)}
 function draw(){
   if($m("muPage").hidden)return;
-  const dl=dayList(), st=stock();
+  const dl=dayList(), st=stock(), sd=muDayN?stock(muDayN):st;
   if(!dl.length){$m("muDay").innerHTML="—";$m("muRows").innerHTML="";}
   const i=dl.findIndex(r=>r.day===muDayN), r=dl[i]||null;
   $m("muPrev").disabled=i<=0;$m("muNext").disabled=i<0||i>=dl.length-1;
   $m("muDay").innerHTML=r?`Day ${r.day}<small>${esc(r.date||"")}</small>${muDoc(r.day)?'<i class="u">✓ محفوظ</i>':""}`:"—";
-  $m("muRo").innerHTML=r?`<b>اس دن کی Day / Night Medicine (روزانہ رپورٹ سے، صرف دیکھنے کیلئے)</b><div class="en">${esc(r.medD)||"—"} / ${esc(r.medN)||"—"}</div>`:"";
+  const wv=d0=>{const d=muDoc(muDayN);return d&&d.water!=null?String(d.water):(r&&r.water!=null?String(r.water):"")};
+  if(document.activeElement!==$m("muWater")&&!muWDirty)$m("muWater").value=wv();
   const prev=dl[i-1];$m("muCopy").textContent=prev?`⧉ پچھلے دن (Day ${prev.day}) والی کاپی کریں`:"⧉ پچھلا دن نہیں ہے";$m("muCopy").disabled=!prev||!muDoc(prev.day);
   $m("muSave").textContent=r?`Save Day ${r.day}`:"Save";$m("muSave").className="save en";$m("muSave").disabled=!r;
+  const chips=t=>[...new Set(String(r?(t==="d"?r.medD:r.medN)||"":"").split(/[,،\/]+/).map(x=>x.trim()).filter(Boolean))].map(x=>`<button type="button" class="much" data-ch="${esc(x)}" data-t="${t}">${esc(x)}</button>`).join("");
   let h="";
-  muRows.forEach((x,j)=>{const rm=x.k?remFor(st,x.k):null, q=parseFloat(x.q);
-    h+=`<div class="row"><button type="button" class="pick${x.k?"":" empty"}" data-p="${j}">${x.k?esc(x.name)+" ▼"+(rm?`<small dir="rtl">باقی <bdi dir="ltr">${fq(rm.rem)} ${esc(rm.unit)}</bdi></small>`:""):"دوائی چُنیں ▼"}</button>
-      <div class="q"><input inputmode="decimal" data-q="${j}" value="${esc(x.q)}" placeholder="Qty"><span>${esc(x.unit||"")}</span></div><button type="button" class="x" data-x="${j}" aria-label="ہٹائیں">✕</button>`;
-    if(muPickOpen===j)h+=`<div class="list"><input type="search" class="musq" placeholder="🔍 نام کا کچھ حصہ لکھیں" autocomplete="off">${st.l.map(s=>`<button type="button" class="${cls(s)==="out"?"ov":cls(s)==="low"?"lo":""}" data-k="${esc(s.k)}" data-n="${esc(nk(s.name))}"><span>${esc(s.name)}</span><small dir="rtl">باقی <bdi dir="ltr">${fq(s.rem)} ${esc(s.unit)}</bdi></small></button>`).join("")||'<button type="button" disabled>Medicine سیکشن میں کوئی دوائی نہیں</button>'}</div>`;
-    if(rm&&q>0&&q>rm.rem)h+=`<div class="warn">⚠ باقی صرف <bdi dir="ltr">${fq(rm.rem)} ${esc(rm.unit)}</bdi> ہے، آپ نے <bdi dir="ltr">${fq(q)}</bdi> لکھا ہے (اینٹری پھر بھی محفوظ ہو جائے گی)</div>`;
+  ["d","n"].forEach(t=>{h+=`<div class="part ${t}"><b>${t==="d"?"☀ Day Medicine":"🌙 Night Medicine"}</b>${chips(t)?`<div class="muchips" style="margin:0 0 8px">${chips(t)}</div>`:""}`;
+  muRows.forEach((x,j)=>{if(x.t!==t)return;const rm=x.k?remFor(sd,x.k):null,gu=rm?rm.unit:x.unit,eu=x.u||gu;
+    h+=`<div class="row"><button type="button" class="pick${x.k?"":" empty"}" data-p="${j}">${x.k?esc(x.name)+" ▼"+(rm?`<small dir="rtl">باقی <bdi dir="ltr">${fqu(rm.rem,rm.unit)}</bdi></small>`:""):"دوائی چُنیں ▼"}</button>
+      <div class="q"><input inputmode="decimal" data-q="${j}" value="${esc(x.q)}" placeholder="Qty"></div>${SUB[gu]?`<div class="ut">${[gu,SUB[gu]].map(u=>`<button type="button" data-u="${j}" data-uv="${u}" class="${eu===u?"on":""}">${u}</button>`).join("")}</div>`:`<span class="ut1">${esc(gu||"")}</span>`}<button type="button" class="x" data-x="${j}" aria-label="ہٹائیں">✕</button>`;
+    if(muPickOpen===j)h+=`<div class="list"><input type="search" class="musq" placeholder="🔍 Medicine" autocomplete="off">${sd.l.map(s=>`<button type="button" class="${s.inn<=0&&!s.use?"na":cls(s)==="out"?"ov":cls(s)==="low"?"lo":""}" data-k="${esc(s.k)}" data-n="${esc(nk(s.name+" "+s.trad))}"><span>${esc(s.name)}${s.trad&&nk(s.trad)!==nk(s.name)?`<i class="mutr"> · ${esc(s.trad)}</i>`:""}</span><small dir="rtl">${s.inn<=0&&!s.use?"ابھی نہیں آئی":`باقی <bdi dir="ltr">${fqu(s.rem,s.unit)}</bdi>`}</small></button>`).join("")||'<button type="button" disabled>Medicine سیکشن میں کوئی دوائی نہیں</button>'}</div>`;
+    h+=`<div class="warn" data-w="${j}" hidden></div>`;
     h+=`</div>`});
-  $m("muRows").innerHTML=h;
+  h+=`<button type="button" class="add" data-add="${t}">+ اور دوائی</button></div>`});
+  $m("muRows").innerHTML=h;muRows.forEach((_,j)=>warnRow(j,sd));
   // stock table
   const anyOut=st.l.some(x=>x.out);
   let t=`<table><thead><tr><th>Medicine</th><th class="n u">آئی</th>${anyOut?'<th class="n u">باہر گئی</th>':""}<th class="n u">استعمال</th><th class="n u">باقی</th></tr></thead><tbody>`;
-  st.l.forEach(x=>{t+=`<tr class="st ${cls(x)}" data-s="${esc(x.k)}"><td>${esc(x.name)}</td><td class="n">${fq(x.inn)} ${esc(x.unit)}</td>${anyOut?`<td class="n">${x.out?fq(x.out)+" "+esc(x.unit):"0"}</td>`:""}<td class="n">${x.use?fq(x.use)+" "+esc(x.unit):"0"}</td><td class="n">${fq(x.rem)} ${esc(x.unit)}</td></tr>`;
+  const sv=nk($m("muSQ").value);$m("muSQx").hidden=!sv;let shown=0;
+  st.l.forEach(x=>{if(sv&&!muMatch(nk(x.name+" "+x.trad),sv))return;shown++;t+=`<tr class="st ${cls(x)}" data-s="${esc(x.k)}"><td>${esc(x.name)}${x.trad&&nk(x.trad)!==nk(x.name)?`<small class="tr">${esc(x.trad)}</small>`:""}</td><td class="n">${fqu(x.inn,x.unit)}</td>${anyOut?`<td class="n">${x.out?fqu(x.out,x.unit):"0"}</td>`:""}<td class="n">${x.use?fqu(x.use,x.unit):"0"}</td><td class="n">${fqu(x.rem,x.unit)}</td></tr>`;
     if(muDetail===x.k){const u=MU.slice().sort((a,b)=>a.day-b.day).map(d=>[d,(d.items||[]).map(uq).filter(i=>i.k===x.k).reduce((a,i)=>a+i.q,0)]).filter(p=>p[1]);
       const others=st.l.filter(y=>y.k!==x.k&&y.unit===x.unit);
-      t+=`<tr class="det"><td colspan="${anyOut?5:4}">${u.length?u.map(([d,q])=>`Day ${d.day} (${esc(d.date||"")}): ${fq(q)} ${esc(x.unit)}`).join("<br>"):'<span class="u">ابھی کوئی استعمال نہیں لکھا</span>'}
+      t+=`<tr class="det"><td colspan="${anyOut?5:4}">${u.length?u.map(([d,q])=>`Day ${d.day} (${esc(d.date||"")}): ${fqu(q,x.unit)}`).join("<br>"):'<span class="u">ابھی کوئی استعمال نہیں لکھا</span>'}
       <div class="mucfg">${x.members.map(m=>`<div class="cv" data-m="${esc(m.k)}"><b class="u" dir="rtl">پیمانہ${x.members.length>1?` (<bdi dir="ltr">${esc(m.name)}</bdi>)`:""}: ایک ${esc(m.su)} کے اندر کتنے؟</b><span dir="ltr">1 ${esc(m.su)} = <input inputmode="decimal" class="cvn" value="${m.conv?m.conv.n:""}" placeholder="12"> <input class="cvu" value="${m.conv?esc(m.conv.u):""}" placeholder="Bottle"> <button type="button" class="cvs">Save</button>${m.conv?' <button type="button" class="cvx u">ہٹائیں</button>':""}</span></div>`).join("")}
-      <div class="mg" dir="rtl"><b class="u">اس دوائی کو ملائیں:</b> ${others.length?`<select class="mgs" dir="ltr"><option value="">— Medicine —</option>${others.map(y=>`<option value="${esc(y.k)}">${esc(y.name)} (${fq(y.rem)} ${esc(y.unit)})</option>`).join("")}</select>`:'<small class="u">اسی پیمانے کی کوئی اور دوائی نہیں</small>'}</div>
+      <div class="mg" dir="rtl"><b class="u">اس دوائی کو ملائیں:</b> ${others.length?`<select class="mgs" dir="ltr"><option value="">— Medicine —</option>${others.map(y=>`<option value="${esc(y.k)}">${esc(y.name)} (${fqu(y.rem,y.unit)})</option>`).join("")}</select>`:'<small class="u">اسی پیمانے کی کوئی اور دوائی نہیں</small>'}</div>
       ${x.members.length>1?`<div class="mg">${x.members.filter(m=>m.k!==x.k).map(m=>`<button type="button" class="mgx" data-m="${esc(m.k)}">✕ <span class="u">الگ کریں:</span> ${esc(m.name)}</button>`).join(" ")}</div>`:""}
       <div class="mumt" id="muCMsg"></div></div></td></tr>`}});
-  if(!st.l.length)t+=`<tr><td colspan="5" class="u">Medicine سیکشن میں اس فلاک کی کوئی دوائی نہیں۔</td></tr>`;
+  if(!st.l.length)t+=`<tr><td colspan="5" class="u">Medicine سیکشن میں اس فلاک کی کوئی دوائی نہیں۔</td></tr>`;else if(!shown)t+=`<tr><td colspan="5" class="u">اس نام کی کوئی دوائی نہیں</td></tr>`;
   $m("muStock").innerHTML=t+"</tbody></table>";
-  $m("muNote").innerHTML=`• "آئی" = فارم کے Medicine سیکشن سے (وہاں کچھ کم نہیں ہوتا)۔ پیلا = ختم ہونے کے قریب، سرخ = باقی سے زیادہ استعمال۔<br>• کسی دوائی پر ٹیپ کریں تو اس کا دن بہ دن استعمال، پیمانہ بدلنا (جیسے 1 Cotton = 12 Bottle) اور دوسری دوائی سے ملانا کھلے گا۔`+(st.bad.length?`<br>• ان دوائیوں کی مقدار سمجھ نہیں آئی، اس لیے لسٹ میں نہیں: <span class="en" dir="ltr">${st.bad.map(esc).join(", ")}</span>`:"");
+  $m("muNote").innerHTML=st.bad.length?`⚠ No Quantity in Medicine section: ${st.bad.map(esc).join(", ")}`:"";
 }
-function goDay(n){muDayN=n;muRows=rowsFrom(n);if(!muRows.length)muRows=[{k:"",name:"",unit:"",q:""}];muPickOpen=-1;msg("");draw()}
-function sub(){if(muSub||!db)return;muSub=true;db.collection("medusage").onSnapshot(s=>{const all=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.flock===flockId&&x.test);MU=all.filter(x=>x.kind!=="cfg");const c=all.find(x=>x.kind==="cfg");CFG=c?{merge:c.merge||{},conv:c.conv||{}}:{merge:{},conv:{}};if(document.activeElement&&document.activeElement.closest&&document.activeElement.closest(".mucfg"))return;draw()},e=>{})}
+function warnRow(j,st){const el=document.querySelector(`#muRows [data-w="${j}"]`),x=muRows[j];if(!el||!x)return;const q=qn(x.q);let t="";
+  if(q!==null&&!(q>0))t="⚠ مقدار صرف نمبر میں لکھیں، جیسے 2 یا 0.5";
+  else if(x.k&&muRows.findIndex(y=>y.k&&y.t===x.t&&resK(y.k)===resK(x.k))!==j)t="⚠ یہ دوائی اوپر بھی چُنی ہوئی ہے، ایک ہی لائن میں ٹوٹل لکھیں";
+  else if(x.k&&q>0){const rm=remFor(st||stock(muDayN),x.k);if(rm){const eu=x.u||rm.unit,qb=toBase(q,eu,rm.unit),tot=muRows.filter(y=>y.k&&resK(y.k)===resK(x.k)).reduce((a,y)=>{const v=qn(y.q);return a+(v>0?toBase(v,y.u||rm.unit,rm.unit):0)},0);if(tot>rm.rem+1e-9)t=`⚠ باقی صرف <bdi dir="ltr">${fqu(rm.rem,rm.unit)}</bdi> ہے، آپ نے <bdi dir="ltr">${fqu(tot,rm.unit)}</bdi> لکھا ہے (اینٹری پھر بھی محفوظ ہو جائے گی)`}}
+  else if(!x.k&&q>0)t="⚠ پہلے دوائی چُنیں";
+  el.innerHTML=t;el.hidden=!t}
+let muDirty=false,muNavOk=false,muWDirty=false;
+function navGuard(){if(!muDirty||muNavOk){muNavOk=false;return true}muNavOk=true;msg("⚠ یہ دن ابھی محفوظ نہیں ہوا۔ Save دبائیں، یا تبدیلی چھوڑنے کیلئے دوبارہ دبائیں۔",true);setTimeout(()=>{muNavOk=false},6000);return false}
+function goDay(n){muDirty=false;muWDirty=false;muNavOk=false;muDayN=n;muRows=fill(rowsFrom(n));muPickOpen=-1;msg("");$m("muWater").value="";draw()}
+function sub(){if(muSub||!db)return;muSub=true;db.collection("medusage").onSnapshot(s=>{const all=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.flock===flockId&&x.test);MU=all.filter(x=>x.kind!=="cfg");if(typeof tab!=="undefined"&&tab==="tmed")try{render()}catch(e){}const c=all.find(x=>x.kind==="cfg");CFG=c?{merge:c.merge||{},conv:c.conv||{}}:{merge:{},conv:{}};if(document.activeElement&&document.activeElement.closest&&document.activeElement.closest(".mucfg"))return;draw()},e=>{})}
 window.muOpenPage=function(){if(!muOn())return;sub();$m("muPage").hidden=false;const dl=dayList();
   const free=dl.find(r=>!muDoc(r.day));goDay((free||dl[dl.length-1]||{}).day||null);$m("muPage").scrollTop=0};
 function close(){$m("muPage").hidden=true;muPickOpen=-1;muWipeSure=false}
 // button beside "سپروائزر ڈیٹا"
 const btn=document.createElement("button");btn.type="button";btn.className="svbtn";btn.id="muOpen";btn.hidden=true;btn.textContent="💊 Medicine Usage";
 $m("svOpen").before(btn);btn.addEventListener("click",()=>window.muOpenPage());
-setInterval(()=>{const on=muOn();if(btn.hidden===on)btn.hidden=!on;if(on)sub();if(!on&&!$m("muPage").hidden)close()},700);
-$m("muBack").addEventListener("click",close);
-const ob=window.hpBack;window.hpBack=function(){if(!$m("muPage").hidden){close();return true}return ob?ob():false};
-$m("muPrev").addEventListener("click",()=>{const dl=dayList(),i=dl.findIndex(r=>r.day===muDayN);if(i>0)goDay(dl[i-1].day)});
-$m("muNext").addEventListener("click",()=>{const dl=dayList(),i=dl.findIndex(r=>r.day===muDayN);if(i>=0&&i<dl.length-1)goDay(dl[i+1].day)});
-$m("muCopy").addEventListener("click",()=>{const dl=dayList(),i=dl.findIndex(r=>r.day===muDayN),p=dl[i-1];if(!p)return;const r=rowsFrom(p.day);if(!r.length){msg("پچھلے دن کا کوئی استعمال محفوظ نہیں۔",true);return}muRows=r;muPickOpen=-1;msg("کاپی ہو گیا۔ مقدار دیکھ لیں، پھر Save دبائیں۔");draw()});
-$m("muAdd").addEventListener("click",()=>{muRows.push({k:"",name:"",unit:"",q:""});muPickOpen=muRows.length-1;draw()});
-$m("muRows").addEventListener("click",e=>{const p=e.target.closest("[data-p]"),k=e.target.closest("[data-k]"),x=e.target.closest("[data-x]");
+const tb=document.createElement("button");tb.type="button";tb.setAttribute("role","tab");tb.id="tTMed";tb.className="en";tb.hidden=true;tb.setAttribute("aria-selected","false");tb.textContent="Test Medicine";$m("tMed").before(tb);
+tb.addEventListener("click",()=>{if(!muOn())return;sub();tab="tmed";["tFeed","tBird","tMed"].forEach(i=>$m(i).setAttribute("aria-selected","false"));tb.setAttribute("aria-selected","true");render()});
+const nm=d=>t=>{const a=(d?d.items||[]:[]).filter(i=>(i.t==="n"?"n":"d")===t).map(i=>esc(i.name));return a.length?a.join("<br>"):"—"};
+const or=render;render=function(){const r=or.apply(this,arguments);if(tab==="tmed"){tb.setAttribute("aria-selected","true");const hist=dayList();
+  $m("hist").innerHTML=`<thead><tr><th class="en">Date</th><th class="en">Day</th><th class="en">Day Medicine</th><th class="en">Night Medicine</th><th class="en">Water (Ltr)</th></tr></thead><tbody>`+hist.map(r=>{const d=muDoc(r.day),f=nm(d),w=d&&d.water!=null?d.water:r.water;return `<tr data-mu="${r.day}"><td class="num">${r.date}</td><td class="num">${r.day}</td><td class="medt"><div class="en">${f("d")}</div></td><td class="medt"><div class="en">${f("n")}</div></td><td class="num">${w!=null?F(w):"—"}</td></tr>`}).join("")+"</tbody>";try{hpHistCut()}catch(e){}}else tb.setAttribute("aria-selected","false");return r};
+$m("hist").addEventListener("click",e=>{const t=e.target.closest("tr[data-mu]");if(!t||tab!=="tmed")return;e.stopPropagation();window.muOpenPage();goDay(+t.dataset.mu)},true);
+setInterval(()=>{const on=muOn();if(btn.hidden===on)btn.hidden=!on;if(tb.hidden===on)tb.hidden=!on;if(!on&&tab==="tmed"){tab="med";try{setTab("med")}catch(e){}}if(on)sub();if(!on&&!$m("muPage").hidden)close()},700);
+$m("muBack").addEventListener("click",()=>{if(navGuard())close()});
+const ob=window.hpBack;window.hpBack=function(){if(!$m("muPage").hidden){if(navGuard())close();return true}return ob?ob():false};
+$m("muPrev").addEventListener("click",()=>{if(!navGuard())return;const dl=dayList(),i=dl.findIndex(r=>r.day===muDayN);if(i>0)goDay(dl[i-1].day)});
+$m("muNext").addEventListener("click",()=>{if(!navGuard())return;const dl=dayList(),i=dl.findIndex(r=>r.day===muDayN);if(i>=0&&i<dl.length-1)goDay(dl[i+1].day)});
+$m("muCopy").addEventListener("click",()=>{const dl=dayList(),i=dl.findIndex(r=>r.day===muDayN),p=dl[i-1];if(!p)return;const r=rowsFrom(p.day);if(!r.length){msg("پچھلے دن کا کوئی استعمال محفوظ نہیں۔",true);return}muRows=fill(r);muDirty=true;muPickOpen=-1;msg("کاپی ہو گیا۔ مقدار دیکھ لیں، پھر Save دبائیں۔");draw()});
+const lastU=k=>{k=resK(k);let best=null;MU.forEach(d=>(d.items||[]).forEach(i=>{if(i.eu&&resK(uq(i).k)===k&&(!best||d.day>best.day||(d.day===best.day)))best={day:d.day,u:i.eu}}));return best?best.u:""};
+const addRow=t=>{muRows.push(ER(t));return muRows.length-1};
+$m("muRows").addEventListener("click",e=>{const p=e.target.closest("[data-p]"),k=e.target.closest("[data-k]"),x=e.target.closest("[data-x]"),ad=e.target.closest("[data-add]"),ut=e.target.closest("[data-uv]"),ch=e.target.closest("[data-ch]");
+  if(ad){muPickOpen=addRow(ad.dataset.add);draw();const q=document.querySelector("#muRows .musq");if(q)q.focus();return}
+  if(ut){const j=+ut.dataset.u;muRows[j].u=ut.dataset.uv;muDirty=true;ut.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===ut));warnRow(j);return}
+  if(ch){const t=ch.dataset.t;let j=muRows.findIndex(y=>y.t===t&&!y.k);if(j<0)j=addRow(t);muPickOpen=j;draw();const q=document.querySelector("#muRows .musq");if(q){q.value=ch.dataset.ch;q.dispatchEvent(new Event("input",{bubbles:true}));q.scrollIntoView({block:"center"})}return}
   if(p){const j=+p.dataset.p;muPickOpen=muPickOpen===j?-1:j;draw();const q=document.querySelector("#muRows .musq");if(q)q.focus();return}
-  if(k&&muPickOpen>=0){const s=stock().l.find(y=>y.k===k.dataset.k);if(s){Object.assign(muRows[muPickOpen],{k:s.k,name:s.name,unit:s.unit});const j=muPickOpen;muPickOpen=-1;draw();const i=document.querySelector(`#muRows [data-q="${j}"]`);if(i)i.focus()}return}
-  if(x){muRows.splice(+x.dataset.x,1);if(!muRows.length)muRows=[{k:"",name:"",unit:"",q:""}];muPickOpen=-1;draw()}});
-$m("muRows").addEventListener("input",e=>{const sq=e.target.closest(".musq");if(sq){const v=nk(sq.value);let n=0;sq.parentNode.querySelectorAll("button[data-n]").forEach(b=>{const ok=!v||b.dataset.n.includes(v)||b.dataset.n.replace(/[^a-z0-9]/g,"").includes(v.replace(/[^a-z0-9]/g,""));b.hidden=!ok;if(ok)n++});let em=sq.parentNode.querySelector(".muem");if(!n&&!em){em=document.createElement("div");em.className="muem u";em.textContent="اس نام کی کوئی دوائی نہیں";sq.after(em)}if(em)em.hidden=!!n;return}
-  const q=e.target.closest("[data-q]");if(!q)return;muRows[+q.dataset.q].q=q.value;clearTimeout(q._t);q._t=setTimeout(()=>{const pos=q.selectionStart;draw();const n=document.querySelector(`#muRows [data-q="${q.dataset.q}"]`);if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}},700)});
+  if(k&&muPickOpen>=0){const s=stock().l.find(y=>y.k===k.dataset.k);if(s){Object.assign(muRows[muPickOpen],{k:s.k,name:s.name,unit:s.unit,u:lastU(s.k)});muDirty=true;const j=muPickOpen;muPickOpen=-1;draw();const i=document.querySelector(`#muRows [data-q="${j}"]`);if(i)i.focus()}return}
+  if(x){muDirty=true;muRows.splice(+x.dataset.x,1);muRows=fill(muRows);muPickOpen=-1;draw()}});
+$m("muWater").addEventListener("input",()=>{muWDirty=true;muDirty=true});
+$m("muSQ").addEventListener("input",()=>draw());$m("muSQx").addEventListener("click",()=>{$m("muSQ").value="";draw()});
+$m("muRows").addEventListener("input",e=>{const sq=e.target.closest(".musq");if(sq){const v=nk(sq.value);let n=0;sq.parentNode.querySelectorAll("button[data-n]").forEach(b=>{const ok=muMatch(b.dataset.n,v);b.hidden=!ok;if(ok)n++});let em=sq.parentNode.querySelector(".muem");if(!n&&!em){em=document.createElement("div");em.className="muem u";em.textContent="اس نام کی کوئی دوائی نہیں";sq.after(em)}if(em)em.hidden=!!n;return}
+  const q=e.target.closest("[data-q]");if(!q)return;muRows[+q.dataset.q].q=q.value;muDirty=true;warnRow(+q.dataset.q)});
 $m("muSave").addEventListener("click",async()=>{const r=dayList().find(x=>x.day===muDayN);if(!r||!db)return;
-  const items=muRows.filter(x=>x.k&&parseFloat(x.q)>0).map(x=>({k:x.k,name:x.name,unit:x.unit,q:parseFloat(x.q)}));
+  if(muRows.some(x=>{const q=qn(x.q);return q!==null&&!(q>0)})){msg("کسی لائن میں مقدار ٹھیک نہیں، صرف نمبر لکھیں (جیسے 2 یا 0.5)۔",true);return}
+  if(muRows.some(x=>!x.k&&qn(x.q)>0)){msg("جس لائن میں مقدار لکھی ہے، اس کی دوائی بھی چُنیں۔",true);return}
+  const wq=qn($m("muWater").value);if(wq!==null&&!(wq>=0)){msg("پانی صرف نمبر میں لکھیں۔",true);return}
+  const sd0=stock(muDayN),items=muRows.filter(x=>x.k&&qn(x.q)>0).map(x=>{const rm=remFor(sd0,x.k),gu=rm?rm.unit:x.unit,eu=x.u||gu,eq=qn(x.q);return {t:x.t,k:x.k,name:x.name,unit:gu,q:toBase(eq,eu,gu),eu,eq}});const had=!!muDoc(r.day);
   const ref=db.doc("medusage/"+flockId+"_"+pad(r.day));$m("muSave").disabled=true;
-  try{if(items.length)await ref.set({test:true,flock:flockId,shed:"s1",day:r.day,date:r.date||"",items,updatedAt:new Date().toISOString()});else await ref.delete();msg(items.length?"✓ Day "+r.day+" محفوظ ہو گیا۔":"Day "+r.day+" کا استعمال ہٹا دیا۔")}
+  const wSave=muWDirty?wq:(muDoc(r.day)||{}).water;try{if(items.length||wSave!=null)await ref.set({test:true,flock:flockId,shed:"s1",day:r.day,date:r.date||"",items,water:wSave==null?null:wSave,updatedAt:new Date().toISOString()});else if(had)await ref.delete();muDirty=false;muWDirty=false;msg(items.length||wSave!=null?"✓ Day "+r.day+" محفوظ ہو گیا۔":had?"Day "+r.day+" کا استعمال ہٹا دیا۔":"کوئی دوائی نہیں لکھی۔")}
   catch(e){msg("محفوظ نہیں ہو سکا، دوبارہ کوشش کریں۔",true)}$m("muSave").disabled=false;draw()});
 async function saveCfg(m){const ref=db.doc("medusage/cfg_"+flockId);try{await ref.set({test:true,kind:"cfg",flock:flockId,shed:"s1",merge:CFG.merge||{},conv:CFG.conv||{},updatedAt:new Date().toISOString()});const el=$m("muCMsg");if(el)el.textContent=m||"✓ محفوظ"}catch(e){const el=$m("muCMsg");if(el){el.textContent="محفوظ نہیں ہو سکا۔";el.classList.add("err")}}draw()}
 $m("muStock").addEventListener("change",e=>{const s=e.target.closest(".mgs");if(!s||!s.value||!muDetail)return;CFG.merge={...(CFG.merge||{}),[muDetail]:s.value};muDetail=s.value;saveCfg("✓ دوائیاں مل گئیں۔")});

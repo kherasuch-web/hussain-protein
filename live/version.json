@@ -1,11 +1,11 @@
 {
- "ver": "1.26.33",
- "note": "TEST Medicine Usage: only in flock 1 (fix) + search box in medicine list",
- "noteUr": "ٹیسٹ Medicine Usage: صرف فلاک 1 میں (درستگی) + دوائی لسٹ میں سرچ",
+ "ver": "1.26.34",
+ "note": "TEST Medicine Usage: Day/Night parts, kg/g Ltr/ml, water, stock search, Test Medicine tab, fixes",
+ "noteUr": "ٹیسٹ Medicine Usage: دن/رات الگ، kg/g اور Ltr/ml، پانی، اسٹاک سرچ، Test Medicine ٹیب، درستگیاں",
  "android": {
-  "zip": "android-1.26.33.zip",
+  "zip": "android-1.26.34.zip",
   "minBuild": 27,
-  "sha256": "3b7ac2793a23d3734732ac8596d825321a8d5c6fffec25fb71674094116c6504"
+  "sha256": "fa8849f44240ef1ec0c4249f630945122c39fe8334d00acfe32f9199e08b1952"
  },
  "windows": {
   "files": [
