@@ -5050,7 +5050,7 @@ function draw(){
   muRows.forEach((x,j)=>{if(x.t!==t)return;const rm=x.k?remFor(sd,x.k):null,gu=rm?rm.unit:x.unit,eu=x.u||gu;
     h+=`<div class="row"><button type="button" class="pick${x.k?"":" empty"}" data-p="${j}">${x.k?esc(x.name)+" ▼"+(rm?`<small dir="rtl">باقی <bdi dir="ltr">${fqu(rm.rem,rm.unit)}</bdi></small>`:""):"دوائی چُنیں ▼"}</button>
       <div class="q"><input inputmode="decimal" data-q="${j}" value="${esc(x.q)}" placeholder="Qty"></div>${SUB[gu]?`<div class="ut">${[gu,SUB[gu]].map(u=>`<button type="button" data-u="${j}" data-uv="${u}" class="${eu===u?"on":""}">${u}</button>`).join("")}</div>`:`<span class="ut1">${esc(gu||"")}</span>`}<button type="button" class="x" data-x="${j}" aria-label="ہٹائیں">✕</button>`;
-    if(muPickOpen===j)h+=`<div class="list"><input type="search" class="musq" placeholder="🔍 Medicine" autocomplete="off">${sd.l.map(s=>`<button type="button" class="${s.inn<=0&&!s.use?"na":cls(s)==="out"?"ov":cls(s)==="low"?"lo":""}" data-k="${esc(s.k)}" data-n="${esc(nk(s.name+" "+s.trad))}"><span>${esc(s.name)}${s.trad&&nk(s.trad)!==nk(s.name)?`<i class="mutr"> · ${esc(s.trad)}</i>`:""}</span><small dir="rtl">${s.inn<=0&&!s.use?"ابھی نہیں آئی":`باقی <bdi dir="ltr">${fqu(s.rem,s.unit)}</bdi>`}</small></button>`).join("")||'<button type="button" disabled>Medicine سیکشن میں کوئی دوائی نہیں</button>'}</div>`;
+    if(muPickOpen===j)h+=`<div class="list"><input type="search" class="musq" placeholder="🔍 Medicine" autocomplete="off">${sd.l.filter(s=>s.inn>0||s.use>0).sort((a,b)=>(a.rem<=0)-(b.rem<=0)).map(s=>`<button type="button" class="${s.inn<=0&&!s.use?"na":cls(s)==="out"?"ov":cls(s)==="low"?"lo":""}" data-k="${esc(s.k)}" data-n="${esc(nk(s.name+" "+s.trad))}"><span>${esc(s.name)}${s.trad&&nk(s.trad)!==nk(s.name)?`<i class="mutr"> · ${esc(s.trad)}</i>`:""}</span><small dir="rtl">${s.inn<=0&&!s.use?"ابھی نہیں آئی":`باقی <bdi dir="ltr">${fqu(s.rem,s.unit)}</bdi>`}</small></button>`).join("")||'<button type="button" disabled>اس دن تک کوئی دوائی نہیں آئی تھی</button>'}</div>`;
     h+=`<div class="warn" data-w="${j}" hidden></div>`;
     h+=`</div>`});
   h+=`<button type="button" class="add" data-add="${t}">+ اور دوائی</button></div>`});
@@ -5120,7 +5120,7 @@ $m("muSave").addEventListener("click",async()=>{const r=dayList().find(x=>x.day=
   const ref=db.doc("medusage/"+flockId+"_"+pad(r.day));$m("muSave").disabled=true;
   const wSave=muWDirty?wq:(muDoc(r.day)||{}).water;try{if(items.length||wSave!=null)await ref.set({test:true,flock:flockId,shed:"s1",day:r.day,date:r.date||"",items,water:wSave==null?null:wSave,updatedAt:new Date().toISOString()});else if(had)await ref.delete();muDirty=false;muWDirty=false;msg(items.length||wSave!=null?"✓ Day "+r.day+" محفوظ ہو گیا۔":had?"Day "+r.day+" کا استعمال ہٹا دیا۔":"کوئی دوائی نہیں لکھی۔")}
   catch(e){msg("محفوظ نہیں ہو سکا، دوبارہ کوشش کریں۔",true)}$m("muSave").disabled=false;draw()});
-async function saveCfg(m){const ref=db.doc("medusage/cfg_"+flockId);try{await ref.set({test:true,kind:"cfg",flock:flockId,shed:"s1",merge:CFG.merge||{},conv:CFG.conv||{},updatedAt:new Date().toISOString()});const el=$m("muCMsg");if(el)el.textContent=m||"✓ محفوظ"}catch(e){const el=$m("muCMsg");if(el){el.textContent="محفوظ نہیں ہو سکا۔";el.classList.add("err")}}draw()}
+async function saveCfg(m){const ref=db.doc("medusage/cfg_"+flockId);try{await ref.set({test:true,kind:"cfg",flock:flockId,shed:"s1",merge:CFG.merge||{},conv:CFG.conv||{},updatedAt:new Date().toISOString()});const el=$m("muCMsg");if(el)el.textContent=m||"✓ محفوظ";muDetail=null}catch(e){const el=$m("muCMsg");if(el){el.textContent="محفوظ نہیں ہو سکا۔";el.classList.add("err")}}draw()}
 $m("muStock").addEventListener("change",e=>{const s=e.target.closest(".mgs");if(!s||!s.value||!muDetail)return;CFG.merge={...(CFG.merge||{}),[muDetail]:s.value};muDetail=s.value;saveCfg("✓ دوائیاں مل گئیں۔")});
 $m("muStock").addEventListener("click",e=>{
   const cs=e.target.closest(".cvs"),cx=e.target.closest(".cvx"),mx=e.target.closest(".mgx");
@@ -5129,7 +5129,8 @@ $m("muStock").addEventListener("click",e=>{
   if(cx){const r=cx.closest(".cv"),c={...(CFG.conv||{})};delete c[r.dataset.m];CFG.conv=c;saveCfg("پیمانہ ہٹا دیا۔");return}
   if(mx){const m={...(CFG.merge||{})};delete m[mx.dataset.m];CFG.merge=m;saveCfg("الگ کر دیا۔");return}
   if(e.target.closest(".mucfg"))return;
-  const t=e.target.closest("tr.st");if(!t)return;muDetail=muDetail===t.dataset.s?null:t.dataset.s;draw()});
+});
+$m("muStock").addEventListener("dblclick",e=>{if(e.target.closest(".mucfg"))return;const t=e.target.closest("tr.st");if(!t)return;muDetail=muDetail===t.dataset.s?null:t.dataset.s;draw()});
 $m("muWipe").addEventListener("click",async()=>{const b=$m("muWipe");if(!muWipeSure){muWipeSure=true;b.classList.add("sure");b.textContent="پکا؟ ہاں، سارا ٹیسٹ ڈیٹا مٹائیں";setTimeout(()=>{if(muWipeSure){muWipeSure=false;b.classList.remove("sure");b.textContent="🗑 ٹیسٹ ڈیٹا مٹائیں"}},6000);return}
   muWipeSure=false;b.classList.remove("sure");b.textContent="🗑 ٹیسٹ ڈیٹا مٹائیں";let ok=true;for(const d of [...MU.slice(),{id:"cfg_"+flockId}]){try{await db.doc("medusage/"+d.id).delete()}catch(e){ok=false}}
   $m("muWMsg").textContent=ok?"✓ سارا ٹیسٹ ڈیٹا مٹ گیا۔":"کچھ ڈیٹا نہیں مٹ سکا، دوبارہ دبائیں۔";goDay(muDayN)});

@@ -1,11 +1,11 @@
 {
- "ver": "1.26.35",
- "note": "TEST Medicine Usage: simple packing (1 box = N pieces, pick unit), fixes old \"100 Pieces\"",
- "noteUr": "ٹیسٹ Medicine Usage: آسان پیمانہ (1 ڈبے میں کتنے + یونٹ چُنیں)",
+ "ver": "1.26.36",
+ "note": "TEST Medicine Usage: list shows only medicines present on that day; stock details open on double click, close after save",
+ "noteUr": "ٹیسٹ Medicine Usage: اس دن موجود دوائیاں ہی لسٹ میں، تفصیل ڈبل کلک سے",
  "android": {
-  "zip": "android-1.26.35.zip",
+  "zip": "android-1.26.36.zip",
   "minBuild": 27,
-  "sha256": "be2631bb291b13790d840c6bad0eb29478d5c7f74ae923e93207b12d3d4831de"
+  "sha256": "1af56785912332cef63b495583863837569b0e6cfae585b0aa4fcb52f1849ea4"
  },
  "windows": {
   "files": [
