@@ -1,11 +1,11 @@
 {
- "ver": "1.26.34",
- "note": "TEST Medicine Usage: Day/Night parts, kg/g Ltr/ml, water, stock search, Test Medicine tab, fixes",
- "noteUr": "ٹیسٹ Medicine Usage: دن/رات الگ، kg/g اور Ltr/ml، پانی، اسٹاک سرچ، Test Medicine ٹیب، درستگیاں",
+ "ver": "1.26.35",
+ "note": "TEST Medicine Usage: simple packing (1 box = N pieces, pick unit), fixes old \"100 Pieces\"",
+ "noteUr": "ٹیسٹ Medicine Usage: آسان پیمانہ (1 ڈبے میں کتنے + یونٹ چُنیں)",
  "android": {
-  "zip": "android-1.26.34.zip",
+  "zip": "android-1.26.35.zip",
   "minBuild": 27,
-  "sha256": "fa8849f44240ef1ec0c4249f630945122c39fe8334d00acfe32f9199e08b1952"
+  "sha256": "be2631bb291b13790d840c6bad0eb29478d5c7f74ae923e93207b12d3d4831de"
  },
  "windows": {
   "files": [

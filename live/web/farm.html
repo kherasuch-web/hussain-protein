@@ -4996,6 +4996,9 @@ const muOn=()=>HPMODE==="farm"&&/گڑیانوال|bagri/i.test(typeof shedNm!=="
 const UNITS=[[/^(l|ltr|ltrs|lt|liter|liters|litre|litres|لیٹر)$/,"Ltr"],[/^(ml|mls)$/,"ml"],[/^(kg|kgs|kilo|کلو)$/,"kg"],[/^(g|gm|gms|gram|grams|گرام)$/,"g"],[/^(bottle|bottles|btl|btls|bot|بوتل|بوتلیں)$/,"Bottle"],[/^(packet|packets|pkt|pkts|pckt|pckts|pkct|pack|packs|پیکٹ)$/,"Packet"],[/^(peti|petti|pети|پیٹی)$/,"Peti"],[/^(sachet|sachets|ساشے)$/,"Sachet"],[/^(box|boxes|ڈبہ|ڈبے|daby|dabay|dabba|dabbay|dabe)$/,"Daby"],[/^(vial|vials|vile|viles)$/,"Vial"],[/^(tab|tabs|tablet|tablets|tblt|tblts)$/,"Tab"],[/^(bag|bags|بوری)$/,"Bag"],[/^(cotton|cottons|carton|cartons|کاٹن)$/,"Cotton"],[/^(balty|balty|balti|bucket|buckets|بالٹی)$/,"Balty"],[/^(dose|doses)$/,"Dose"],[/^(pcs|pc|piece|pieces|عدد)$/,"Pcs"]];
 function pq(s){s=String(s||"").replace(/,/g,"").trim().replace(/(\d+(?:\.\d+)?)\s*k\s+(?=[a-z])/i,(m,n)=>String(parseFloat(n)*1000)+" ");const m=s.match(/(\d+(?:\.\d+)?)\s*([A-Za-z؀-ۿ]+)?/);if(!m)return null;
   let u=(m[2]||"").toLowerCase().replace(/\.$/,"");for(const [re,v] of UNITS)if(re.test(u)){u=v;break}return {n:parseFloat(m[1]),u}}
+const cu=t=>{const l=String(t||"").trim().toLowerCase().replace(/\.$/,"");for(const [re,v] of UNITS)if(re.test(l))return v;return String(t||"").trim()};
+const normU=t=>{const m=String(t||"").trim().match(/^(\d+(?:\.\d+)?)\s*(.*)$/);return m&&m[2]?{f:parseFloat(m[1]),u:cu(m[2])}:{f:1,u:cu(t)}};
+const normConv=c=>{if(!c)return c;const x=normU(c.u);return {n:(Number(c.n)||0)*x.f,u:x.u}};
 const qn=v=>{const t=String(v==null?"":v).trim().replace(/,/g,".");return t===""?null:(/^\d*\.?\d+$/.test(t)?parseFloat(t):NaN)};
 const nk=s=>String(s||"").toLowerCase().replace(/\s+/g," ").trim();
 const fq=x=>Number(x).toLocaleString("en-US",{maximumFractionDigits:2});
@@ -5021,7 +5024,7 @@ function stock(upTo){
   return {l,bad,base}}
 // a saved usage line in the unit its medicine is shown in now (after merge / packing change)
 function muMatch(n,v){if(!v)return true;const z=t=>t.replace(/[^a-z0-9]/g,"");if(n.includes(v)||z(n).includes(z(v)))return true;const a=z(v);if(a.length<4)return false;return n.split(/[\s,·\/()-]+/).some(w=>z(w).startsWith(a.slice(0,4)))}
-function uq(it){let ik=String(it.k||""),q=Number(it.q)||0,iu=it.unit;if(/\|g$/.test(ik)){ik=ik.slice(0,-2)+"|kg";q/=1000;iu="kg"}else if(/\|ml$/.test(ik)){ik=ik.slice(0,-3)+"|Ltr";q/=1000;iu="Ltr"}it={...it,k:ik,unit:iu};const k=resK(it.k);const c=(CFG.conv||{})[it.k]||(CFG.conv||{})[k];if(c&&it.unit&&it.unit!==c.u&&it.unit===String(it.k).split("|")[1])q*=c.n;return {k,q}}
+function uq(it){let ik=String(it.k||""),q=Number(it.q)||0,iu=it.unit;if(/\|g$/.test(ik)){ik=ik.slice(0,-2)+"|kg";q/=1000;iu="kg"}else if(/\|ml$/.test(ik)){ik=ik.slice(0,-3)+"|Ltr";q/=1000;iu="Ltr"}{const x=normU(iu);if(x.f!==1){q*=x.f}iu=x.u}it={...it,k:ik,unit:iu};const k=resK(it.k);const c=(CFG.conv||{})[it.k]||(CFG.conv||{})[k];if(c&&it.unit&&it.unit!==c.u&&it.unit===String(it.k).split("|")[1])q*=c.n;return {k,q}}
 const cls=r=>r.rem<0?"out":(r.inn>0&&r.rem<=r.inn*0.2)?"low":"";
 const dayList=()=>{try{return compute(days)}catch(e){return []}};
 const muDoc=n=>MU.find(d=>d.day===n);
@@ -5060,7 +5063,7 @@ function draw(){
     if(muDetail===x.k){const u=MU.slice().sort((a,b)=>a.day-b.day).map(d=>[d,(d.items||[]).map(uq).filter(i=>i.k===x.k).reduce((a,i)=>a+i.q,0)]).filter(p=>p[1]);
       const others=st.l.filter(y=>y.k!==x.k&&y.unit===x.unit);
       t+=`<tr class="det"><td colspan="${anyOut?5:4}">${u.length?u.map(([d,q])=>`Day ${d.day} (${esc(d.date||"")}): ${fqu(q,x.unit)}`).join("<br>"):'<span class="u">ابھی کوئی استعمال نہیں لکھا</span>'}
-      <div class="mucfg">${x.members.map(m=>`<div class="cv" data-m="${esc(m.k)}"><b class="u" dir="rtl">پیمانہ${x.members.length>1?` (<bdi dir="ltr">${esc(m.name)}</bdi>)`:""}: ایک ${esc(m.su)} کے اندر کتنے؟</b><span dir="ltr">1 ${esc(m.su)} = <input inputmode="decimal" class="cvn" value="${m.conv?m.conv.n:""}" placeholder="12"> <input class="cvu" value="${m.conv?esc(m.conv.u):""}" placeholder="Bottle"> <button type="button" class="cvs">Save</button>${m.conv?' <button type="button" class="cvx u">ہٹائیں</button>':""}</span></div>`).join("")}
+      <div class="mucfg">${x.members.map(m=>`<div class="cv" data-m="${esc(m.k)}"><span dir="ltr"><b class="u" dir="rtl">${x.members.length>1?`<bdi dir="ltr">${esc(m.name)}</bdi>: `:""}1 <bdi dir="ltr">${esc(m.su)}</bdi> میں کتنے؟</b> <input inputmode="decimal" class="cvn" value="${m.conv?m.conv.n:""}" placeholder="100"> <select class="cvu">${[...new Set(["Pcs","Sachet","Bottle","Tab","Vial","Packet",...(m.conv&&m.conv.u?[m.conv.u]:[])])].map(u=>`<option${m.conv&&m.conv.u===u?" selected":""}>${esc(u)}</option>`).join("")}</select> <button type="button" class="cvs">Save</button>${m.conv?' <button type="button" class="cvx u">ہٹائیں</button>':""}</span></div>`).join("")}
       <div class="mg" dir="rtl"><b class="u">اس دوائی کو ملائیں:</b> ${others.length?`<select class="mgs" dir="ltr"><option value="">— Medicine —</option>${others.map(y=>`<option value="${esc(y.k)}">${esc(y.name)} (${fqu(y.rem,y.unit)})</option>`).join("")}</select>`:'<small class="u">اسی پیمانے کی کوئی اور دوائی نہیں</small>'}</div>
       ${x.members.length>1?`<div class="mg">${x.members.filter(m=>m.k!==x.k).map(m=>`<button type="button" class="mgx" data-m="${esc(m.k)}">✕ <span class="u">الگ کریں:</span> ${esc(m.name)}</button>`).join(" ")}</div>`:""}
       <div class="mumt" id="muCMsg"></div></div></td></tr>`}});
@@ -5077,7 +5080,7 @@ function warnRow(j,st){const el=document.querySelector(`#muRows [data-w="${j}"]`
 let muDirty=false,muNavOk=false,muWDirty=false;
 function navGuard(){if(!muDirty||muNavOk){muNavOk=false;return true}muNavOk=true;msg("⚠ یہ دن ابھی محفوظ نہیں ہوا۔ Save دبائیں، یا تبدیلی چھوڑنے کیلئے دوبارہ دبائیں۔",true);setTimeout(()=>{muNavOk=false},6000);return false}
 function goDay(n){muDirty=false;muWDirty=false;muNavOk=false;muDayN=n;muRows=fill(rowsFrom(n));muPickOpen=-1;msg("");$m("muWater").value="";draw()}
-function sub(){if(muSub||!db)return;muSub=true;db.collection("medusage").onSnapshot(s=>{const all=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.flock===flockId&&x.test);MU=all.filter(x=>x.kind!=="cfg");if(typeof tab!=="undefined"&&tab==="tmed")try{render()}catch(e){}const c=all.find(x=>x.kind==="cfg");CFG=c?{merge:c.merge||{},conv:c.conv||{}}:{merge:{},conv:{}};if(document.activeElement&&document.activeElement.closest&&document.activeElement.closest(".mucfg"))return;draw()},e=>{})}
+function sub(){if(muSub||!db)return;muSub=true;db.collection("medusage").onSnapshot(s=>{const all=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.flock===flockId&&x.test);MU=all.filter(x=>x.kind!=="cfg");if(typeof tab!=="undefined"&&tab==="tmed")try{render()}catch(e){}const c=all.find(x=>x.kind==="cfg");CFG=c?{merge:c.merge||{},conv:Object.fromEntries(Object.entries(c.conv||{}).map(([k,v])=>[k,normConv(v)]))}:{merge:{},conv:{}};if(document.activeElement&&document.activeElement.closest&&document.activeElement.closest(".mucfg"))return;draw()},e=>{})}
 window.muOpenPage=function(){if(!muOn())return;sub();$m("muPage").hidden=false;const dl=dayList();
   const free=dl.find(r=>!muDoc(r.day));goDay((free||dl[dl.length-1]||{}).day||null);$m("muPage").scrollTop=0};
 function close(){$m("muPage").hidden=true;muPickOpen=-1;muWipeSure=false}
@@ -5122,7 +5125,7 @@ $m("muStock").addEventListener("change",e=>{const s=e.target.closest(".mgs");if(
 $m("muStock").addEventListener("click",e=>{
   const cs=e.target.closest(".cvs"),cx=e.target.closest(".cvx"),mx=e.target.closest(".mgx");
   if(cs){const r=cs.closest(".cv"),n=parseFloat(r.querySelector(".cvn").value),u=r.querySelector(".cvu").value.trim();if(!(n>0)||!u){const el=$m("muCMsg");el.textContent="نمبر اور پیمانہ دونوں لکھیں، جیسے 12 Bottle";el.classList.add("err");return}
-    CFG.conv={...(CFG.conv||{}),[r.dataset.m]:{n,u}};saveCfg("✓ پیمانہ محفوظ ہو گیا۔");return}
+    CFG.conv={...(CFG.conv||{}),[r.dataset.m]:normConv({n,u})};saveCfg("✓ پیمانہ محفوظ ہو گیا۔");return}
   if(cx){const r=cx.closest(".cv"),c={...(CFG.conv||{})};delete c[r.dataset.m];CFG.conv=c;saveCfg("پیمانہ ہٹا دیا۔");return}
   if(mx){const m={...(CFG.merge||{})};delete m[mx.dataset.m];CFG.merge=m;saveCfg("الگ کر دیا۔");return}
   if(e.target.closest(".mucfg"))return;
