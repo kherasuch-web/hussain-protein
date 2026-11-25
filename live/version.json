@@ -1,11 +1,11 @@
 {
- "ver": "1.26.40",
- "note": "Waiting Vehicles: typed vehicle number brings the date from the Dealer Vehicles list",
- "noteUr": "ویٹنگ: گاڑی نمبر لکھنے پر ڈیلر لسٹ والی تاریخ",
+ "ver": "1.26.41",
+ "note": "Waiting Vehicles Cash: Total Price, Received and Remaining shown under Saafi Weight",
+ "noteUr": "ویٹنگ کیش: کل رقم، وصول اور بقایا",
  "android": {
-  "zip": "android-1.26.40.zip",
+  "zip": "android-1.26.41.zip",
   "minBuild": 27,
-  "sha256": "00a55d1cec37e224879762092845ccae00eebebc050f86ac0fae982ad405b8f4"
+  "sha256": "b4f85432df3a70c365cd201082bb24b348c4f2de7f1108dae85a055c379f8b1b"
  },
  "windows": {
   "files": [

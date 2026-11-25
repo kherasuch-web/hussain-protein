@@ -4134,7 +4134,7 @@ $("dvTable").addEventListener("click",e=>{if(e.target.closest("#dvAllB")){dvAll=
 function wvMode(x){const was=wvSel;wvSel=x?x.id:null;if(x){$("wvDate").value=x.date||"";$("wvVeh").value=x.veh||"";$("wvDl").value=x.dealer||"";$("wvDrv").value=x.drv||"";$("wvMob").value=x.mob||"";$("wvEmpty").value=x.empty||""}else if(was)wvClear();document.querySelectorAll('#wvForm [data-wv="l"]').forEach(l=>l.hidden=!x);
   $("wvSel").hidden=!x;if(x)$("wvSel").textContent=x.veh+" · "+dn(x.dealer)+" · Empty "+F(x.empty)+" kg"+(x.drv?" · "+x.drv:"");
   wvCash(false);$("wvLoad").value="";$("wvCalc").hidden=true;$("wvCancel").hidden=$("wvDel").hidden=!x;$("wvDel").textContent="Delete";check();render()}
-function wvCash(on){const x=WV.find(y=>y.id===wvSel);$("wvRateL").hidden=$("wvRecvL").hidden=!on;$("wvCashB").classList.toggle("on",!!on);$("wvCashB").dataset.on=on?"1":"";if(on&&x){const r=slRate(x.dealer,$("wvDate").value||x.date);$("wvRate").value=r?F(r):"";$("wvRecv").value="";setTimeout(()=>$("wvRecv").focus(),30)}else{$("wvRate").value="";$("wvRecv").value=""}}
+function wvCash(on){const x=WV.find(y=>y.id===wvSel);$("wvRateL").hidden=$("wvRecvL").hidden=!on;$("wvCashB").classList.toggle("on",!!on);$("wvCashB").dataset.on=on?"1":"";if(on&&x){const r=slRate(x.dealer,$("wvDate").value||x.date);$("wvRate").value=r?F(r):"";$("wvRecv").value="";setTimeout(()=>$("wvRecv").focus(),30)}else{$("wvRate").value="";$("wvRecv").value=""}try{wvCalcUp()}catch(e){}}
 $("wvCashB").addEventListener("click",()=>wvCash(!$("wvCashB").dataset.on));
 function wvClear(){$("wvVeh").value="";$("wvDrv").value="";$("wvMob").value="";$("wvEmpty").value="";$("wvDl").value="";if(!$("wvDate").value)$("wvDate").value=todayISO()}
 $("wvVeh").addEventListener("input",()=>{const m=look($("wvVeh").value);if(m){$("wvDl").value=m.dealer;if(!wvSel&&m.date)$("wvDate").value=m.date}check()});
@@ -4142,7 +4142,8 @@ $("wvVeh").addEventListener("change",()=>{const m=look($("wvVeh").value);if(m){$
 $("wvDl").addEventListener("change",check);
 const drvMob=()=>{const nm=$("wvDrv").value.trim().toLowerCase();if(!nm||$("wvMob").value.trim())return;const o=svehs.concat(WV).slice().reverse().find(x=>(x.drv||"").toLowerCase()===nm&&x.mob);if(o)$("wvMob").value=o.mob};
 $("wvDrv").addEventListener("change",drvMob);$("wvDrv").addEventListener("blur",()=>setTimeout(drvMob,200));
-const wvCalcUp=()=>{const x=WV.find(y=>y.id===wvSel),l=mNum($("wvLoad").value),em=mNum($("wvEmpty").value);$("wvCalc").hidden=!(x&&l&&em);if(x&&l&&em)$("wvCalc").innerHTML=`Saafi Weight = ${F(l)} − ${F(em)} = <b>${F(r2(l-em))} kg</b>`};
+const wvCalcUp=()=>{const x=WV.find(y=>y.id===wvSel),l=mNum($("wvLoad").value),em=mNum($("wvEmpty").value);$("wvCalc").hidden=!(x&&l&&em);if(x&&l&&em){const kg=r2(l-em),on=$("wvCashB").dataset.on,r=mNum($("wvRate").value),rv=mNum($("wvRecv").value),tp=Math.round(kg*r);$("wvCalc").innerHTML=`Saafi Weight = ${F(l)} − ${F(em)} = <b>${F(kg)} kg</b>`+(on&&r?`<br>Total Price = ${F(kg)} × ${F(r)} = <b>Rs ${F(tp)}</b>`+(rv?`<br>Received <b>Rs ${F(rv)}</b> · Remaining <b>Rs ${F(tp-rv)}</b>`:""):"")}};
+["wvRate","wvRecv"].forEach(i=>$(i).addEventListener("input",()=>wvCalcUp()));
 $("wvLoad").addEventListener("input",()=>{wvCalcUp();check()});$("wvEmpty").addEventListener("input",wvCalcUp);
 $("wvSave").addEventListener("click",async()=>{if(!db||!canWrite)return;const b=$("wvSave");
   if(wvSel){const x0=WV.find(y=>y.id===wvSel);if(!x0)return;const l=mNum($("wvLoad").value);
