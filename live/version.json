@@ -1,11 +1,11 @@
 {
- "ver": "1.26.38",
- "note": "TEST Medicine Usage: 3 names per line, keyboard navigation, water below, small unit default, recent medicines, non-medicine items",
- "noteUr": "ٹیسٹ Medicine Usage: ایک لائن میں 3 نام، کی بورڈ، پانی نیچے، چھوٹا یونٹ، پچھلی دوائیاں، سامان",
+ "ver": "1.26.39",
+ "note": "Sale: vehicle date match, short vehicle tables, Cash in Waiting Vehicles with per-vehicle cash, PDF pages fit the bill; Medicine Usage TEST real names on one line",
+ "noteUr": "سیل: گاڑی کی تاریخ، چھوٹے ٹیبل، ویٹنگ میں کیش، ہر گاڑی کا کیش، PDF صفحہ بل جتنا",
  "android": {
-  "zip": "android-1.26.38.zip",
+  "zip": "android-1.26.39.zip",
   "minBuild": 27,
-  "sha256": "f30df5a985001c60157f030b179752a7ea1a5425e6ec20909d8791fcaa7f7916"
+  "sha256": "09c01b61700a4ebfca8bd5fcdfda616e1f2ee68cc890884ed712b379863d5f7d"
  },
  "windows": {
   "files": [
@@ -17,6 +17,7 @@
   "minDesk": "1.26.0"
  },
  "to": [
-  "farm"
+  "farm",
+  "main"
  ]
 }

@@ -847,6 +847,9 @@ body.supview #hpLogoBtn{display:none}
           <label data-wv="e">Driver Mobile No<span class="sugw"><input class="txt" id="wvMob" maxlength="20" inputmode="tel" autocomplete="off" placeholder="e.g. 0300-1234567" data-sk="slMob"><span class="sug" role="listbox" hidden></span></span></label>
           <label data-wv="e">Empty Weight (kg)<input class="txt" id="wvEmpty" inputmode="decimal" placeholder="Empty vehicle weight"></label>
           <label data-wv="l" hidden>Load Weight (kg)<input class="txt" id="wvLoad" inputmode="decimal" placeholder="After loading"></label>
+          <div data-wv="l" hidden class="wvcash"><button type="button" class="ghost" id="wvCashB">💵 Cash</button></div>
+          <label id="wvRateL" hidden>Rate (Rs / kg) · this date<input class="txt" id="wvRate" inputmode="decimal" placeholder="Rate"></label>
+          <label id="wvRecvL" hidden>Received from this vehicle (Rs)<input class="txt" id="wvRecv" inputmode="decimal" placeholder="Cash received"></label>
           <div class="slcalc" id="wvCalc" hidden></div>
           <div class="row"><button class="save" type="button" id="wvSave">Save Empty Weight</button><button class="ghost" type="button" id="wvCancel" hidden>Cancel</button><button class="danger" type="button" id="wvDel" hidden>Delete</button></div>
           <div class="toast" id="wvToast" role="status"></div>
@@ -1436,14 +1439,15 @@ async function billPdf(o,toast){
     box.querySelectorAll("table").forEach(t=>{let f=12.5;while(t.scrollWidth>W-2*PX+1&&f>8){f-=.5;t.style.fontSize=f+"px"}});
     const top=box.getBoundingClientRect().top, total=box.offsetHeight, ph=H-2*PY;
     const cuts=[...box.querySelectorAll(".btab tr,.bsum,.bfoot,.binfo")].map(e=>Math.round(e.getBoundingClientRect().bottom-top));
+    const real=[...box.querySelectorAll(".btab tr,.bsum,.binfo,.bsec")].map(e=>Math.round(e.getBoundingClientRect().bottom-top)),lastReal=Math.max(0,...real);
     const pages=[];let pos=0;
-    while(pos<total-1){const lim=pos+(pos?ph:H-PY);if(total<=lim){pages.push([pos,total]);break}
+    while(pos<total-1){if(pos&&lastReal<=pos+2)break;const lim=pos+(pos?ph:H-PY);if(total<=lim){pages.push([pos,total]);break}
       const c=cuts.filter(y=>y>pos+40&&y<=lim);const end=c.length?Math.max(...c):lim;pages.push([pos,end]);pos=end}
     const cv=await html2canvas(box,{scale:2,backgroundColor:"#ffffff",logging:false,windowWidth:W});
     // v1.26.7: a one-page bill gets a page only as tall as the bill (no empty half page); longer bills stay A4
     const A4W=595.28,pk0=A4W/W,one=pages.length===1?Math.max(320,Math.round((pages[0][1]-pages[0][0]+PY)*pk0+26)):0;
     const k=cv.width/W, pdf=new jspdf.jsPDF({unit:"pt",format:one?[A4W,one]:"a4",orientation:one&&one<A4W?"l":"p"}), pw=pdf.internal.pageSize.getWidth(), pk=pw/W;
-    pages.forEach(([a,b],i)=>{if(i)pdf.addPage();const c=document.createElement("canvas");c.width=cv.width;c.height=Math.round((b-a)*k);
+    pages.forEach(([a,b],i)=>{if(i){const lh=i===pages.length-1?Math.max(200,Math.round((b-a+2*PY)*pk0+26)):0;if(lh&&lh<841)pdf.addPage([A4W,lh],lh<A4W?"l":"p");else pdf.addPage("a4","p")}const c=document.createElement("canvas");c.width=cv.width;c.height=Math.round((b-a)*k);
       const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(cv,0,Math.round(a*k),cv.width,c.height,0,0,c.width,c.height);
       pdf.addImage(c.toDataURL("image/jpeg",0.92),"JPEG",0,i?PY*pk:0,pw,(b-a)*pk);
       pdf.setFontSize(9);pdf.setTextColor(120);pdf.text("Page "+(i+1)+" of "+pages.length,pw/2,pdf.internal.pageSize.getHeight()-14,{align:"center"})});
@@ -1459,7 +1463,7 @@ function saleBill(d,date,toast,withRate){
   if(!gs.length){toast("No sale to this dealer"+(date?" on "+dmy(date):"")+" yet.",true);return}
   const dot=v=>v?F(v):"...";let n=0;
   let h=`<thead><tr><th>Sr</th><th>Date</th><th>Vehicle No</th><th class="r">Empty (kg)</th><th class="r">Load (kg)</th><th class="r">Saafi (kg)</th>${M?'<th class="r">Rate</th><th class="r">Total Price</th>':""}${C?'<th class="r">Received</th><th class="r">Remaining</th>':""}</tr></thead><tbody>`;
-  gs.forEach(g=>{h+=g.v.map(x=>`<tr><td>${++n}</td><td>${dmy(x.date)}</td><td>${x.veh?esc(x.veh):"..."}</td><td class="r">${F(x.empty)}</td><td class="r">${F(x.load)}</td><td class="r">${F(slSaafi(x))}</td>${M?"<td></td><td></td>":""}${C?"<td></td><td></td>":""}</tr>`).join("");
+  gs.forEach(g=>{h+=g.v.map(x=>`<tr><td>${++n}</td><td>${dmy(x.date)}</td><td>${x.veh?esc(x.veh):"..."}</td><td class="r">${F(x.empty)}</td><td class="r">${F(x.load)}</td><td class="r">${F(slSaafi(x))}</td>${M?"<td></td><td></td>":""}${C?`<td class="r">${x.cash?F(x.cash):""}</td><td></td>`:""}</tr>`).join("");
     h+=`<tr class="bd"><td colspan="5">${dmy(g.date)} · Total (${F(g.v.length)} vehicle${g.v.length>1?"s":""})</td><td class="r">${F(g.kg)}</td>${M?`<td class="r">${dot(g.rate)}</td><td class="r">${g.rate?F(g.price):"..."}</td>`:""}${C?`<td class="r">${dot(g.recv)}</td><td class="r">${g.rate?F(g.rem):"..."}</td>`:""}</tr>`});
   const kg=r2(gs.reduce((a,g)=>a+g.kg,0)),rkg=r2(gs.filter(g=>g.rate).reduce((a,g)=>a+g.kg,0)),price=r2(gs.reduce((a,g)=>a+g.price,0)),recv=r2(gs.reduce((a,g)=>a+g.recv,0)),nv=gs.reduce((a,g)=>a+g.v.length,0);
   if(!date)h+=`<tr class="bt"><td colspan="5">Grand Total · ${esc(d.name)}</td><td class="r">${F(kg)}</td>${M?`<td class="r">${rkg&&price?F(r2(price/rkg)):""}</td><td class="r">${F(price)}</td>`:""}${C?`<td class="r">${F(recv)}</td><td class="r">${F(r2(price-recv))}</td>`:""}</tr>`;
@@ -1487,7 +1491,7 @@ function allBill(date,toast){
   h+=`<tr class="bt"><td colspan="3">Total · All Dealers</td><td class="r">${F(G.n)}</td><td class="r">${F(r2(G.kg))}</td>${M?`<td></td><td class="r">${F(r2(G.price))}</td>`:""}${anyC?`<td class="r">${F(r2(G.recv))}</td><td class="r">${F(r2(G.rem))}</td>`:""}</tr></tbody>`;
   const more=[];
   V.forEach(({d,gs,C})=>{let n=0,t=tot(gs);let b=`<thead><tr><th>Sr</th><th>Date</th><th>Vehicle No</th><th class="r">Empty (kg)</th><th class="r">Load (kg)</th><th class="r">Saafi (kg)</th>${M?'<th class="r">Rate</th><th class="r">Total Price</th>':""}${C?'<th class="r">Received</th><th class="r">Remaining</th>':""}</tr></thead><tbody>`;
-    gs.forEach(g=>{b+=g.v.map(x=>`<tr><td>${++n}</td><td>${dmy(x.date)}</td><td>${x.veh?esc(x.veh):"..."}</td><td class="r">${F(x.empty)}</td><td class="r">${F(x.load)}</td><td class="r">${F(slSaafi(x))}</td>${M?"<td></td><td></td>":""}${C?"<td></td><td></td>":""}</tr>`).join("");
+    gs.forEach(g=>{b+=g.v.map(x=>`<tr><td>${++n}</td><td>${dmy(x.date)}</td><td>${x.veh?esc(x.veh):"..."}</td><td class="r">${F(x.empty)}</td><td class="r">${F(x.load)}</td><td class="r">${F(slSaafi(x))}</td>${M?"<td></td><td></td>":""}${C?`<td class="r">${x.cash?F(x.cash):""}</td><td></td>`:""}</tr>`).join("");
       b+=`<tr class="bd"><td colspan="5">${dmy(g.date)} · Total (${F(g.v.length)} vehicle${g.v.length>1?"s":""})</td><td class="r">${F(g.kg)}</td>${M?`<td class="r">${dot(g.rate)}</td><td class="r">${g.rate?F(g.price):"..."}</td>`:""}${C?`<td class="r">${dot(g.recv)}</td><td class="r">${g.rate?F(g.rem):"..."}</td>`:""}</tr>`});
     if(gs.length>1)b+=`<tr class="bt"><td colspan="5">Grand Total · ${esc(d.name)}</td><td class="r">${F(t.kg)}</td>${M?`<td class="r">${t.rkg&&t.price?F(r2(t.price/t.rkg)):""}</td><td class="r">${F(t.price)}</td>`:""}${C?`<td class="r">${F(t.recv)}</td><td class="r">${F(r2(t.price-t.recv))}</td>`:""}</tr>`;
     more.push({h:d.name+" · Vehicle Sale",table:b+"</tbody>"})});
@@ -1738,14 +1742,15 @@ async function rptPdf(inner,file,dl,toast){
     await Promise.all([...box.querySelectorAll("img")].map(i=>i.decode?i.decode().catch(()=>{}):null));
     const top=box.getBoundingClientRect().top, total=box.offsetHeight, ph=H-2*PY;
     const cuts=[...box.querySelectorAll("tr,h3,h4,.rfoot")].map(e=>Math.round((e.tagName==="H3"||e.tagName==="H4"?e.getBoundingClientRect().top:e.getBoundingClientRect().bottom)-top));
+    const real=[...box.querySelectorAll("tr,h3,h4")].map(e=>Math.round(e.getBoundingClientRect().bottom-top)),lastReal=Math.max(0,...real);
     const pages=[];let pos=0;
-    while(pos<total-1){const lim=pos+(pos?ph:H-PY);if(total<=lim){pages.push([pos,total]);break}
+    while(pos<total-1){if(pos&&lastReal<=pos+2)break;const lim=pos+(pos?ph:H-PY);if(total<=lim){pages.push([pos,total]);break}
       const c=cuts.filter(y=>y>pos+40&&y<=lim);const end=c.length?Math.max(...c):lim;pages.push([pos,end]);pos=end}
     const cv=await html2canvas(box,{scale:2,backgroundColor:"#ffffff",logging:false,windowWidth:W});
     // v1.26.7: a one-page report also gets a page only as tall as the content
     const A4W=595.28,pk0=A4W/W,one=pages.length===1?Math.max(320,Math.round((pages[0][1]-pages[0][0]+PY)*pk0+26)):0;
     const k=cv.width/W, pdf=new jspdf.jsPDF({unit:"pt",format:one?[A4W,one]:"a4",orientation:one&&one<A4W?"l":"p"}), pw=pdf.internal.pageSize.getWidth(), pk=pw/W;
-    pages.forEach(([a,b],i)=>{if(i)pdf.addPage();const c=document.createElement("canvas");c.width=cv.width;c.height=Math.round((b-a)*k);
+    pages.forEach(([a,b],i)=>{if(i){const lh=i===pages.length-1?Math.max(200,Math.round((b-a+2*PY)*pk0+26)):0;if(lh&&lh<841)pdf.addPage([A4W,lh],lh<A4W?"l":"p");else pdf.addPage("a4","p")}const c=document.createElement("canvas");c.width=cv.width;c.height=Math.round((b-a)*k);
       const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(cv,0,Math.round(a*k),cv.width,c.height,0,0,c.width,c.height);
       pdf.addImage(c.toDataURL("image/jpeg",0.9),"JPEG",0,i?PY*pk:0,pw,(b-a)*pk);
       pdf.setFontSize(9);pdf.setTextColor(120);pdf.text("Page "+(i+1)+" of "+pages.length,pw/2,pdf.internal.pageSize.getHeight()-14,{align:"center"})});
@@ -2119,7 +2124,7 @@ function renderSale(){
     el.querySelectorAll("[data-cashonly]").forEach(x=>x.hidden=!C);const cb=el.querySelector('[data-act="cash"]');cb.textContent=C?"Cash: On":"Cash: Off";cb.setAttribute("aria-pressed",C);cb.className=C?"save":"ghost";const sr=el.querySelector('[data-act="srate"]');if(sr)sr.textContent=C?"Save Rate / Received only":"Save Rate only";
     let h=`<thead><tr><th>Date</th><th>Vehicle No</th><th class="drvc">Driver</th><th class="amt">Empty (kg)</th><th class="amt">Load (kg)</th><th class="amt">Saafi (kg)</th><th class="amt">Rate</th><th class="amt">Total Price</th>${C?'<th class="amt">Received</th><th class="amt">Remaining</th>':""}</tr></thead><tbody>`;
     T.groups.forEach(g=>{
-      h+=g.v.map(x=>`<tr data-sv="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="w"><div>${x.veh?esc(x.veh):"..."}</div></td><td class="w drvc"><div>${x.drv?esc(x.drv):"..."}${x.mob?`<br><small class="num">${esc(x.mob)}</small>`:""}</div></td><td class="num amt">${F(x.empty)}</td><td class="num amt">${F(x.load)}</td><td class="num amt">${F(slSaafi(x))}</td><td></td><td></td>${ex}</tr>`).join("");
+      h+=g.v.map(x=>`<tr data-sv="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="w"><div>${x.veh?esc(x.veh):"..."}</div></td><td class="w drvc"><div>${x.drv?esc(x.drv):"..."}${x.mob?`<br><small class="num">${esc(x.mob)}</small>`:""}</div></td><td class="num amt">${F(x.empty)}</td><td class="num amt">${F(x.load)}</td><td class="num amt">${F(slSaafi(x))}</td><td></td><td></td>${C?`<td class="num amt vcash">${x.cash?"💵 "+F(x.cash):""}</td><td></td>`:""}</tr>`).join("");
       h+=`<tr class="sld"><td colspan="5" class="dcs">${dmy(g.date)} · Total (${F(g.v.length)} vehicle${g.v.length>1?"s":""})</td><td class="num amt">${F(g.kg)}</td><td class="num amt hprt" data-rt="v|${esc(d.id)}|${g.date}">${g.rate?F(g.rate):"..."}</td><td class="num amt">${g.rate?F(g.price):"..."}</td>${C?`<td class="num amt hprt" data-rt="r|${esc(d.id)}|${g.date}">${g.recv?F(g.recv):"..."}</td><td class="num amt${g.rem<0?" neg":""}">${g.rate?F(g.rem):"..."}</td>`:""}</tr>`;
     });
     h+=T.n?`<tr class="tot"><td colspan="5" class="dcs">Total · ${esc(d.name)}</td><td class="num amt">${F(T.kg)}</td><td class="num amt"></td><td class="num amt">${F(T.price)}</td>${C?`<td class="num amt">${F(T.recv)}</td><td class="num amt">${F(T.rem)}</td>`:""}</tr>`:`<tr><td colspan="${cols}" class="empty">No sale to this dealer yet. Add the first vehicle above.</td></tr>`;
@@ -4071,7 +4076,7 @@ html.hpro #dvTable tr,html.hpro #wvTable tr{cursor:default}
 </style>
 <script>
 (function(){
-const $=i=>document.getElementById(i);let DV=[],WV=[],dvEd=null,wvSel=null,wvSure="";
+const $=i=>document.getElementById(i);let DV=[],WV=[],dvAll=false,dvEd=null,wvSel=null,wvSure="";
 const nv=v=>String(v||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
 const nowI=()=>new Date().toISOString();
 const sd=d=>d?d.slice(8,10)+"/"+d.slice(5,7):"...";
@@ -4079,7 +4084,10 @@ const dn=id=>{const d=sdealers.find(x=>x.id===id);return d?d.name:"..."};
 const dvL=()=>DV.filter(inF),wvL=()=>WV.filter(inF);
 // v1.26.27: a waiting vehicle belongs ONLY to the NEWEST dealer-list line of that number+dealer, not to older lines
 const own=(x,w)=>{const n=nv(x.veh);if(nv(w.veh)!==n||w.dealer!==x.dealer)return false;const S=dvL().filter(y=>nv(y.veh)===n&&y.dealer===x.dealer).sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:0);return S[0]&&S[0].id===x.id};
-const st=x=>{const n=nv(x.veh);if(wvL().some(w=>own(x,w)))return"p";if(svehs.some(v=>nv(v.veh)===n&&v.dealer===x.dealer&&v.date>=x.date))return"s";return"n"};
+// v1.26.39: each sale vehicle matches ONE list line (oldest open line of same number+dealer dated up to 1 day after the sale)
+const d1=d=>{try{return new Date(Date.parse(d+"T00:00:00Z")+864e5).toISOString().slice(0,10)}catch(e){return d}};
+const dvM=()=>{const S=new Set(),E=dvL().slice().sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);svehs.slice().sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0).forEach(v=>{const lim=d1(v.date),n=nv(v.veh);const e=E.find(x=>!S.has(x.id)&&x.dealer===v.dealer&&nv(x.veh)===n&&x.date<=lim);if(e)S.add(e.id)});return S};
+const st=x=>{if(wvL().some(w=>own(x,w)))return"p";return dvM().has(x.id)?"s":"n"};
 const tt=(id,m,e)=>{const b=$(id);b.textContent=m||"";b.classList.toggle("err",!!e)};
 function opts(sel,keep){const v=keep!=null?keep:sel.value;sel.innerHTML='<option value="">Choose dealer</option>'+sdealers.slice().sort((a,b)=>(a.seq||0)-(b.seq||0)).map(d=>`<option value="${esc(d.id)}">${esc(d.name)}</option>`).join("");sel.value=v}
 // which dealer list line matches this number (not yet in sale)
@@ -4094,9 +4102,10 @@ function check(){const c=$("wvChk");wvSure="";$("wvSave").textContent=wvSel?(mNu
 function render(){
   if(!$("dvTable"))return;
   opts($("dvDl"));opts($("wvDl"));
-  const ord={p:0,n:1,s:2},L=dvL().map(x=>({...x,_s:st(x)})).sort((a,b)=>(b.date>a.date?1:b.date<a.date?-1:0)||ord[a._s]-ord[b._s]);
+  const ord={p:0,n:1,s:2};let L=dvL().map(x=>({...x,_s:st(x)})).sort((a,b)=>(b.date>a.date?1:b.date<a.date?-1:0)||ord[a._s]-ord[b._s]);
   const lab={p:"⚖ Load pending",n:"⏳ Not arrived",s:"✅ In Sale"};
-  $("dvTable").innerHTML='<thead><tr><th>Date</th><th>Vehicle No</th><th>Dealer</th><th>Status</th></tr></thead><tbody>'+(L.length?L.map((x,i)=>(i&&L[i-1].date!==x.date?'<tr class="hpgap"><td colspan="4"></td></tr>':'')+`<tr data-dv="${esc(x.id)}" class="${x._s==="s"?"dim":""}"><td class="num">${sd(x.date)}</td><td>${esc(x.veh)}</td><td>${esc(dn(x.dealer))}</td><td class="st ${x._s}">${lab[x._s]}</td></tr>`).join(""):'<tr><td colspan="4" class="empty">No vehicle numbers yet. Add the numbers the dealers send.</td></tr>')+"</tbody>";
+  const dvLast=L.filter(x=>x._s==="s").reduce((m,x)=>x.date>m?x.date:m,""),dvOld=L.filter(x=>x._s==="s"&&x.date!==dvLast).length;const L0=L;L=dvAll?L0:L0.filter(x=>x._s!=="s"||x.date===dvLast);
+  $("dvTable").innerHTML='<thead><tr><th>Date</th><th>Vehicle No</th><th>Dealer</th><th>Status</th></tr></thead><tbody>'+(L.length?L.map((x,i)=>(i&&L[i-1].date!==x.date?'<tr class="hpgap"><td colspan="4"></td></tr>':'')+`<tr data-dv="${esc(x.id)}" class="${x._s==="s"?"dim":""}"><td class="num">${sd(x.date)}</td><td>${esc(x.veh)}</td><td>${esc(dn(x.dealer))}</td><td class="st ${x._s}">${lab[x._s]}</td></tr>`).join(""):'<tr><td colspan="4" class="empty">No vehicle numbers yet. Add the numbers the dealers send.</td></tr>')+(dvOld?`<tr class="dvmore"><td colspan="4"><button type="button" class="ghost" id="dvAllB">${dvAll?"▲ Hide old vehicles":"▼ Show old vehicles ("+dvOld+")"}</button></td></tr>`:"")+"</tbody>";
   const nOpen=L.filter(x=>x._s!=="s").length;$("dvCnt").textContent=nOpen+" waiting";$("dvCnt").hidden=!nOpen;
   const W=wvL().slice().sort((a,b)=>(a.createdAt||"")<(b.createdAt||"")?-1:1);
   $("wvTable").innerHTML='<thead><tr><th>Date</th><th>Vehicle No</th><th>Dealer</th><th class="amt">Empty (kg)</th><th class="amt">Load</th></tr></thead><tbody>'+(W.length?W.map(x=>`<tr data-wv="${esc(x.id)}" class="${wvSel===x.id?"sel":""}"><td class="num">${sd(x.date)}</td><td>${esc(x.veh)}</td><td>${esc(dn(x.dealer))}</td><td class="num amt">${F(x.empty)}</td><td class="lp">${wvSel===x.id?"writing...":canWrite&&!document.documentElement.classList.contains("hpro")?"tap to add":"pending"}</td></tr>`).join(""):'<tr><td colspan="5" class="empty">No vehicle waiting. Write the empty weight when a vehicle comes.</td></tr>')+"</tbody>";
@@ -4105,7 +4114,7 @@ function render(){
 }
 window.wvRender=render;
 window.hpDvAll=()=>DV;window.hpWvAll=()=>WV;
-window.hpDvOpen=(dl,date)=>dvL().filter(x=>x.dealer===dl&&x.date<=date&&st(x)==="n");
+window.hpDvOpen=(dl,date)=>dvL().filter(x=>x.dealer===dl&&x.date<=d1(date)&&st(x)==="n");
 window.hpDvDel=async ids=>{let n=0;for(const id of ids){try{await db.doc("saledv/"+id).delete();DV=DV.filter(x=>x.id!==id);n++}catch(e){}}render();return n};
 const _rs=renderSale;renderSale=function(){_rs.apply(this,arguments);try{render()}catch(e){}};
 // dealer vehicle list
@@ -4120,11 +4129,13 @@ $("dvSave").addEventListener("click",async()=>{if(!db||!canWrite)return;const da
 $("dvCancel").addEventListener("click",()=>{tt("dvToast","");dvFill(null);render()});
 $("dvDel").addEventListener("click",async()=>{if(!dvEd||!db)return;const b=$("dvDel");if(b.textContent!=="Yes, delete"){b.textContent="Yes, delete";return}
   try{await db.doc("saledv/"+dvEd).delete();DV=DV.filter(x=>x.id!==dvEd);tt("dvToast","Deleted.")}catch(e){tt("dvToast","Could not delete.",1)}dvFill(null);render()});
-$("dvTable").addEventListener("click",e=>{const tr=e.target.closest("tr[data-dv]");if(!tr||!canWrite||document.documentElement.classList.contains("hpro"))return;const x=DV.find(y=>y.id===tr.dataset.dv);if(!x)return;dvFill(x);tt("dvToast","Editing "+x.veh+": change and Save, or Delete.")});
+$("dvTable").addEventListener("click",e=>{if(e.target.closest("#dvAllB")){dvAll=!dvAll;render();return}const tr=e.target.closest("tr[data-dv]");if(!tr||!canWrite||document.documentElement.classList.contains("hpro"))return;const x=DV.find(y=>y.id===tr.dataset.dv);if(!x)return;dvFill(x);tt("dvToast","Editing "+x.veh+": change and Save, or Delete.")});
 // waiting vehicles
 function wvMode(x){const was=wvSel;wvSel=x?x.id:null;if(x){$("wvDate").value=x.date||"";$("wvVeh").value=x.veh||"";$("wvDl").value=x.dealer||"";$("wvDrv").value=x.drv||"";$("wvMob").value=x.mob||"";$("wvEmpty").value=x.empty||""}else if(was)wvClear();document.querySelectorAll('#wvForm [data-wv="l"]').forEach(l=>l.hidden=!x);
   $("wvSel").hidden=!x;if(x)$("wvSel").textContent=x.veh+" · "+dn(x.dealer)+" · Empty "+F(x.empty)+" kg"+(x.drv?" · "+x.drv:"");
-  $("wvLoad").value="";$("wvCalc").hidden=true;$("wvCancel").hidden=$("wvDel").hidden=!x;$("wvDel").textContent="Delete";check();render()}
+  wvCash(false);$("wvLoad").value="";$("wvCalc").hidden=true;$("wvCancel").hidden=$("wvDel").hidden=!x;$("wvDel").textContent="Delete";check();render()}
+function wvCash(on){const x=WV.find(y=>y.id===wvSel);$("wvRateL").hidden=$("wvRecvL").hidden=!on;$("wvCashB").classList.toggle("on",!!on);$("wvCashB").dataset.on=on?"1":"";if(on&&x){const r=slRate(x.dealer,$("wvDate").value||x.date);$("wvRate").value=r?F(r):"";$("wvRecv").value="";setTimeout(()=>$("wvRecv").focus(),30)}else{$("wvRate").value="";$("wvRecv").value=""}}
+$("wvCashB").addEventListener("click",()=>wvCash(!$("wvCashB").dataset.on));
 function wvClear(){$("wvVeh").value="";$("wvDrv").value="";$("wvMob").value="";$("wvEmpty").value="";$("wvDl").value="";if(!$("wvDate").value)$("wvDate").value=todayISO()}
 $("wvVeh").addEventListener("input",()=>{const m=look($("wvVeh").value);if(m)$("wvDl").value=m.dealer;check()});
 $("wvVeh").addEventListener("change",()=>{const m=look($("wvVeh").value);if(m)$("wvDl").value=m.dealer;check()});
@@ -4144,10 +4155,14 @@ $("wvSave").addEventListener("click",async()=>{if(!db||!canWrite)return;const b=
     if(l<=x.empty){tt("wvToast","Load Weight must be more than Empty Weight.",1);return}
     if(!sdealers.some(d=>d.id===x.dealer)){tt("wvToast","This dealer is not in Sale any more.",1);return}
     b.disabled=true;const sid="sv"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-    let ok=await write(db.doc("salev/"+sid),{dealer:x.dealer,date:x.date,veh:x.veh,drv:x.drv||"",mob:x.mob||"",empty:x.empty,load:l,seq:svehs.reduce((m,y)=>Math.max(m,y.seq||0),0)+1,shed:"s1",flock:x.flock||flockId,createdAt:nowI(),updatedAt:nowI(),fromWait:1});
+    let ok=await write(db.doc("salev/"+sid),{dealer:x.dealer,date:x.date,veh:x.veh,drv:x.drv||"",mob:x.mob||"",empty:x.empty,load:l,seq:svehs.reduce((m,y)=>Math.max(m,y.seq||0),0)+1,shed:"s1",flock:x.flock||flockId,createdAt:nowI(),updatedAt:nowI(),fromWait:1,cash:($("wvCashB").dataset.on&&mNum($("wvRecv").value))||null});
+    let cashMsg="";if(ok&&$("wvCashB").dataset.on){const r=mNum($("wvRate").value),rv=mNum($("wvRecv").value);if(r||rv){const old=srates.find(y=>y.dealer===x.dealer&&y.date===x.date),{id:_o,...od}=old||{};
+      const ok2=await write(db.doc("salerate/"+(old?old.id:x.dealer+"_"+x.date)),{...od,dealer:x.dealer,date:x.date,rate:r||(old&&old.rate)||null,recv:r2(((old&&old.recv)||0)+(rv||0))||null,shed:"s1",flock:x.flock||flockId,updatedAt:nowI()});
+      if(ok2&&!slCash(x.dealer)){const dd=sdealers.find(y=>y.id===x.dealer);if(dd){const {id:_d,...d2}=dd;await write(db.doc("saledealers/"+x.dealer),{...d2,cash:true})}}
+      cashMsg=ok2?(rv?" · Cash Rs "+F(rv)+" received":"")+(r?" · Rate "+F(r):""):" · Cash NOT saved, write it in the dealer."}}
     if(ok){try{await db.doc("salewait/"+x.id).delete()}catch(e){}WV=WV.filter(y=>y.id!==x.id)}
     b.disabled=false;if(!ok){tt("wvToast","Could not save. Please try again.",1);return}
-    tt("wvToast","✅ "+x.veh+" moved to "+dn(x.dealer)+" sale · Saafi "+F(r2(l-x.empty))+" kg");wvMode(null);renderSale();return}
+    tt("wvToast","✅ "+x.veh+" moved to "+dn(x.dealer)+" sale · Saafi "+F(r2(l-x.empty))+" kg"+cashMsg);wvMode(null);renderSale();return}
   const date=$("wvDate").value,veh=$("wvVeh").value.trim(),dl=$("wvDl").value,e=mNum($("wvEmpty").value);
   if(!date){tt("wvToast","Please choose the date.",1);return}if(!veh){tt("wvToast","Please write the vehicle number.",1);return}
   if(!dl){tt("wvToast","Please choose the dealer.",1);return}if(!e){tt("wvToast","Write the Empty Weight.",1);return}
@@ -4173,14 +4188,16 @@ sub();
 })();
 </script>
 <style>html.hpro #kvForm{display:none!important}#kvTable tr[data-kv]{cursor:pointer}html.hpro #kvTable tr{cursor:default}
-#kvTable .st{font-weight:700;white-space:nowrap}#kvTable tr.dim td{opacity:.45}
+#kvTable .st{font-weight:700;white-space:nowrap}tr.dvmore td{text-align:center;padding:6px!important}tr.dvmore .ghost{font-size:13px;padding:5px 12px}#wvCashB.on{background:#e9f6ee;border-color:#1f7a4d;color:#1f6b3a;font-weight:700}.wvcash{display:flex;align-items:flex-end}#kvTable tr.dim td{opacity:.45}
 @media (max-width:999px){#kvTable{font-size:12.5px}#kvTable td,#kvTable th{padding-left:4px;padding-right:4px}}</style>
 <script>
 (function(){
-const $=i=>document.getElementById(i);let KV=[],kvEd=null,sure="";
+const $=i=>document.getElementById(i);let KV=[],kvAll=false,kvEd=null,sure="";
 const nv=v=>String(v||"").toUpperCase().replace(/[^A-Z0-9]/g,"");const nowI=()=>new Date().toISOString();const sd=d=>d?d.slice(8,10)+"/"+d.slice(5,7):"...";
 const L=()=>KV.filter(inF);const ro=()=>!canWrite||document.documentElement.classList.contains("hpro");
-const st=x=>kvehs.some(v=>nv(v.veh)===nv(x.veh)&&(v.dk||kdKey(v.dealer))===x.dk&&v.date>=x.date)?"s":"n";
+const d1=d=>{try{return new Date(Date.parse(d+"T00:00:00Z")+864e5).toISOString().slice(0,10)}catch(e){return d}};
+const kvM=()=>{const S=new Set(),E=L().slice().sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);kvehs.slice().sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0).forEach(v=>{const lim=d1(v.date),n=nv(v.veh),k=v.dk||kdKey(v.dealer);const e=E.find(x=>!S.has(x.id)&&x.dk===k&&nv(x.veh)===n&&x.date<=lim);if(e)S.add(e.id)});return S};
+const st=x=>kvM().has(x.id)?"s":"n";
 const tt=(m,e)=>{const b=$("kvToast");b.textContent=m||"";b.classList.toggle("err",!!e)};
 function look(veh){const n=nv(veh);if(!n)return null;const A=L().filter(x=>nv(x.veh)===n);return A.find(x=>st(x)==="n")||null}
 function check(){const c=$("kdChk");sure="";if(kdEdit){c.hidden=true;return}const v=$("kdV").value.trim();if(!v){c.hidden=true;return}
@@ -4189,11 +4206,13 @@ function check(){const c=$("kdChk");sure="";if(kdEdit){c.hidden=true;return}cons
   else if(m){c.className="wvchk bad";c.textContent="🔴 "+v+" belongs to "+m.dealer+", not "+dl+".";c.hidden=false}
   else{c.className="wvchk bad";c.textContent="🔴 This number was NOT sent by any dealer. Add it in Kanda Dealer Vehicles first.";c.hidden=false}
   $("kdCalc").textContent="Calculate Weight"}
-function render(){if(!$("kvTable"))return;const A=L().map(x=>({...x,_s:st(x)})).sort((a,b)=>(b.date>a.date?1:b.date<a.date?-1:0)||(a._s==="s")-(b._s==="s"));
+function render(){if(!$("kvTable"))return;let A=L().map(x=>({...x,_s:st(x)})).sort((a,b)=>(b.date>a.date?1:b.date<a.date?-1:0)||(a._s==="s")-(b._s==="s"));
+  const kvLast=A.filter(x=>x._s==="s").reduce((m,x)=>x.date>m?x.date:m,""),kvOld=A.filter(x=>x._s==="s"&&x.date!==kvLast).length,nW=A.filter(x=>x._s==="n").length;if(!kvAll)A=A.filter(x=>x._s!=="s"||x.date===kvLast);
   $("kvTable").innerHTML='<thead><tr><th>Date</th><th>Vehicle No</th><th>Dealer</th><th>Status</th></tr></thead><tbody>'+(A.length?A.map((x,i)=>(i&&A[i-1].date!==x.date?'<tr class="hpgap"><td colspan="4"></td></tr>':'')+`<tr data-kv="${esc(x.id)}" class="${x._s==="s"?"dim":""}"><td class="num">${sd(x.date)}</td><td>${esc(x.veh)}</td><td>${esc(x.dealer)}</td><td class="st ${x._s==="s"?"ok":"wait"}" style="color:${x._s==="s"?"#1f7a4d":"#b5520b"}">${x._s==="s"?"✅ In Sale":"⏳ Not arrived"}</td></tr>`).join(""):'<tr><td colspan="4" class="empty">No vehicle numbers yet. Add the numbers the Kanda dealers send.</td></tr>')+"</tbody>";
-  const n=A.filter(x=>x._s==="n").length;$("kvCnt").textContent=n+" waiting";$("kvCnt").hidden=!n}
+  if(kvOld){const tb=$("kvTable").tBodies[0];if(tb)tb.insertAdjacentHTML("beforeend",`<tr class="dvmore"><td colspan="4"><button type="button" class="ghost" id="kvAllB">${kvAll?"▲ Hide old vehicles":"▼ Show old vehicles ("+kvOld+")"}</button></td></tr>`)}
+  const n=nW;$("kvCnt").textContent=n+" waiting";$("kvCnt").hidden=!n}
 window.kvRender=render;
-window.hpKvOpen=(dk,date)=>L().filter(x=>x.dk===dk&&x.date<=date&&st(x)==="n");
+window.hpKvOpen=(dk,date)=>L().filter(x=>x.dk===dk&&x.date<=d1(date)&&st(x)==="n");
 window.hpKvDel=async ids=>{let n=0;for(const id of ids){try{await db.doc("kandadv/"+id).delete();KV=KV.filter(x=>x.id!==id);n++}catch(e){}}render();return n};
 window.hpKvAll=()=>KV;
 const _rk=renderKanda;renderKanda=function(){_rk.apply(this,arguments);try{render();check()}catch(e){}};
@@ -4208,7 +4227,7 @@ $("kvSave").addEventListener("click",async()=>{if(!db||ro())return;const date=$(
 $("kvCancel").addEventListener("click",()=>{tt("");fill(null);render()});
 $("kvDel").addEventListener("click",async()=>{if(!kvEd||!db)return;const b=$("kvDel");if(b.textContent!=="Yes, delete"){b.textContent="Yes, delete";return}
   try{await db.doc("kandadv/"+kvEd).delete();KV=KV.filter(x=>x.id!==kvEd);tt("Deleted.")}catch(e){tt("Could not delete.",1)}fill(null);render()});
-$("kvTable").addEventListener("click",e=>{const tr=e.target.closest("tr[data-kv]");if(!tr||ro())return;const x=KV.find(y=>y.id===tr.dataset.kv);if(!x)return;fill(x);tt("Editing "+x.veh+": change and Save, or Delete.")});
+$("kvTable").addEventListener("click",e=>{if(e.target.closest("#kvAllB")){kvAll=!kvAll;render();return}const tr=e.target.closest("tr[data-kv]");if(!tr||ro())return;const x=KV.find(y=>y.id===tr.dataset.kv);if(!x)return;fill(x);tt("Editing "+x.veh+": change and Save, or Delete.")});
 attachSug($("kvDl"),$("kvDl").nextElementSibling,"kdDl");
 // Kanda form: vehicle number is checked against the list
 const auto=()=>{if(kdEdit)return;const m=look($("kdV").value);if(m&&!$("kdDl").value.trim()){$("kdDl").value=m.dealer;$("kdDl").dispatchEvent(new Event("input",{bubbles:true}))}check()};
@@ -4933,7 +4952,7 @@ setInterval(()=>{if(typeof view!=="undefined"&&view==="sale")try{dots()}catch(e)
 #muPage .list{grid-column:1/-1;background:#fff;border:1px solid var(--accent,#1c5d93);border-radius:10px;box-shadow:0 6px 16px #0003;max-height:300px;overflow:auto}
 #muPage .list button{display:flex;width:100%;justify-content:space-between;gap:8px;background:none;border:0;border-bottom:1px solid var(--line,#c5d3e0);padding:9px 10px;font:14.5px "Segoe UI",Roboto,Arial,sans-serif;text-align:left;cursor:pointer;color:var(--fg,#0f1d2b)}
 #muPage .list .musq{position:sticky;top:0;width:100%;border:0;border-bottom:2px solid var(--accent,#1c5d93);padding:10px;font:16px "Segoe UI",Roboto,Arial,"Jameel Noori",sans-serif;outline:none;background:#fff;color:#0f1d2b}#muPage .list button[hidden]{display:none}#muPage .list button.hl{background:#dcebf9;outline:2px solid #1c5d93;outline-offset:-2px}#muPage .muem{padding:10px;color:#4a5d70;text-align:center}
-#muPage .mutr{font-style:normal;color:#6b7d8f;font-size:12px}#muPage .muchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}#muPage .much.mur{background:#e9f6ee;border-color:#9fd3b2;color:#1f6b3a}#muPage .nmb,#muStock tr.det .u{font-family:"Jameel Noori",serif!important;font-size:16px}#muPage .nmb{background:#fff4e5;border:1px solid #f0c27a;color:#8a5200;border-radius:8px;padding:6px 10px;cursor:pointer}#muStock tr.nmh td{background:#f6f8fb}#muStock #muNmT{background:none;border:0;color:#8a5200;font-size:15px;cursor:pointer;padding:4px}#muStock tr.nmr td{color:#6b7d8f;display:table-cell}#muStock .unm{background:#eef5fc;border:1px solid #b9d3ea;color:#1c5d93;border-radius:8px;padding:3px 8px;margin-inline-start:8px;cursor:pointer}#muPage .much{border:1px solid #b9d3ea;background:#eef5fc;color:#1c5d93;border-radius:14px;padding:4px 10px;font:13px "Segoe UI",Roboto,Arial,sans-serif;cursor:pointer}#muPage .list small{color:#2e7d4f;white-space:nowrap}#muPage .list .na,#muPage .list .na small{color:#98a6b3}#muPage .muhd{padding:4px 10px;font-size:13px;color:#4a5d70;background:#f4f8fc;text-align:right}#muPage .list .lo small{color:#a06a00}#muPage .list .ov,#muPage .list .ov small{color:#b42318}
+#muPage .mutr{font-style:normal;color:#6b7d8f;font-size:12px}#muPage .muchips{display:flex;flex-wrap:nowrap;gap:6px;margin-top:4px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}#muPage .muchips::-webkit-scrollbar{display:none}#muPage .much{flex:0 0 auto;white-space:nowrap}#muPage .much[hidden]{display:none}@media(min-width:1000px){#muPage .muchips{overflow:hidden}}#muPage .much.mur{background:#e9f6ee;border-color:#9fd3b2;color:#1f6b3a}#muPage .nmb,#muStock tr.det .u{font-family:"Jameel Noori",serif!important;font-size:16px}#muPage .nmb{background:#fff4e5;border:1px solid #f0c27a;color:#8a5200;border-radius:8px;padding:6px 10px;cursor:pointer}#muStock tr.nmh td{background:#f6f8fb}#muStock #muNmT{background:none;border:0;color:#8a5200;font-size:15px;cursor:pointer;padding:4px}#muStock tr.nmr td{color:#6b7d8f;display:table-cell}#muStock .unm{background:#eef5fc;border:1px solid #b9d3ea;color:#1c5d93;border-radius:8px;padding:3px 8px;margin-inline-start:8px;cursor:pointer}#muPage .much{border:1px solid #b9d3ea;background:#eef5fc;color:#1c5d93;border-radius:14px;padding:4px 10px;font:13px "Segoe UI",Roboto,Arial,sans-serif;cursor:pointer}#muPage .list small{color:#2e7d4f;white-space:nowrap}#muPage .list .na,#muPage .list .na small{color:#98a6b3}#muPage .muhd{padding:4px 10px;font-size:13px;color:#4a5d70;background:#f4f8fc;text-align:right}#muPage .list .lo small{color:#a06a00}#muPage .list .ov,#muPage .list .ov small{color:#b42318}
 #muPage .warn[hidden]{display:none}#muPage .warn{grid-column:1/-1;background:#fde8e6;color:#b42318;border-radius:8px;padding:4px 9px;font-size:13.5px;direction:rtl}
 #muPage .add{background:none;border:0;color:var(--accent,#1c5d93);font:inherit;font-weight:700;font-size:15px;padding:4px 2px;cursor:pointer}
 #muPage .save{width:100%;margin-top:6px}
@@ -5060,7 +5079,7 @@ function draw(){
   {const dd=r?muDoc(r.day):null,closed=!!dd&&!muEdit;$m("muForm").hidden=closed;$m("muSum").hidden=!closed;
    if(closed){const q=i=>`<span>${esc(i.name)} <i>${fq(i.eq!=null?i.eq:i.q)} ${esc(i.eu||i.unit||"")}</i></span>`,part=t=>(dd.items||[]).filter(i=>(i.t==="n"?"n":"d")===t).map(q).join(", ")||"—";
     $m("muSum").innerHTML=`<div class="sum"><div class="r d"><b>☀</b><div>${part("d")}</div></div><div class="r n"><b>🌙</b><div>${part("n")}</div></div><div class="r w"><b>💧</b><div>${dd.water!=null?fq(dd.water)+" Ltr":(r.water!=null?fq(r.water)+" Ltr":"—")}</div></div></div><button type="button" class="ed u" id="muEdit">✏ تبدیل کریں</button>`}}
-  $m("muRows").innerHTML=h;muRows.forEach((_,j)=>warnRow(j,sd));
+  $m("muRows").innerHTML=h;muFit();muRows.forEach((_,j)=>warnRow(j,sd));
   // stock table
   const anyOut=st.l.some(x=>x.out);
   let t=`<table><thead><tr><th>Medicine</th><th class="n u">آئی</th>${anyOut?'<th class="n u">باہر گئی</th>':""}<th class="n u">استعمال</th><th class="n u">باقی</th></tr></thead><tbody>`;
@@ -5107,9 +5126,11 @@ const ob=window.hpBack;window.hpBack=function(){if(!$m("muPage").hidden){if(navG
 $m("muPrev").addEventListener("click",()=>{if(!navGuard())return;const dl=dayList(),i=dl.findIndex(r=>r.day===muDayN);if(i>0)goDay(dl[i-1].day)});
 $m("muNext").addEventListener("click",()=>{if(!navGuard())return;const dl=dayList(),i=dl.findIndex(r=>r.day===muDayN);if(i>=0&&i<dl.length-1)goDay(dl[i+1].day)});
 $m("muCopy").addEventListener("click",()=>{const dl=dayList(),i=dl.findIndex(r=>r.day===muDayN),p=dl[i-1];if(!p)return;const r=rowsFrom(p.day);if(!r.length){msg("پچھلے دن کا کوئی استعمال محفوظ نہیں۔",true);return}muRows=fill(r);muDirty=true;muPickOpen=-1;msg("کاپی ہو گیا۔ مقدار دیکھ لیں، پھر Save دبائیں۔");draw()});
+function muFit(){if(!matchMedia("(min-width:1000px)").matches)return;document.querySelectorAll("#muRows .muchips").forEach(c=>{const W=c.getBoundingClientRect().right;[...c.children].forEach(b=>{b.hidden=false});[...c.children].forEach(b=>{if(b.getBoundingClientRect().right>W+1)b.hidden=true})})}
+addEventListener("resize",()=>{try{muFit()}catch(e){}});
 function recent(t){const sd=stock(muDayN),have=new Set(muRows.filter(x=>x.t===t&&x.k).map(x=>resK(x.k))),seen=new Set(),out=[];
  MU.filter(d=>d.kind!=="cfg"&&d.flock===flockId&&d.day<muDayN).sort((a,b)=>b.day-a.day).forEach(d=>(d.items||[]).forEach(i=>{if((i.t==="n"?"n":"d")!==t||out.length>=8)return;const k=resK(uq(i).k);if(seen.has(k)||have.has(k))return;seen.add(k);const st=sd.l.find(y=>resK(y.k)===k);if(!st||st.rem<=0)return;out.push(st)}));
- return out.map(st=>`<button type="button" class="much mur" data-rk="${esc(st.k)}" data-t="${t}" title="${esc(st.name)}">${esc(st.trad||st.name)}</button>`).join("")}
+ return out.map(st=>`<button type="button" class="much mur" data-rk="${esc(st.k)}" data-t="${t}" title="${esc(st.trad||st.name)}">${esc(st.name)}</button>`).join("")}
 const lastU=k=>{k=resK(k);let best=null;MU.forEach(d=>(d.items||[]).forEach(i=>{if(i.eu&&resK(uq(i).k)===k&&(!best||d.day>best.day||(d.day===best.day)))best={day:d.day,u:i.eu}}));return best?best.u:""};
 const addRow=t=>{muRows.push(ER(t));return muRows.length-1};
 $m("muRows").addEventListener("click",e=>{const p=e.target.closest("[data-p]"),k=e.target.closest("[data-k]"),x=e.target.closest("[data-x]"),ad=e.target.closest("[data-add]"),ut=e.target.closest("[data-uv]"),ch=e.target.closest("[data-ch]");
