@@ -1,11 +1,11 @@
 {
- "ver": "1.26.39",
- "note": "Sale: vehicle date match, short vehicle tables, Cash in Waiting Vehicles with per-vehicle cash, PDF pages fit the bill; Medicine Usage TEST real names on one line",
- "noteUr": "سیل: گاڑی کی تاریخ، چھوٹے ٹیبل، ویٹنگ میں کیش، ہر گاڑی کا کیش، PDF صفحہ بل جتنا",
+ "ver": "1.26.40",
+ "note": "Waiting Vehicles: typed vehicle number brings the date from the Dealer Vehicles list",
+ "noteUr": "ویٹنگ: گاڑی نمبر لکھنے پر ڈیلر لسٹ والی تاریخ",
  "android": {
-  "zip": "android-1.26.39.zip",
+  "zip": "android-1.26.40.zip",
   "minBuild": 27,
-  "sha256": "09c01b61700a4ebfca8bd5fcdfda616e1f2ee68cc890884ed712b379863d5f7d"
+  "sha256": "00a55d1cec37e224879762092845ccae00eebebc050f86ac0fae982ad405b8f4"
  },
  "windows": {
   "files": [

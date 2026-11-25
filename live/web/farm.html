@@ -4137,8 +4137,8 @@ function wvMode(x){const was=wvSel;wvSel=x?x.id:null;if(x){$("wvDate").value=x.d
 function wvCash(on){const x=WV.find(y=>y.id===wvSel);$("wvRateL").hidden=$("wvRecvL").hidden=!on;$("wvCashB").classList.toggle("on",!!on);$("wvCashB").dataset.on=on?"1":"";if(on&&x){const r=slRate(x.dealer,$("wvDate").value||x.date);$("wvRate").value=r?F(r):"";$("wvRecv").value="";setTimeout(()=>$("wvRecv").focus(),30)}else{$("wvRate").value="";$("wvRecv").value=""}}
 $("wvCashB").addEventListener("click",()=>wvCash(!$("wvCashB").dataset.on));
 function wvClear(){$("wvVeh").value="";$("wvDrv").value="";$("wvMob").value="";$("wvEmpty").value="";$("wvDl").value="";if(!$("wvDate").value)$("wvDate").value=todayISO()}
-$("wvVeh").addEventListener("input",()=>{const m=look($("wvVeh").value);if(m)$("wvDl").value=m.dealer;check()});
-$("wvVeh").addEventListener("change",()=>{const m=look($("wvVeh").value);if(m)$("wvDl").value=m.dealer;check()});
+$("wvVeh").addEventListener("input",()=>{const m=look($("wvVeh").value);if(m){$("wvDl").value=m.dealer;if(!wvSel&&m.date)$("wvDate").value=m.date}check()});
+$("wvVeh").addEventListener("change",()=>{const m=look($("wvVeh").value);if(m){$("wvDl").value=m.dealer;if(!wvSel&&m.date)$("wvDate").value=m.date}check()});
 $("wvDl").addEventListener("change",check);
 const drvMob=()=>{const nm=$("wvDrv").value.trim().toLowerCase();if(!nm||$("wvMob").value.trim())return;const o=svehs.concat(WV).slice().reverse().find(x=>(x.drv||"").toLowerCase()===nm&&x.mob);if(o)$("wvMob").value=o.mob};
 $("wvDrv").addEventListener("change",drvMob);$("wvDrv").addEventListener("blur",()=>setTimeout(drvMob,200));
