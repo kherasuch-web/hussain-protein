@@ -1053,6 +1053,7 @@ body.supview #hpLogoBtn{display:none}
         <div class="tablewrap hpwide"><table id="fqIn" class="fdt"></table></div>
         <h2 class="en" id="fqOutH">Out Feed</h2>
         <div class="tablewrap hpwide"><table id="fqOut" class="fdt"></table></div>
+        <div class="tablewrap"><table id="fqBal" class="fdt"></table></div>
         <button class="save pdfbtn" id="fqPdf" type="button" hidden>⬇ Download Search PDF</button>
         <div class="toast pdftoast" id="fqToast" role="status"></div>
       </section>
@@ -1700,6 +1701,19 @@ async function fcrPdf(toast){
     <div class="rfoot">Hussain Protein · FCR report made on ${dmy(todayISO())}</div>`;
   return rptPdf(inner,(fin&&wk?"FCR Report with Final - ":fin?"Final FCR Report - ":"FCR Report - ")+dmy(todayISO()).replace(/\//g,"-"),dl,toast);
 }
+/* v1.26.43: full report graphs - daily mortality, daily feed eaten, weekly average weight */
+function rptBars(title,unit,pts,color,line){if(!pts.length)return "";const W=720,H=190,L=46,B=26,T=16,mx=Math.max(...pts.map(p=>p.v),1),n=pts.length,bw=(W-L-8)/n,y=v=>T+(H-T-B)*(1-v/mx);
+  let g=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;margin:4px 0 10px">`;
+  [0,.5,1].forEach(f=>{const v=mx*f,yy=y(v);g+=`<line x1="${L}" x2="${W-4}" y1="${yy}" y2="${yy}" stroke="#e3e9ef"/><text x="${L-6}" y="${yy+4}" font-size="11" text-anchor="end" fill="#6b7b8b">${F(Math.round(v))}</text>`});
+  if(line){let d="";pts.forEach((p,i)=>{const cx=L+bw*i+bw/2;d+=(i?"L":"M")+cx.toFixed(1)+" "+y(p.v).toFixed(1);g+=`<circle cx="${cx.toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="4" fill="${color}"/><text x="${cx.toFixed(1)}" y="${(y(p.v)-8).toFixed(1)}" font-size="11" text-anchor="middle" fill="#173f66">${F(p.v)}</text>`});g+=`<path d="${d}" fill="none" stroke="${color}" stroke-width="2.5"/>`}
+  else pts.forEach((p,i)=>{const x=L+bw*i+bw*.12,h=Math.max(0,H-B-y(p.v));g+=`<rect x="${x.toFixed(1)}" y="${y(p.v).toFixed(1)}" width="${(bw*.76).toFixed(1)}" height="${h.toFixed(1)}" fill="${color}" rx="1.5"/>`});
+  const st=Math.max(1,Math.ceil(n/16));pts.forEach((p,i)=>{if(i%st&&i!==n-1)return;g+=`<text x="${(L+bw*i+bw/2).toFixed(1)}" y="${H-8}" font-size="11" text-anchor="middle" fill="#6b7b8b">${esc(p.l)}</text>`});
+  const tot=line?"":` · Total ${F(r2(pts.reduce((a,p)=>a+p.v,0)))} ${unit}`;
+  return `<h4 style="font-size:15px;color:#173f66">Graph · ${esc(title)}${tot}</h4>`+g+"</svg>"}
+function rptCharts(){const h=compute(days);const m=h.map(r=>({l:String(r.day),v:r.m24||0})),f=h.map(r=>({l:String(r.day),v:r2(r.f24||0)}));
+  const w=Object.values(weeks).filter(x=>x.weight>0&&x.week).sort((a,b)=>a.week-b.week).map(x=>({l:"Week "+x.week,v:x.weight}));
+  const out=rptBars("Daily Mortality (birds) · by day","birds",m,"#d64545")+rptBars("Daily Feed Eaten (bags) · by day","bags",f,"#1c5d93")+rptBars("Average Weight (g) · by week","g",w,"#2e8b57",1);
+  return out}
 async function fullReport(withMoney,toast){
   const dl=window.claude?.use?await window.claude.use("downloads"):null;
   if(!dl){toast("PDF download is not available here.",true);return}
@@ -1715,11 +1729,13 @@ async function fullReport(withMoney,toast){
   if(!withMoney){const d=document.createElement("div");d.innerHTML=res;d.querySelectorAll("tr").forEach(r=>{const k=(r.cells[0]||{}).textContent||"";if(!/^(Grand Total Expenses|Cost per Bird|Average Weight|Birds \(chicks|Total Weight|Cost per kg$)/.test(k))r.remove()});res=d.innerHTML}
   const secs=(sel)=>[...document.querySelectorAll(sel)].map(el=>{const t=el.querySelector("table").cloneNode(true);t.querySelectorAll(".drvc").forEach(c=>c.remove());t.querySelectorAll(".dcs").forEach(c=>c.colSpan-=1);return `<h4>${esc(el.querySelector(".mbdname").textContent)} · ${esc(el.querySelector(".mbdtot").textContent)}</h4><table class="${t.className}">${t.innerHTML}</table>`}).join("");
   const inner=`<div class="rh"><span class="rlogo"><img src="img/logo-1024.png" alt=""><b>HUSSAIN PROTEIN GROUP</b></span><div><div class="u">${esc(shedNm)}</div><small>Flock start ${dateFor(1)} · Report ${dmy(todayISO()).replace(/\//g,"-")}</small></div></div>
-    <h3>Main Summary</h3>${T("mnFlock")}
-    <h3>Feed Summary (bags)</h3>${T("mnFeed")}
-    ${withMoney?`<h3>Income (Sale)</h3>${T("mnSale")}`:""}
-    <h3>Expenses · ${esc($("mnGrand").textContent)}</h3>${T("mnExp")}
-    <h3>Result</h3>${res}
+    <style>.rsum table{width:auto!important;min-width:380px;max-width:520px}.rsum td:first-child{padding-right:24px}</style>
+    <h3>Main Summary</h3><div class="rsum">${T("mnFlock")}</div>
+    <h3>Feed Summary (bags)</h3><div class="rsum">${T("mnFeed")}</div>
+    ${withMoney?`<h3>Income (Sale)</h3><div class="rsum">${T("mnSale")}</div>`:""}
+    <h3>Expenses · ${esc($("mnGrand").textContent)}</h3><div class="rsum">${T("mnExp")}</div>
+    <h3>Result</h3><div class="rsum">${res}</div>
+    ${rptCharts()}
     <h3 class="ur">روزانہ رپورٹ: فیڈ (بیگ)</h3><div class="rtl">${hFeed}</div>
     <h3 class="ur">روزانہ رپورٹ: برڈ</h3><div class="rtl">${hBird}</div>
     <h3>Daily Medicine</h3>${hMed}
@@ -1962,7 +1978,7 @@ function renderMain(){
   const sold=days.reduce((a,d)=>a+(d.sold||0),0), mort=last?last.mTot:0, alive=last?last.bRem:flock.placed;
   const wk=weekRows(hist).filter(r=>r.fcr!=null).pop();
   $("mnFlock").innerHTML="<tbody>"+row("Shed",'<span class="urf">'+esc($("shedName").textContent)+"</span>")+row("Flock Start",dateFor(1))+row("Day",last?F(last.day):dot)+row("Chicks Placed",F(flock.placed))+
-    row("Total Mortality",F(mort)+(flock.placed?" ("+(mort/flock.placed*100).toFixed(2)+"%)":""))+row("Birds Sold",F(sold))+row("Birds Alive",F(alive),{c:"tot"})+(()=>{if(!(alive>0)||(wExtra&&wExtra.finalEnd))return "";const w=costKg(alive,0);return row("Live Weight",w.kg?F(w.kg)+" kg"+`<div class="lwsub">avg ${F(w.g)} g · ${esc(w.src)}</div>`:"...")})()+
+    row("Total Mortality",F(mort)+(flock.placed?" ("+(mort/flock.placed*100).toFixed(2)+"%)":""))+row("Birds Sold",F(sold))+row("Birds Alive",F(alive),{c:"tot"})+(()=>{if(!(alive>0)||(wExtra&&wExtra.finalEnd)||todayDay()<=28)return "";const w=costKg(alive,0);const e=typeof oldView!=="undefined"&&oldView?null:estW();return row("Live Weight",w.kg?F(w.kg)+" kg"+`<div class="lwsub">avg ${F(w.g)} g · ${esc(w.src)}</div>`:"...")+(e?row("Today Weight (estimate)",F(Math.round(e.g*alive/1000))+" kg"+`<div class="lwsub">avg ${F(e.g)} g · day ${e.day} · +${F(e.gain)} g/day</div>`,{c:"tot"}):"")})()+
     row("FCR"+(wk?" (week "+wk.w+")":""),wk?wk.fcr.toFixed(2):dot)+"</tbody>";
   const fIn=r2(flock.openFeed+days.reduce((a,d)=>a+(d.in||0),0)), fOut=r2(days.reduce((a,d)=>a+(d.out||0),0));
   $("mnFeed").innerHTML="<tbody>"+row("Feed In (with opening store)",F(fIn),{go:"daily"})+row("Feed Eaten",F(last?last.fTot:0),{go:"daily"})+row("Feed Out",F(fOut),{go:"daily"})+row("Feed In Store",F(last?last.fRem:flock.openFeed),{c:"tot",go:"daily",neg:last&&last.fRem<0})+"</tbody>";
@@ -1997,6 +2013,11 @@ function renderMain(){
   const mo=moneyOK();$("mnSaleCard").hidden=$("mnResCard").hidden=!mo;$("mnExpH").textContent=(mo?"4":"3")+". Expenses";
 }
 // cost per kg of live weight: average weight typed in Main, else the last weekly weight of the FCR section
+/* v1.26.43: today's average weight estimate from the growth between the last two weekly weights */
+function estW(){const W=Object.values(weeks).filter(x=>x.weight>0&&x.week).sort((a,b)=>a.week-b.week);if(W.length<2||!flock||!flock.start)return null;
+  const a=W[W.length-2],b=W[W.length-1],gain=(b.weight-a.weight)/((b.week-a.week)*7);if(!(gain>0))return null;
+  const day=todayDay();if(day<=28)return null;const ahead=Math.max(0,Math.min(14,day-b.week*7));
+  return {g:Math.round(b.weight+gain*ahead),gain:Math.round(gain),day,from:b.week}}
 function costKg(alive,grand){
   const typed=wExtra.costAvgW>0?wExtra.costAvgW:null, wk=Object.values(weeks).filter(x=>x.weight>0).sort((a,b)=>b.week-a.week)[0]||null;
   const g=typed||(wk?wk.weight:null), src=typed?"written":wk?"week "+wk.week:"";
@@ -2188,7 +2209,7 @@ function fdTab(list,isIn,pdf,empty){const dot=v=>v?esc(v):"...",R=pdf?' class="r
 function renderFq(){const f=fqFilter(),on=!!f;$("fqRes").style.display=on?"flex":"none";
   document.querySelectorAll('#vFeed>section.card[aria-label="Add feed entry"],#vFeed>section[aria-label="Feed record"],#vFeed>section[aria-label="Feed by type"]').forEach(e=>on?e.style.setProperty("display","none","important"):e.style.removeProperty("display"));
   if(on){$("fqIn").innerHTML=fdTab(f.inn,true,0,"Nothing found in In Feed.");$("fqOut").innerHTML=fdTab(f.out,false,0,"Nothing found in Out Feed.");
-    $("fqInH").textContent="In Feed · "+f.lab;$("fqOutH").textContent="Out Feed · "+f.lab;$("fqPdf").hidden=!f.inn.length&&!f.out.length}}
+    {const bb=r2(fdBags(f.inn)-fdBags(f.out)),br=Math.round(fdRs(f.inn)-fdRs(f.out));$("fqBal").innerHTML=`<tbody><tr class="tot"><td colspan="2">Balance · ${esc(f.lab)} (In − Out)</td></tr><tr class="tot"><td class="num amt">${F(bb)} bags</td><td class="num amt">Rs ${F(br)}</td></tr></tbody>`;$("fqBal").parentElement.hidden=!f.inn.length&&!f.out.length}$("fqInH").textContent="In Feed · "+f.lab;$("fqOutH").textContent="Out Feed · "+f.lab;$("fqPdf").hidden=!f.inn.length&&!f.out.length}}
 const fdGap='<tr><td colspan="8" style="border:0;height:10px"></td></tr>',fdHd=t=>`<thead><tr><th colspan="8" style="text-align:left">${t}</th></tr></thead>`;
 const fdDates=l=>{const d=l.map(x=>x.date).filter(Boolean).sort();return d.length?dmy(d[0])+" to "+dmy(d[d.length-1]):"..."};
 function fdTypeRows(ins,outs){const all=ins.concat(outs),types=[...new Set(all.map(x=>x.type||""))].sort((a,b)=>!a?1:!b?-1:a.localeCompare(b));
@@ -2206,11 +2227,11 @@ function fdPdf(kind,tt,f,day){const t=typeof tt==="function"?tt:(m,e)=>toast(kin
   if(useOut)parts.push((kind==="out"?"":fdHd("Out Feed"))+fdTab(outs,false,1));
   if(kind==="all")parts.push(fdHd("Feed by Type")+fdTypeRows(ins,outs));
   const tb=parts.join(fdGap).replace(/<\/?tbody>/g,""),used=(useIn?ins:[]).concat(useOut?outs:[]);
-  const title=kind==="q"?((useOut&&!useIn?"Out Feed":"In Feed")+(f.q?" - "+f.q:"")):kind==="in"?"In Feed":kind==="out"?"Out Feed":"Feed Report";
+  const title=kind==="q"?((useOut&&useIn?"Feed":useOut?"Out Feed":"In Feed")+(f.q?" - "+f.q:"")):kind==="in"?"In Feed":kind==="out"?"Out Feed":"Feed Report";
   const sum=[];if(useIn)sum.push(["In Feed",F(fdBags(ins))+" bags · Rs "+F(Math.round(fdRs(ins)))]);if(useOut)sum.push(["Out Feed",F(fdBags(outs))+" bags · Rs "+F(Math.round(fdRs(outs)))]);
-  if(kind==="all")sum.push(["Balance",F(r2(fdBags(ins)-fdBags(outs)))+" bags"]);
+  if(kind==="all")sum.push(["Balance",F(r2(fdBags(ins)-fdBags(outs)))+" bags"]);if(kind==="q")sum.push(["Balance (In − Out)",F(r2(fdBags(useIn?ins:[])-fdBags(useOut?outs:[])))+" bags · Rs "+F(Math.round(fdRs(useIn?ins:[])-fdRs(useOut?outs:[])))]);
   const info=(kind==="q"?[[f.q?"Search":"Dates chosen",f.q||f.lab]]:[]).concat([[day?"Bill":"Dates",day?"Feed of "+dmy(day)+" (one day)":fdDates(used)],["Report Date",dmy(todayISO())]]);
-  return billPdf({title,info,table:tb,sum,file:(kind==="q"?(useOut&&!useIn?"Out Feed - ":"In Feed - ")+f.file:title+" - "+(day?dmy(day):dmy(todayISO())).replace(/\//g,"-")),fit:1},t)}
+  return billPdf({title,info,table:tb,sum,file:(kind==="q"?(useOut&&useIn?"Feed - ":useOut?"Out Feed - ":"In Feed - ")+f.file:title+" - "+(day?dmy(day):dmy(todayISO())).replace(/\//g,"-")),fit:1},t)}
 // v1.26.29: feed PARTY bills. A party = C/S Name (In) or Name (Out); both kinds of one name come in ONE bill with the balance
 // her rule: the COMPANY is the name before the bracket; the bracket is the source, e.g. Chenab(Ahsan) -> company Chenab, source Ahsan
 const fdCo=n=>String(n||"").split("(")[0].trim(),fdSrc=n=>{const m=String(n||"").match(/\(([^)]*)\)/);return m?m[1].trim():""};
@@ -2350,14 +2371,19 @@ const storeTot=()=>stMan()?(mbStore&&mbStore.total||0):r2(medbuys.filter(x=>x.de
 function dealerSection(d){
   const k=d.id, el=document.createElement("section");el.className="card mbsec";el.dataset.dealer=k;
   el.innerHTML=`<button type="button" class="mbhead" aria-expanded="false"><h2 class="en"><span class="chev" aria-hidden="true">▶</span><span class="mbdname"></span></h2><span class="daybadge num mbdtot"></span></button><div class="mbbody" hidden>
-    <label>Date<input class="txt" type="date" data-f="date"></label>
-    <label>Medicine Name${sugIn("mbN_"+k,"Name written on the medicine",100,"mbName")}</label>
-    <label data-tradl>Traditional Name${sugIn("mbT_"+k,"Formula / common name",100,"mbTrad")}</label>
-    <label>Quantity${sugIn("mbQ_"+k,"e.g. 5 Ltr, 2 Kg, 10 Pcs",40,"mbQty")}</label>
-    <label data-srcl>Source (from which farm)${sugIn("mbS_"+k,"e.g. Kunjah Farm",80,"mbSrc")}</label>
-    <label>Rate (Rs)<input class="txt" inputmode="decimal" data-f="rate" placeholder="Rate per unit"></label>
-    <label>Total Price (Rs)<input class="txt" inputmode="decimal" data-f="price" placeholder="Fills itself from Rate × Quantity"></label>
-    <div class="row"><button class="save" type="button" data-act="save">Save</button><button class="ghost" type="button" data-act="cancel" hidden>Cancel edit</button><button class="ghost" type="button" data-act="del" hidden>Delete</button></div>
+    <label class="mbf">Date<input class="txt" type="date" data-f="date"></label>
+    <label class="mbf">Medicine Name${sugIn("mbN_"+k,"Name written on the medicine",100,"mbName")}</label>
+    <label class="mbf" data-tradl>Traditional Name${sugIn("mbT_"+k,"Formula / common name",100,"mbTrad")}</label>
+    <label class="mbf">Quantity${sugIn("mbQ_"+k,"e.g. 5 Ltr, 2 Kg, 10 Pcs",40,"mbQty")}</label>
+    <label class="mbf" data-srcl>Source (from which farm)${sugIn("mbS_"+k,"e.g. Kunjah Farm",80,"mbSrc")}</label>
+    <label class="mbf">Rate (Rs)<input class="txt" inputmode="decimal" data-f="rate" placeholder="Rate per unit"></label>
+    <label class="mbf">Total Price (Rs)<input class="txt" inputmode="decimal" data-f="price" placeholder="Fills itself from Rate × Quantity"></label>
+    <div class="row mbf"><button class="save" type="button" data-act="save">Save</button><button class="ghost" type="button" data-act="cancel" hidden>Cancel edit</button><button class="ghost" type="button" data-act="del" hidden>Delete</button></div>
+    <label class="elf">Date<input class="txt" type="date" data-f="edate"></label>
+    <label class="elf">Description<input class="txt" maxlength="300" data-f="edesc" placeholder="Work / item"></label>
+    <label class="elf">Quantity<input class="txt" maxlength="40" data-f="eqty" placeholder="e.g. 2 Pcs, 20 m"></label>
+    <label class="elf">Amount (Rs)<input class="txt" inputmode="decimal" data-f="eamt" placeholder="e.g. 2500"></label>
+    <div class="row elf"><button class="save" type="button" data-act="elsave">Save</button></div>
     <div class="row" data-srcrow><button class="ghost srctog" type="button" data-act="srctog">Source column: Off</button><button class="ghost srctog" type="button" data-act="nmtog">⚡ Electrician: Off</button></div>
     <div class="row" data-box="del" hidden><button class="danger" type="button" data-act="delyes">Yes, delete</button><button class="ghost" type="button" data-act="delno">No</button></div>
     <div class="toast" role="status"></div>
@@ -2404,6 +2430,11 @@ function dealerSection(d){
     if(a==="srctog"&&db){const d=dealers.find(x=>x.id===k);if(!d)return;const {id:_i,...rest}=d;b.disabled=true;const ok=await write(db.doc("dealers/"+k),{...rest,src:!mbSelf(d),updatedAt:new Date().toISOString()});b.disabled=false;if(!ok)t("Could not save. Please try again.",true);renderMed();return}
     if(a==="del")q('[data-box="del"]').hidden=false;
     if(a==="delno")q('[data-box="del"]').hidden=true;
+    if(a==="elsave"&&db){const d=dealers.find(x=>x.id===k);if(!d)return;const g=f=>q('[data-f="'+f+'"]'),date=g("edate").value,desc=g("edesc").value.trim(),amount=mNum(g("eamt").value)||null;
+      if(!date||!desc){t("Date and Description are required.",true);return}
+      const id="sp"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),now=new Date().toISOString();b.disabled=true;
+      const ok=await write(db.doc("spendings/"+id),{date,desc,qty:g("eqty").value.trim(),cp:d.name,amount,seq:nextSeq(),shed:"s1",flock:flockId,createdAt:now,updatedAt:now});b.disabled=false;
+      if(ok){t("Saved: "+desc+(amount?" · "+rs(amount):""));["edesc","eqty","eamt"].forEach(f=>g(f).value="")}else t("Could not save. Please try again.",true);renderMed();return}
     if(a==="delyes"&&db&&mbEdit[k]){try{await db.doc("medbuy/"+mbEdit[k]).delete();t("Deleted.");mbEdit[k]=null;fill(null)}catch(e){t("Could not delete.",true)}renderMed()}
     if(a==="save"){
       const date=fld("date").value,name=fld("name").value.trim(),price=fld("price")?mNum(fld("price").value):0;
@@ -2542,7 +2573,7 @@ function renderMed(){
   const all=medbuys.slice().sort(byDate), dot=v=>v?esc(v):"...", sum=l=>r2(l.reduce((a,x)=>a+(x.price||0),0));
   ds.forEach(d=>{
     const el=wrap.querySelector(`.mbsec[data-dealer="${d.id}"]`), list=all.filter(x=>x.dealer===d.id), isSt=d.id===MB_STORE.id, EL=mbElec(d), esl=EL?elSp(d):[], tot=isSt?storeTot():EL?r2(esl.reduce((a,x)=>a+(x.amount||0),0)):sum(list);
-    el.classList.toggle("elec",EL);el.querySelectorAll(".legend").forEach(g=>{if(/Double-tap/.test(g.textContent))g.style.display=EL?"none":""});
+    el.classList.toggle("elec",EL);if(EL){const ed=el.querySelector('[data-f="edate"]');if(ed&&!ed.value)ed.value=todayISO()}el.querySelectorAll(".legend").forEach(g=>{if(/Double-tap/.test(g.textContent))g.style.display=EL?"none":""});
     const isM=isSt&&stMan();if(isSt){el.classList.toggle("stman",isM);const sb=el.querySelector('[data-act="stman"]');if(sb){sb.textContent="Manual: "+(isM?"On ✓":"Off");sb.classList.toggle("on",isM);sb.disabled=!canWrite}el.querySelector(".stmnote").textContent=isM?"One total written by you. Rate / Total of lines hidden (kept).":"Each line has Rate and Total. Section total = sum of lines.";}
     if(isSt){const inp=el.querySelector('[data-f="stot"]');if(document.activeElement!==inp)inp.value=mbStore&&mbStore.total?F(mbStore.total):"";
       el.querySelector(".mbsum").textContent=mbStore&&mbStore.total?"":"No Store Total written yet.";el.querySelector(".mbsum").hidden=!!(mbStore&&mbStore.total);}
@@ -3467,6 +3498,8 @@ function forms(){const L=[];const e=document.getElementById("entryCard");if(e)L.
  const fd=document.querySelector('section[aria-label="Add feed entry"]');if(fd)L.push([fd,1]);
  document.querySelectorAll(".mbbody>.hpform").forEach(f=>L.push([f,0]));const mo=document.getElementById("moForm");if(mo)L.push([mo,0]);
  for(const q of ["#dvForm","#wvForm","#kvForm","#kdForm",'section[aria-label="Add general sale"]',"#smForm"]){const x=document.querySelector(q);if(x)L.push([x,0])}return L}
+/* v1.26.43: supervisor data waiting -> daily entry opens by itself (Windows) */
+const supOn=f=>{if(f.id!=="entryCard")return false;const b=document.getElementById("supBox");return !!b&&!b.hidden&&!b.classList.contains("thin")};
 const fold=(f,on)=>{f.classList.toggle("hpfolded",!!on);setTimeout(sync,0)};
 // which heading opens which entry. pre(set): for Feed, In/Out heading also picks the In/Out tab
 function heads(f){const r=[];if(f.id==="entryCard"){const h=document.getElementById("histH");if(h)r.push([h])}
@@ -3488,13 +3521,13 @@ function setup(){for(const [f,h] of forms()){if(f.dataset.hpf)continue;f.dataset
  const s=strip(h);f.before(s);s.onclick=()=>{fold(f,false);const i=f.querySelector("input:not([type=date]),textarea");if(i)i.focus()};
  const x=document.createElement("button");x.type="button";x.className="hpfoldx";x.textContent="چھپائیں ⇥";x.onclick=()=>fold(f,true);
  const hd=f.querySelector(":scope>.dayhead");if(hd)hd.appendChild(x);else{const r=document.createElement("div");r.className="hpfxrow";r.appendChild(x);f.prepend(r)}
- fold(f,mq.matches||f.id!=="entryCard");
+ fold(f,(mq.matches||f.id!=="entryCard")&&!supOn(f));
  heads(f).forEach(([hd,pre])=>{if(hd.dataset.hphb)return;hd.dataset.hphb=1;hd.classList.add("hphb");hd.setAttribute("role","button");hd.tabIndex=0;
   const ch=document.createElement("span");ch.className="hpch";hd.prepend(ch);
   const go=()=>{const open=f.classList.contains("hpfolded")||(pre&&!pre());if(pre)pre(true);fold(f,!open);if(open){const i=f.querySelector("input:not([type=date]),textarea");if(i)i.focus({preventScroll:true})}sync()};
   hd.addEventListener("click",go);hd.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}})});
  // tapping a record row to edit opens the form again
- new MutationObserver(()=>{if([...f.querySelectorAll("[id$=Cancel],[data-act=cancel],.slsec [data-act=del]")].some(b=>!b.closest("[hidden]"))||/ترمیم/.test((f.querySelector("h2")||{}).textContent||""))fold(f,false)}).observe(f,{subtree:true,attributes:true,attributeFilter:["hidden"],childList:true,characterData:true})}}
+ new MutationObserver(()=>{if([...f.querySelectorAll("[id$=Cancel],[data-act=cancel],.slsec [data-act=del]")].some(b=>!b.closest("[hidden]"))||supOn(f)||/ترمیم/.test((f.querySelector("h2")||{}).textContent||""))fold(f,false)}).observe(f,{subtree:true,attributes:true,attributeFilter:["hidden"],childList:true,characterData:true})}}
 mq.addEventListener("change",()=>forms().forEach(([f])=>fold(f,mq.matches||f.id!=="entryCard")));
 new MutationObserver(setup).observe(document.documentElement,{childList:true,subtree:true});
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",setup);else setup()})();</script>
@@ -3505,7 +3538,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 .srctog{font-size:14px;padding:6px 12px}
 .srctog.on{background:#e7f5ec;border-color:#1f7a4d;color:#1f7a4d;font-weight:600}
 </style>
-<style>.mbsec.elec .mbbody>label,.mbsec.elec .mbbody>.row:has(>[data-act="save"]),.mbsec.elec [data-act="srctog"],.mbsec.elec .mbbody>.legend{display:none!important}</style>
+<style>.mbsec.elec .mbf,.mbsec:not(.elec) .elf,.mbsec.elec .mbbody>label:not(.elf),.mbsec.elec [data-act="srctog"],.mbsec.elec .mbbody>.legend{display:none!important}</style>
 <style>/* 1.26.42 phone: long tables scroll inside a box so the heading row stays on top */
 @media (max-width:999px){.tablewrap{max-height:calc(100dvh - 190px);overflow:auto;overscroll-behavior:auto}.tablewrap thead th{position:sticky;top:0;z-index:2}}
 </style>
@@ -4333,10 +4366,10 @@ try{render()}catch(e){}
 const $=i=>document.getElementById(i);
 const cut=(f,out)=>{if(f){if(out)f.inn=[];else f.out=[]}return f};
 const _m=mqFilter;mqFilter=function(){return cut(_m.apply(this,arguments),mbPart==="out")};
-const _f=fqFilter;fqFilter=function(){return cut(_f.apply(this,arguments),fdKind==="out")};
+/* v1.26.43 (her ask): Feed search shows In AND Out + Balance, whatever tab */
 const show=(ids,on)=>ids.forEach(i=>{const e=$(i);if(!e)return;const w=e.tagName==="TABLE"?e.parentElement:e;w.style.display=on?"":"none"});
 const _rm=renderMq;renderMq=function(){const x=_rm.apply(this,arguments);const out=mbPart==="out";show(["mqInH","mqIn"],!out);show(["mqOutH","mqOut"],out);const lg=document.querySelector("#mqRes>.legend");if(lg)lg.style.display=out?"none":"";return x};
-const _rf=renderFq;renderFq=function(){const x=_rf.apply(this,arguments);const out=fdKind==="out";show(["fqInH","fqIn"],!out);show(["fqOutH","fqOut"],out);return x};
+
 try{renderMq();renderFq()}catch(e){}
 })();
 </script>

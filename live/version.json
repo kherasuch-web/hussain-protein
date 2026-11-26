@@ -1,11 +1,11 @@
 {
- "ver": "1.26.42",
- "note": "Electrician dealer (entries from General Spendings, not in medicine total); phone table headers stay on top",
- "noteUr": "الیکٹریشن ڈیلر، فون پر ٹیبل کی ہیڈنگ اوپر رہے",
+ "ver": "1.26.43",
+ "note": "Electrician entry form; Windows daily entry opens for new supervisor data; today weight estimate (day 29+); Full Report graphs + narrow summary; Feed search In+Out+Balance",
+ "noteUr": "الیکٹریشن فارم، سپروائزر ڈیٹا پر اینٹری کھلے، اندازاً وزن، رپورٹ گراف، فیڈ بیلنس",
  "android": {
-  "zip": "android-1.26.42.zip",
+  "zip": "android-1.26.43.zip",
   "minBuild": 27,
-  "sha256": "b76d598698ceea6eb52e105eb99a06a1a151fb6b1ad3ad895cb0a66c0508a847"
+  "sha256": "fd1b867069a028522cd4c2c4523f0ae468a80d0bf56cb14bbecf24fae07e2948"
  },
  "windows": {
   "files": [
