@@ -1025,6 +1025,7 @@ body.supview #hpLogoBtn{display:none}
         <div class="dayhead"><h2 class="en">New Dealer</h2></div>
         <label for="mbNewName">Dealer Name<input id="mbNewName" class="txt" maxlength="80" autocomplete="off" placeholder="Dealer name"></label>
         <label class="mbchk"><input type="checkbox" id="mbNewSrc"> Add "Source" (which farm it came from)</label>
+        <label class="mbchk"><input type="checkbox" id="mbNewNm"> ⚡ Electrician (not medicine; entries come from General Spendings)</label>
         <div class="row">
           <button class="save" id="mbNewSave" type="button">Create Section</button>
           <button class="ghost" id="mbNewNo" type="button">Cancel</button>
@@ -1629,6 +1630,10 @@ function kdVehBill(x,toast,withRate){
   return billPdf({title:x.dealer,info,table:h,sum,file:"Kanda Vehicle Bill - "+x.dealer+" - "+(x.veh||"vehicle")+" - "+dmy(x.date).replace(/\//g,"-")},toast);
 }
 function medBill(d,toast){
+  if(mbElec(d)){const L=elSp(d),dot=v=>v?esc(v):"...",tot=r2(L.reduce((a,x)=>a+(x.amount||0),0));if(!L.length){toast("No entry for this electrician yet.",true);return}
+    let h=`<thead><tr><th>Sr</th><th>Date</th><th>Description</th><th>Qty</th><th class="r">Amount (Rs)</th></tr></thead><tbody>`+L.map((x,i)=>`<tr><td>${i+1}</td><td>${dmy(x.date)}</td><td>${dot(x.desc)}</td><td>${dot(x.qty)}</td><td class="r">${x.amount?F(x.amount):"..."}</td></tr>`).join("")+`<tr class="bt"><td colspan="4">Total (Rs) · ${esc(d.name)}</td><td class="r">${F(tot)}</td></tr>`;
+    const ds=L.map(x=>x.date).filter(Boolean).sort();
+    return billPdf({title:"Electrician Bill",info:[["Electrician",d.name],["Bill",ds.length?"Complete ("+dmy(ds[0])+" to "+dmy(ds[ds.length-1])+")":"Complete"],["Bill Date",dmy(todayISO())]],table:h+"</tbody>",sum:[["Entries",F(L.length)],["Total Amount","Rs "+F(Math.round(tot))]],file:"Electrician Bill - "+d.name},toast)}
   const isSt=d.id===MB_STORE.id, list=medbuys.filter(x=>x.dealer===d.id).sort(byDate), dot=v=>v?esc(v):"...";
   const tot=isSt?storeTot():r2(list.reduce((a,x)=>a+(x.price||0),0));
   if(!list.length&&!tot){toast("No medicine in this section yet.",true);return}
@@ -1642,7 +1647,7 @@ function medBill(d,toast){
 }
 // v1.22: Medicine Report = one combined bill of ALL dealers (+ Previous Store), each dealer with its own total
 function medReport(toast,day){
-  const ds=[MB_WFN,MB_STORE,...dealers.slice().sort((a,b)=>(a.seq||0)-(b.seq||0))], all=medbuys.filter(x=>!day||x.date===day).sort(byDate), dot=v=>v?esc(v):"...";
+  const ds=[MB_WFN,MB_STORE,...dealers.filter(d=>!d.nomed).sort((a,b)=>(a.seq||0)-(b.seq||0))], all=medbuys.filter(x=>!day||x.date===day).sort(byDate), dot=v=>v?esc(v):"...";
   // v1.26.29: one-day bill leaves out the written Store Total (it is not of one day)
   const parts=ds.map(d=>{const isSt=d.id===MB_STORE.id,list=all.filter(x=>x.dealer===d.id);return {d,isSt,list,tot:isSt?(day?0:storeTot()):r2(list.reduce((a,x)=>a+(x.price||0),0))}}).filter(p=>p.list.length||p.tot);
   if(!parts.length){toast("No medicine"+(day?" on "+dmy(day):"")+" yet.",true);return}
@@ -2330,7 +2335,11 @@ const sugIn=(id,ph,ml,key)=>`<span class="sugw"><input id="${id}" class="txt" ma
 const MB_STORE={id:"prevstore",name:"Previous Store Medicine",seq:0};
 // v1.27: "Waiting For Note" = medicine whose dealer is not known yet; later each entry is moved to its dealer
 const MB_WFN={id:"wfn",name:"Waiting For Note",seq:-1};
-const mbCounted=x=>x.dealer===MB_WFN.id||dealers.some(d=>d.id===x.dealer);
+const mbElec=d=>!!(d&&d.nomed);
+const mbCounted=x=>x.dealer===MB_WFN.id||dealers.some(d=>d.id===x.dealer&&!d.nomed);
+// v1.26.42: electrician dealer = General Spendings entries whose Counterpart is his name (counted only in Spendings)
+const elSp0=d=>{const q=String(d&&d.name||"").toLowerCase().replace(/\s+/g," ").trim();if(!q)return[];return (typeof spends!=="undefined"?spends:[]).filter(x=>x.type!=="break"&&String(x.cp||"").split(",").some(p=>p.toLowerCase().replace(/\s+/g," ").trim()===q)).sort(byDate)};
+const elSp=d=>{const t=d&&d.nomedAt||"";const a=medbuys.filter(x=>x.dealer===d.id).map(x=>({id:x.id,date:x.date,desc:x.name,qty:x.qty,amount:x.price,old:true}));const b=elSp0(d).filter(x=>!t||(x.createdAt&&String(x.createdAt)>=t));return a.concat(b).sort(byDate)};
 let mbOpen=null;
 // v1.23: split a dealer box into form part + record part (phone: display:contents = no change; Windows: side by side)
 function hpSplit(bd){const kids=[...bd.children],i=kids.findIndex(c=>c.tagName==="H2");if(i<1)return;const f=document.createElement("div"),r=document.createElement("div");f.className="hpform";r.className="hprec";kids.slice(0,i).forEach(c=>f.appendChild(c));kids.slice(i).forEach(c=>r.appendChild(c));bd.append(f,r)}
@@ -2349,7 +2358,7 @@ function dealerSection(d){
     <label>Rate (Rs)<input class="txt" inputmode="decimal" data-f="rate" placeholder="Rate per unit"></label>
     <label>Total Price (Rs)<input class="txt" inputmode="decimal" data-f="price" placeholder="Fills itself from Rate × Quantity"></label>
     <div class="row"><button class="save" type="button" data-act="save">Save</button><button class="ghost" type="button" data-act="cancel" hidden>Cancel edit</button><button class="ghost" type="button" data-act="del" hidden>Delete</button></div>
-    <div class="row" data-srcrow><button class="ghost srctog" type="button" data-act="srctog">Source column: Off</button></div>
+    <div class="row" data-srcrow><button class="ghost srctog" type="button" data-act="srctog">Source column: Off</button><button class="ghost srctog" type="button" data-act="nmtog">⚡ Electrician: Off</button></div>
     <div class="row" data-box="del" hidden><button class="danger" type="button" data-act="delyes">Yes, delete</button><button class="ghost" type="button" data-act="delno">No</button></div>
     <div class="toast" role="status"></div>
     <h2 class="en" style="margin-top:6px">Record</h2>
@@ -2391,6 +2400,7 @@ function dealerSection(d){
       b.disabled=true;const ok=await write(db.doc("dealers/"+storeId()),{kind:"store",total:v,manual:true,shed:"s0",updatedAt:new Date().toISOString()});b.disabled=false;
       tb.classList.toggle("err",!ok);tb.textContent=ok?(v?"Saved: "+rs(v):"Total cleared."):"Could not save. Please try again.";if(ok&&!v)q('[data-f="stot"]').value="";renderMed();return}
     if(a==="stman"&&db){b.disabled=true;const on=!stMan();const ok=await write(db.doc("dealers/"+storeId()),{kind:"store",total:mbStore&&mbStore.total||null,manual:on,shed:"s0",updatedAt:new Date().toISOString()});b.disabled=false;if(!ok)t("Could not save. Please try again.",true);renderMed();return}
+    if(a==="nmtog"&&db){const d=dealers.find(x=>x.id===k);if(!d)return;const {id:_i,...rest}=d;b.disabled=true;const ok=await write(db.doc("dealers/"+k),{...rest,nomed:d.nomed?null:true,nomedAt:d.nomed?null:new Date().toISOString(),updatedAt:new Date().toISOString()});b.disabled=false;if(!ok)t("Could not save. Please try again.",true);renderMed();return}
     if(a==="srctog"&&db){const d=dealers.find(x=>x.id===k);if(!d)return;const {id:_i,...rest}=d;b.disabled=true;const ok=await write(db.doc("dealers/"+k),{...rest,src:!mbSelf(d),updatedAt:new Date().toISOString()});b.disabled=false;if(!ok)t("Could not save. Please try again.",true);renderMed();return}
     if(a==="del")q('[data-box="del"]').hidden=false;
     if(a==="delno")q('[data-box="del"]').hidden=true;
@@ -2531,17 +2541,19 @@ function renderMed(){
   ds.forEach(d=>{let el=wrap.querySelector(`.mbsec[data-dealer="${d.id}"]`);if(!el){el=dealerSection(d)}wrap.appendChild(el)});
   const all=medbuys.slice().sort(byDate), dot=v=>v?esc(v):"...", sum=l=>r2(l.reduce((a,x)=>a+(x.price||0),0));
   ds.forEach(d=>{
-    const el=wrap.querySelector(`.mbsec[data-dealer="${d.id}"]`), list=all.filter(x=>x.dealer===d.id), isSt=d.id===MB_STORE.id, tot=isSt?storeTot():sum(list);
+    const el=wrap.querySelector(`.mbsec[data-dealer="${d.id}"]`), list=all.filter(x=>x.dealer===d.id), isSt=d.id===MB_STORE.id, EL=mbElec(d), esl=EL?elSp(d):[], tot=isSt?storeTot():EL?r2(esl.reduce((a,x)=>a+(x.amount||0),0)):sum(list);
+    el.classList.toggle("elec",EL);el.querySelectorAll(".legend").forEach(g=>{if(/Double-tap/.test(g.textContent))g.style.display=EL?"none":""});
     const isM=isSt&&stMan();if(isSt){el.classList.toggle("stman",isM);const sb=el.querySelector('[data-act="stman"]');if(sb){sb.textContent="Manual: "+(isM?"On ✓":"Off");sb.classList.toggle("on",isM);sb.disabled=!canWrite}el.querySelector(".stmnote").textContent=isM?"One total written by you. Rate / Total of lines hidden (kept).":"Each line has Rate and Total. Section total = sum of lines.";}
     if(isSt){const inp=el.querySelector('[data-f="stot"]');if(document.activeElement!==inp)inp.value=mbStore&&mbStore.total?F(mbStore.total):"";
       el.querySelector(".mbsum").textContent=mbStore&&mbStore.total?"":"No Store Total written yet.";el.querySelector(".mbsum").hidden=!!(mbStore&&mbStore.total);}
-    el.querySelector(".mbdname").textContent=(mbEdit[d.id]?"Edit · ":"")+d.name;el.querySelector(".mbdtot").textContent=rs(tot);
+    el.querySelector(".mbdname").textContent=(mbEdit[d.id]?"Edit · ":"")+d.name+(EL?" (Electrician)":"");el.querySelector(".mbdtot").textContent=rs(tot);
     const isW=d.id===MB_WFN.id,mvOk=isW&&canWrite;
     const sf=!isW&&mbSelf(d),nt=mbNoTrad(d),sl=el.querySelector("[data-srcl]"),tl=el.querySelector("[data-tradl]");if(sl){if(sf)sl.style.removeProperty("display");else sl.style.setProperty("display","none","important")}if(tl){if(nt)tl.style.setProperty("display","none","important");else tl.style.removeProperty("display")}
-    const sr=el.querySelector("[data-srcrow]");if(sr){if(isSt)sr.remove();else{const sb=sr.querySelector(".srctog");sb.textContent="Source column: "+(sf?"On ✓":"Off");sb.classList.toggle("on",sf);sb.disabled=!canWrite}}
+    const sr=el.querySelector("[data-srcrow]");if(sr){if(isSt)sr.remove();else{const sb=sr.querySelector(".srctog");sb.textContent="Source column: "+(sf?"On ✓":"Off");sb.classList.toggle("on",sf);sb.disabled=!canWrite;const nb=sr.querySelector('[data-act="nmtog"]');if(nb){const on=!!d.nomed;nb.textContent="⚡ Electrician: "+(on?"On ✓":"Off");nb.classList.toggle("on",on);nb.disabled=!canWrite}}}
     let h=`<thead><tr><th>Date</th><th>Medicine Name</th>${nt?"":"<th>Traditional Name</th>"}${sf?"<th>Source</th>":""}<th>Quantity</th>${isM?"":`<th class="amt">Rate</th><th class="amt">Total Price</th>`}${mvOk?"<th></th>":""}</tr></thead><tbody>`;
     h+=list.map(x=>`<tr data-mb="${esc(x.id)}"><td class="num">${dmy(x.date)}</td><td class="w"><div>${esc(x.name)}</div></td>${nt?"":`<td class="w"><div>${dot(x.trad)}</div></td>`}${sf?`<td class="w"><div>${dot(x.src)}</div></td>`:""}<td class="w"><div>${dot(x.qty)}</div></td>${isM?"":`<td class="num amt">${x.rate?F(x.rate):"..."}</td><td class="num amt">${x.price?F(x.price):"..."}</td>`}${mvOk?`<td><button type="button" class="wfnmv" data-mv="${esc(x.id)}">↪ Move</button></td>`:""}</tr>`).join("");
     h+=(list.length||(isSt&&tot))?`<tr class="tot"><td colspan="${(isM?3:5)+(sf?1:0)-(nt?1:0)}">Total (Rs) · ${esc(d.name)}</td><td class="num amt">${isSt&&!tot?"...":F(tot)}</td>${mvOk?"<td></td>":""}</tr>`:`<tr><td colspan="${(isM?4:6)+(sf?1:0)-(nt?1:0)+(mvOk?1:0)}" class="empty">${isW?"Nothing waiting. Write medicine here when its dealer is not known yet.":d.id===MB_STORE.id?"No previous store medicine yet. Add the first one above.":"No medicine from this dealer yet. Add the first one above."}</td></tr>`;
+    if(EL){h=`<thead><tr><th>Date</th><th>Description</th><th>Qty</th><th class="amt">Amount (Rs)</th></tr></thead><tbody>`+esl.map(x=>`<tr><td class="num">${dmy(x.date)}</td><td class="w dsc"><div>${dot(x.desc)}</div></td><td class="w"><div>${dot(x.qty)}</div></td><td class="num amt">${x.amount?F(x.amount):"..."}</td></tr>`).join("")+(esl.length?`<tr class="tot"><td colspan="3">Total (Rs) · ${esc(d.name)}</td><td class="num amt">${F(tot)}</td></tr>`:`<tr><td colspan="4" class="empty">No General Spendings entry with Counterpart "${esc(d.name)}" yet.</td></tr>`)}
     el.querySelector(".mbtab").innerHTML=h+"</tbody>";
     const ed=!!mbEdit[d.id];el.querySelector('[data-act="cancel"]').hidden=el.querySelector('[data-act="del"]').hidden=!ed;el.querySelector('[data-act="save"]').disabled=!canWrite;
   });
@@ -2906,14 +2918,14 @@ $("slNewSave").addEventListener("click",async()=>{
   const ok=await write(db.doc("saledealers/"+id),{name,seq:sdealers.reduce((m,x)=>Math.max(m,x.seq||0),0)+1,shed:"s1",createdAt:new Date().toISOString()});
   if(ok){$("slNewBox").hidden=true;slOpen=id;renderSale();const el=document.querySelector(`.slsec[data-sd="${id}"]`);if(el)el.scrollIntoView({behavior:"smooth"})}else toast("slNewToast","Could not save. Please try again.",true);
 });
-$("vMed").addEventListener("click",ev=>{if(!ev.target.closest("[data-adddealer]"))return;$("mbNewBox").hidden=false;$("mbFirst").hidden=true;$("mbNewName").value="";$("mbNewSrc").checked=false;toast("mbNewToast","");$("mbNewBox").scrollIntoView({behavior:"smooth"});setTimeout(()=>$("mbNewName").focus(),300)});
+$("vMed").addEventListener("click",ev=>{if(!ev.target.closest("[data-adddealer]"))return;$("mbNewBox").hidden=false;$("mbFirst").hidden=true;$("mbNewName").value="";$("mbNewSrc").checked=false;$("mbNewNm").checked=false;toast("mbNewToast","");$("mbNewBox").scrollIntoView({behavior:"smooth"});setTimeout(()=>$("mbNewName").focus(),300)});
 $("mbNewNo").addEventListener("click",()=>{$("mbNewBox").hidden=true;renderMed()});
 $("mbNewSave").addEventListener("click",async()=>{
   const name=$("mbNewName").value.trim();if(!name){toast("mbNewToast","Please write the dealer name.",true);return}
   if(dealers.some(d=>d.name.toLowerCase()===name.toLowerCase())){toast("mbNewToast","This dealer already has a section.",true);return}
   if(!db)return;
   const id="dl"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-  const ok=await write(db.doc("dealers/"+id),{name,src:$("mbNewSrc").checked,seq:dealers.reduce((m,x)=>Math.max(m,x.seq||0),0)+1,shed:"s1",createdAt:new Date().toISOString()});
+  const ok=await write(db.doc("dealers/"+id),{name,src:$("mbNewSrc").checked,nomed:$("mbNewNm").checked||null,seq:dealers.reduce((m,x)=>Math.max(m,x.seq||0),0)+1,shed:"s1",createdAt:new Date().toISOString()});
   if(ok){$("mbNewBox").hidden=true;mbOpen=id;renderMed();const el=document.querySelector(`.mbsec[data-dealer="${id}"]`);if(el)el.scrollIntoView({behavior:"smooth"})}else toast("mbNewToast","Could not save. Please try again.",true);
 });
 $("spTabGen").addEventListener("click",()=>{spPart="gen";renderSup();fitTA($("spDesc"))});
@@ -3202,7 +3214,7 @@ spFill(null);fdFill(null);suFill(null);saFill(null);
   try{const u=await window.claude.use("user");const w=u?await u.can("data.write"):null;if(w===false){canWrite=baseWrite=false;setStatus("آپ یہ ریکارڈ دیکھ سکتے ہیں مگر بدل نہیں سکتے۔",true)}}catch(e){}
   db.collection("spendings").onSnapshot(s=>{
     RAW.spendings=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.shed==="s1");spends=RAW.spendings.filter(inF);
-    if(view==="spend")renderSpend();if(view==="main")renderMain();
+    if(view==="spend")renderSpend();if(view==="main")renderMain();if(view==="med")try{renderMed()}catch(e){}
   },e=>{});
   db.collection("dealers").onSnapshot(s=>{
     RAW.dealers=s.docs.map(d=>({id:d.id,...d.data()}));derive();mbSrcMove();
@@ -3492,6 +3504,10 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 .mbchk input{width:20px;height:20px;accent-color:#1f7a4d}
 .srctog{font-size:14px;padding:6px 12px}
 .srctog.on{background:#e7f5ec;border-color:#1f7a4d;color:#1f7a4d;font-weight:600}
+</style>
+<style>.mbsec.elec .mbbody>label,.mbsec.elec .mbbody>.row:has(>[data-act="save"]),.mbsec.elec [data-act="srctog"],.mbsec.elec .mbbody>.legend{display:none!important}</style>
+<style>/* 1.26.42 phone: long tables scroll inside a box so the heading row stays on top */
+@media (max-width:999px){.tablewrap{max-height:calc(100dvh - 190px);overflow:auto;overscroll-behavior:auto}.tablewrap thead th{position:sticky;top:0;z-index:2}}
 </style>
 <style>/* v1.25 suggestions (Windows): 1 no logo in top bar, 3 sticky table headings, 4 small supervisor bar */
 @media (min-width:1000px){
@@ -5033,7 +5049,8 @@ const fqu=(n,u)=>(SUB[u]&&n&&Math.abs(n)<1)?fq(n*1000)+" "+SUB[u]:fq(n)+" "+u;
 const toBase=(q,eu,gu)=>SUB[gu]&&eu===SUB[gu]?q/1000:q;
 function stock(upTo){
   const base=new Map(), bad=[], cut=upTo&&flock&&flock.start?isoFor(upTo):null;
-  const add=(x,sign)=>{const p=nrm(pq(x.qty));if(cut&&x.date&&x.date>cut&&p&&base.has(nk(x.name)+"|"+p.u))return;if(!x.name||!String(x.name).trim())return;if(!p){bad.push(x.name+(x.qty?" ("+x.qty+")":""));return}
+  const nmD=new Set((typeof dealers!=="undefined"?dealers:[]).filter(d=>d.nomed).map(d=>d.id)),nmdK=new Set(),medK=new Set();
+  const add=(x,sign)=>{const p=nrm(pq(x.qty));if(sign>0&&x.name&&p){(nmD.has(x.dealer)?nmdK:medK).add(nk(x.name)+"|"+p.u)}if(cut&&x.date&&x.date>cut&&p&&base.has(nk(x.name)+"|"+p.u))return;if(!x.name||!String(x.name).trim())return;if(!p){bad.push(x.name+(x.qty?" ("+x.qty+")":""));return}
     const k=nk(x.name)+"|"+p.u;let r=base.get(k);if(!r){r={k,name:String(x.name).trim(),su:p.u,inn:0,out:0,trad:new Set()};base.set(k,r)}if(x.trad&&String(x.trad).trim())r.trad.add(String(x.trad).trim());
     if(cut&&x.date&&x.date>cut)return;if(sign>0)r.inn+=p.n;else r.out+=p.n};
   (medbuys||[]).forEach(x=>add(x,1));(typeof medouts!=="undefined"?medouts:[]).forEach(x=>add(x,-1));
@@ -5043,7 +5060,8 @@ function stock(upTo){
   base.forEach(b=>{const c=cv(b.k),f=c?c.n:1;let fk=resK(b.k);if(uOf(fk)!==uOf(b.k))fk=b.k;const G=grp(fk);G.inn+=b.inn*f;G.out+=b.out*f;(b.trad||[]).forEach(t=>G.trad.add(t));G.members.push({k:b.k,name:b.name,su:b.su,conv:c||null})});
   MU.forEach(d=>{if(upTo&&d.day>upTo)return;(d.items||[]).forEach(it=>{const u=uq(it);grp(u.k).use+=u.q})});
   const l0=[...g.values()].map(r=>({...r,rem:Math.round((r.inn-r.out-r.use)*1000)/1000,trad:[...r.trad].join(", ")})).sort((a,b)=>a.name.localeCompare(b.name));
-  const nmL=l0.filter(x=>(CFG.nm||{})[x.k]),l=l0.filter(x=>!(CFG.nm||{})[x.k]);
+  const dn=x=>x.members.length&&x.members.every(m=>nmdK.has(m.k)&&!medK.has(m.k));l0.forEach(x=>{if(dn(x))x.dnm=1});
+  const nmL=l0.filter(x=>x.dnm||(CFG.nm||{})[x.k]),l=l0.filter(x=>!x.dnm&&!(CFG.nm||{})[x.k]);
   return {l,bad,base,nmL}}
 // a saved usage line in the unit its medicine is shown in now (after merge / packing change)
 function muMatch(n,v){if(!v)return true;const z=t=>t.replace(/[^a-z0-9]/g,"");if(n.includes(v)||z(n).includes(z(v)))return true;const a=z(v);if(a.length<4)return false;return n.split(/[\s,·\/()-]+/).some(w=>z(w).startsWith(a.slice(0,4)))}
@@ -5094,7 +5112,7 @@ function draw(){
       ${x.members.length>1?`<div class="mg">${x.members.filter(m=>m.k!==x.k).map(m=>`<button type="button" class="mgx" data-m="${esc(m.k)}">✕ <span class="u">الگ کریں:</span> ${esc(m.name)}</button>`).join(" ")}</div>`:""}
       <div class="mg"><button type="button" class="nmb" data-nm="${esc(x.k)}">📦 <span class="u">یہ دوائی نہیں، سامان ہے</span></button></div>
       <div class="mumt" id="muCMsg"></div></div></td></tr>`}});
-  if(st.nmL.length){t+=`<tr class="nmh"><td colspan="${anyOut?5:4}"><button type="button" id="muNmT" class="u">📦 سامان (${st.nmL.length}) ${muNmOpen?"▲":"▼"}</button></td></tr>`;if(muNmOpen)st.nmL.forEach(x=>{t+=`<tr class="nmr"><td colspan="${anyOut?5:4}"><span>${esc(x.name)}</span> <button type="button" class="unm u" data-unm="${esc(x.k)}">↩ دوائی ہے</button></td></tr>`})}
+  if(st.nmL.length){t+=`<tr class="nmh"><td colspan="${anyOut?5:4}"><button type="button" id="muNmT" class="u">📦 سامان (${st.nmL.length}) ${muNmOpen?"▲":"▼"}</button></td></tr>`;if(muNmOpen)st.nmL.forEach(x=>{t+=`<tr class="nmr"><td colspan="${anyOut?5:4}"><span>${esc(x.name)}</span>${x.dnm?"":` <button type="button" class="unm u" data-unm="${esc(x.k)}">↩ دوائی ہے</button>`}</td></tr>`})}
   if(!st.l.length)t+=`<tr><td colspan="5" class="u">Medicine سیکشن میں اس فلاک کی کوئی دوائی نہیں۔</td></tr>`;else if(!shown)t+=`<tr><td colspan="5" class="u">اس نام کی کوئی دوائی نہیں</td></tr>`;
   $m("muStock").innerHTML=t+"</tbody></table>";
   $m("muNote").innerHTML=st.bad.length?`⚠ No Quantity in Medicine section: ${st.bad.map(esc).join(", ")}`:"";

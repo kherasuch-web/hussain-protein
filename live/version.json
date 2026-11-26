@@ -1,11 +1,11 @@
 {
- "ver": "1.26.41",
- "note": "Waiting Vehicles Cash: Total Price, Received and Remaining shown under Saafi Weight",
- "noteUr": "ویٹنگ کیش: کل رقم، وصول اور بقایا",
+ "ver": "1.26.42",
+ "note": "Electrician dealer (entries from General Spendings, not in medicine total); phone table headers stay on top",
+ "noteUr": "الیکٹریشن ڈیلر، فون پر ٹیبل کی ہیڈنگ اوپر رہے",
  "android": {
-  "zip": "android-1.26.41.zip",
+  "zip": "android-1.26.42.zip",
   "minBuild": 27,
-  "sha256": "b4f85432df3a70c365cd201082bb24b348c4f2de7f1108dae85a055c379f8b1b"
+  "sha256": "b76d598698ceea6eb52e105eb99a06a1a151fb6b1ad3ad895cb0a66c0508a847"
  },
  "windows": {
   "files": [
