@@ -1,11 +1,11 @@
 {
- "ver": "1.26.45",
- "note": "Chick info (company, breed, day-old weight, A Grade/Starter): supervisor first screen, farm forms, Main Chick Info row, Flock Comparison; Arbor Acres Plus breed",
- "noteUr": "چوزے کی معلومات (کمپنی، نسل، وزن، قسم) اور Arbor Acres نسل",
+ "ver": "1.26.46",
+ "note": "Chick info screen for the supervisor only on flocks started from now on",
+ "noteUr": "سپروائزر کی چوزے والی سکرین صرف نئے فلاک پر",
  "android": {
-  "zip": "android-1.26.45.zip",
+  "zip": "android-1.26.46.zip",
   "minBuild": 27,
-  "sha256": "04c0da3038daa21ca8aa4b67608372455a8350eaf9b27263734aa7d74c9c3440"
+  "sha256": "2689f5fdfa8ef860d034df86fbc8bb7dd1a29fe9479a0780721fa0518ab05e36"
  },
  "windows": {
   "files": [

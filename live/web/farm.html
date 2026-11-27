@@ -2705,7 +2705,7 @@ $("sGo").addEventListener("click",async()=>{
   if(!db){toast("sToast","ڈیٹا محفوظ کرنے کی سہولت دستیاب نہیں۔",true);return}
   $("sGo").disabled=true;
   const id="f"+start.replace(/-/g,"")+"-"+Date.now().toString(36);
-  const ok=await write(db.doc("flocks/"+id),{start,placed,openFeed,bagKg:50,shed:"1",no,company,breed,dow,grade,ckBy:(company||breed||dow||grade)?"farm":"",createdAt:new Date().toISOString()})
+  const ok=await write(db.doc("flocks/"+id),{start,placed,openFeed,bagKg:50,shed:"1",no,company,breed,dow,grade,ckBy:(company||breed||dow||grade)?"farm":"",ck:1,createdAt:new Date().toISOString()})
         && await write(db.doc("config/app"),{currentFlock:id,legacyFlock:legacyFlock||liveFlock||id});
   $("sGo").disabled=false;
   if(!ok){toast("sToast","محفوظ نہیں ہو سکا، دوبارہ کوشش کریں۔",true);return}
@@ -5342,7 +5342,7 @@ sugData.ckCo=[];
 setInterval(()=>{if(HPMODE!=="sup"&&allFlocks.length)ckCos(allFlocks)},3000);
 /* supervisor: first screen of a new flock until chick info is written (only the empty fields) */
 let ckSupCos=false;
-function ckMissing(){const R=flock&&flock.raw;if(!R)return [];const m=[];if(!(R.company||"").trim())m.push("co");if(!R.breed)m.push("br");if(R.dow==null||R.dow==="")m.push("dow");if(!R.grade)m.push("gr");return m}
+function ckMissing(){const R=flock&&flock.raw;if(!R||!R.ck)return [];const m=[];if(!(R.company||"").trim())m.push("co");if(!R.breed)m.push("br");if(R.dow==null||R.dow==="")m.push("dow");if(!R.grade)m.push("gr");return m}
 function ckBox(){if(HPMODE!=="sup")return;let b=$("ckBox");const m=typeof oldView!=="undefined"&&oldView?[]:ckMissing();
   if(!b){b=document.createElement("div");b.id="ckBox";b.hidden=true;document.body.appendChild(b);b.addEventListener("click",ckSave)}
   const on=m.length>0;b.hidden=!on;document.body.classList.toggle("ckneed",on);if(!on){b.dataset.k="";return}
