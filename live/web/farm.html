@@ -307,7 +307,7 @@ tr.tot td,table.fdt tr.tot td,#spTable tr.tot td{background:var(--accent-soft);f
 .fcalc{background:var(--accent-soft);border:2px solid var(--accent);border-radius:10px;padding:10px 12px;font-family:"IBM Plex Sans","Segoe UI",Arial,sans-serif;font-size:14.5px;line-height:1.7;direction:ltr;color:var(--fg)}
 .fcalc b{font-size:17px}
 .pdfbtn{background:var(--head);color:#fff}
-.lefttag{display:inline;color:var(--bad);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.lefttag{display:inline;color:var(--bad);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}#saTable td:first-child{white-space:nowrap}
 table.fdt tr.left td{background:var(--feed-soft)}
 .salebox{border:2px solid var(--accent);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;background:var(--accent-soft)}
 .sline{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--surface);border-radius:8px;padding:6px 10px;font-size:15px}
@@ -5377,6 +5377,26 @@ tr.cksub td:first-child{padding-left:22px!important;color:#4a5d70}.ckar{display:
 #ckBox input,#ckBox select{width:100%;box-sizing:border-box;margin-top:2px}#ckBox .save{width:100%}
 body.ckneed #smNav{display:none!important}
 </style>
+
+<script>
+/* ---------- v1.29: table zoom (two fingers / Ctrl + wheel) ---------- */
+(function(){
+  const TZ=new WeakMap();let pin=null;
+  const tblOf=w=>w&&w.querySelector(":scope>table");
+  function minZ(w,t){const z=+t.style.zoom||1,nat=Math.max(w.scrollWidth,t.getBoundingClientRect().width)/z;return nat>0?Math.min(1,(w.clientWidth-1)/nat):1}
+  function chip(w,z){let c=w.previousElementSibling;if(!c||!c.classList.contains("tzChip")){c=document.createElement("div");c.className="tzChip";c.innerHTML='<button type="button" class="en">100%</button>';w.before(c);c.firstChild.addEventListener("click",()=>setZ(w,1))}c.hidden=Math.abs(z-1)<.01}
+  function setZ(w,z){const t=tblOf(w);if(!t)return;z=Math.max(minZ(w,t),Math.min(2,z));if(Math.abs(z-1)<.04)z=1;t.style.zoom=z===1?"":String(z);TZ.set(w,z);chip(w,z)}
+  const dist=e=>Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+  document.addEventListener("touchstart",e=>{if(e.touches.length!==2)return;const w=e.target.closest&&e.target.closest(".tablewrap");if(!w||!tblOf(w))return;
+    const z0=TZ.get(w)||1;pin={w,d:dist(e),z0,snap:z0<1?1:null}},{passive:true});
+  document.addEventListener("touchmove",e=>{if(!pin||e.touches.length!==2)return;e.preventDefault();let z=pin.z0*dist(e)/pin.d;
+    if(pin.snap&&z>1&&pin.z0<1){z=1}setZ(pin.w,z)},{passive:false});
+  document.addEventListener("touchend",e=>{if(pin&&e.touches.length<2)pin=null},{passive:true});
+  document.addEventListener("wheel",e=>{if(!e.ctrlKey)return;const w=e.target.closest&&e.target.closest(".tablewrap");if(!w||!tblOf(w))return;e.preventDefault();
+    const z=TZ.get(w)||1,n=z*(e.deltaY<0?1.1:1/1.1);setZ(w,z<1&&n>1?1:n)},{passive:false});
+})();
+</script>
+<style>.tzChip{display:flex;justify-content:flex-end;margin:0 0 4px}.tzChip[hidden]{display:none!important}.tzChip button{border:0;border-radius:999px;background:#173f66;color:#fff;font:700 13px "Segoe UI",Roboto,Arial,sans-serif;padding:4px 12px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.2)}</style>
 
 </body>
 </html>

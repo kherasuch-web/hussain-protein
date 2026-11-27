@@ -1,11 +1,11 @@
 {
- "ver": "1.26.46",
- "note": "Chick info screen for the supervisor only on flocks started from now on",
- "noteUr": "سپروائزر کی چوزے والی سکرین صرف نئے فلاک پر",
+ "ver": "1.26.47",
+ "note": "Pinch zoom on every table (100% resets); salary (Left) stays on the name line",
+ "noteUr": "ہر ٹیبل میں انگلیوں سے زوم، سیلری میں (Left) نام کے ساتھ",
  "android": {
-  "zip": "android-1.26.46.zip",
+  "zip": "android-1.26.47.zip",
   "minBuild": 27,
-  "sha256": "2689f5fdfa8ef860d034df86fbc8bb7dd1a29fe9479a0780721fa0518ab05e36"
+  "sha256": "f97e67fde0303e83574b647827ad15b754ea69d42166ca447617877c96213630"
  },
  "windows": {
   "files": [
