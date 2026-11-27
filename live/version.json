@@ -1,11 +1,11 @@
 {
- "ver": "1.26.44",
- "note": "Breed standard columns (Ross 308/Cobb 500) in FCR; plain number font; Flock Comparison (Main Result + Windows top button + PDF); Daily flock card under entry; close entry button at bottom; Full Report tables centred + line graphs; Salary search (name + From/To, PDF, All Labour with charges); leaving day not counted; (Left) tag",
- "noteUr": "نسل کا معیار، سادہ ہندسے، فلاک موازنہ، اینٹری بند کرنے کا نیچے بٹن، رپورٹ گراف لائن، سیلری سرچ، چھوڑنے کا دن شمار نہیں",
+ "ver": "1.26.45",
+ "note": "Chick info (company, breed, day-old weight, A Grade/Starter): supervisor first screen, farm forms, Main Chick Info row, Flock Comparison; Arbor Acres Plus breed",
+ "noteUr": "چوزے کی معلومات (کمپنی، نسل، وزن، قسم) اور Arbor Acres نسل",
  "android": {
-  "zip": "android-1.26.44.zip",
+  "zip": "android-1.26.45.zip",
   "minBuild": 27,
-  "sha256": "08df3c7c91e0d6d288c81ab4bb1d5f0677e894af6346cb52fde4a7d4724c52b2"
+  "sha256": "04c0da3038daa21ca8aa4b67608372455a8350eaf9b27263734aa7d74c9c3440"
  },
  "windows": {
   "files": [

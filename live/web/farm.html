@@ -458,7 +458,9 @@ body.supview #hpLogoBtn{display:none}
       <label for="sFeed">سٹور میں فیڈ (بیگ)<input id="sFeed" inputmode="decimal" placeholder="مثلاً 100"></label>
       <label for="sNo">فلاک نمبر<input id="sNo" inputmode="numeric" placeholder="مثلاً 2"></label>
       <label for="sCo">چوزوں کی کمپنی<input id="sCo" class="txt" maxlength="40" placeholder="مثلاً Sultan"></label>
-      <label for="sBr">نسل (چوزہ)<select id="sBr"><option value="">—</option><option value="ross">Ross 308</option><option value="cobb">Cobb 500</option></select></label>
+      <label for="sBr">نسل (چوزہ)<select id="sBr"><option value="">—</option><option value="ross">Ross 308</option><option value="cobb">Cobb 500</option><option value="aa">Arbor Acres Plus</option></select></label>
+      <label for="sDow">اوسط وزن (گرام)<input id="sDow" inputmode="decimal" placeholder="مثلاً 38"></label>
+      <label class="ckl">قسم<span class="ckseg en" id="sGr" data-v=""><button type="button" data-v="a">A Grade</button><button type="button" data-v="s">Starter</button></span></label>
     </div>
     <div class="row">
       <button class="save" id="sGo" type="button">فلاک شروع کریں</button>
@@ -1098,9 +1100,11 @@ body.supview #hpLogoBtn{display:none}
       <div class="grid" id="fiBox">
         <label for="fiNo">فلاک نمبر<input id="fiNo" inputmode="numeric"></label>
         <label for="fiCo">چوزوں کی کمپنی<input id="fiCo" class="txt" maxlength="40"></label>
-        <label for="fiBr">نسل (چوزہ)<select id="fiBr"><option value="">—</option><option value="ross">Ross 308</option><option value="cobb">Cobb 500</option></select></label>
+        <label for="fiBr">نسل (چوزہ)<select id="fiBr"><option value="">—</option><option value="ross">Ross 308</option><option value="cobb">Cobb 500</option><option value="aa">Arbor Acres Plus</option></select></label>
+        <label for="fiDow">اوسط وزن (گرام)<input id="fiDow" inputmode="decimal"></label>
+        <label class="ckl">قسم<span class="ckseg en" id="fiGr" data-v=""><button type="button" data-v="a">A Grade</button><button type="button" data-v="s">Starter</button></span></label>
       </div>
-      <div class="row"><button class="ghost" id="fiSave" type="button">فلاک نمبر / کمپنی / نسل محفوظ کریں</button></div>
+      <div class="row"><button class="ghost" id="fiSave" type="button">فلاک کی معلومات محفوظ کریں</button></div>
       <div class="toast" id="fiToast" role="status"></div>
       <div class="legend">فلاک مکمل ہو گیا؟ نیا فلاک شروع کرنے سے پرانا ریکارڈ محفوظ رہتا ہے۔</div>
       <button class="ghost" id="newFlock" type="button">نیا فلاک شروع کریں</button>
@@ -1353,7 +1357,7 @@ async function finalPoster(toast){
 }
 
 // v1.29: official breed standards, as-hatched body weight (g) by day 0-56. Ross 308: Aviagen Broiler Performance Objectives 2022. Cobb 500: Cobb500 Broiler Performance & Nutrition Supplement 2022.
-const BREEDS={ross:{n:"Ross 308",w:[44,62,81,102,125,151,181,213,249,288,330,376,425,477,533,592,655,720,789,860,935,1012,1092,1174,1258,1345,1434,1524,1616,1710,1805,1901,1999,2097,2196,2296,2396,2496,2597,2697,2798,2898,2998,3097,3197,3295,3393,3490,3586,3681,3776,3869,3961,4052,4142,4230,4318]},cobb:{n:"Cobb 500",w:[42,55,71,90,112,138,168,202,240,283,330,382,440,503,570,639,711,786,864,945,1029,1116,1205,1296,1390,1486,1583,1682,1783,1886,1989,2094,2200,2306,2413,2521,2629,2738,2846,2954,3062,3170,3278,3384,3490,3595,3699,3801,3902,4001,4099,4195,4289,4380,4470,4557,4641]}};
+const BREEDS={aa:{n:"Arbor Acres Plus",w:[44,61,79,100,123,148,177,209,244,283,325,370,419,471,527,586,648,714,782,854,928,1006,1085,1168,1252,1339,1428,1518,1611,1704,1799,1895,1992,2090,2188,2287,2386,2486,2585,2684,2784,2882,2981,3079,3176,3272,3368,3462,3556,3649,3740,3831,3920,4007,4094,4179,4263]},ross:{n:"Ross 308",w:[44,62,81,102,125,151,181,213,249,288,330,376,425,477,533,592,655,720,789,860,935,1012,1092,1174,1258,1345,1434,1524,1616,1710,1805,1901,1999,2097,2196,2296,2396,2496,2597,2697,2798,2898,2998,3097,3197,3295,3393,3490,3586,3681,3776,3869,3961,4052,4142,4230,4318]},cobb:{n:"Cobb 500",w:[42,55,71,90,112,138,168,202,240,283,330,382,440,503,570,639,711,786,864,945,1029,1116,1205,1296,1390,1486,1583,1682,1783,1886,1989,2094,2200,2306,2413,2521,2629,2738,2846,2954,3062,3170,3278,3384,3490,3595,3699,3801,3902,4001,4099,4195,4289,4380,4470,4557,4641]}};
 const breedOf=()=>flock&&flock.raw&&BREEDS[flock.raw.breed]||null;
 function weekRows(hist){
   const bag=flock.bagKg||50, out=[];let adj=0;
@@ -1773,13 +1777,13 @@ async function flockCmpData(prog){
       await wait(900);renderMain();
       const h=compute(days),last=h[h.length-1]||null,placed=flock.placed||0,mort=last?last.mTot:0,wk=weekRows(h).filter(r=>r.fcr!=null).pop(),M=window.__mn||{},C=costKg(M.fb||0,M.grand||0);
       res.push({no:f.no||(i+1),live:f.id===liveFlock,start:f.start,end:last?dateFor(last.day):"",day:last?last.day:0,placed,mort,mp:placed?mort/placed*100:0,
-        sold:days.reduce((a,d)=>a+(d.sold||0),0),eat:last?r2(last.fTot):0,wt:C.g||null,fcr:wk?wk.fcr:null,kg:num(val("mnSale",/^Weight Sold/)),sale:M.sRs||0,grand:M.grand||0,ck:C.cost||null});
+        sold:days.reduce((a,d)=>a+(d.sold||0),0),eat:last?r2(last.fTot):0,wt:C.g||null,fcr:wk?wk.fcr:null,kg:num(val("mnSale",/^Weight Sold/)),sale:M.sRs||0,grand:M.grand||0,ck:C.cost||null,co:f.company||"",br:f.breed||"",gr:f.grade||"",dow:f.dow??null});
     }
   }finally{if(flockId!==back)openFlock(back);await wait(400);try{renderMain()}catch(e){}}
   return res}
 function flockCmpHtml(res,cw){const money=moneyOK();
   const cols=(a,n)=>{const o=[];for(let i=0;i<a.length;i+=n)o.push(a.slice(i,i+n));return o};
-  const rowsDef=[["Flock Start",r=>dmy(r.start).replace(/\//g,"-")],["Last Day",r=>r.end?r.end+" · Day "+r.day:"..."],["Chicks Placed",r=>F(r.placed)],["Total Mortality",r=>F(r.mort)],["Mortality %",r=>r.mp.toFixed(2)+"%"],["Birds Sold",r=>F(r.sold)],["Feed Eaten (bags)",r=>F(r.eat)],["Average Weight (g)",r=>r.wt?F(r.wt):"..."],["FCR",r=>r.fcr==null?"...":r.fcr.toFixed(2)]]
+  const rowsDef=[["Flock Start",r=>dmy(r.start).replace(/\//g,"-")],["Last Day",r=>r.end?r.end+" · Day "+r.day:"..."],["Chicks Placed",r=>F(r.placed)],["Chick Company",r=>r.co?esc(r.co):"..."],["Breed",r=>BREEDS[r.br]?BREEDS[r.br].n:"..."],["Chick Type",r=>CKGR[r.gr]||"..."],["Day-old Weight (g)",r=>r.dow!=null?F(r.dow):"..."],["Total Mortality",r=>F(r.mort)],["Mortality %",r=>r.mp.toFixed(2)+"%"],["Birds Sold",r=>F(r.sold)],["Feed Eaten (bags)",r=>F(r.eat)],["Average Weight (g)",r=>r.wt?F(r.wt):"..."],["FCR",r=>r.fcr==null?"...":r.fcr.toFixed(2)]]
     .concat(money?[["Weight Sold (kg)",r=>r.kg?F(r.kg):"..."],["Total Sale (Rs)",r=>F(r.sale)],["Total Expenses (Rs)",r=>F(r.grand)],["Cost per kg",r=>r.ck?F(r.ck):"..."],["Profit / Loss (Rs)",r=>{const p=Math.round(r.sale-r.grand);return (p<0?"− ":"")+F(Math.abs(p))},1]]:[["Total Expenses (Rs)",r=>F(r.grand)],["Cost per kg",r=>r.ck?F(r.ck):"..."]]);
   const tbl=g=>`<table class="fdt"><thead><tr><th></th>${g.map(r=>`<th class="num">Flock ${esc(String(r.no))}${r.live?" (running)":""}</th>`).join("")}</tr></thead><tbody>${rowsDef.map(([l,fn,t])=>`<tr${t?' class="tot"':""}><td>${l}</td>${g.map(r=>`<td class="num">${fn(r)}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
   const L=r=>"Flock "+r.no;
@@ -2024,7 +2028,7 @@ function renderMain(){
   const row=(l,v,o={})=>`<tr${o.go?` data-go="${o.go}"`:""} class="${o.c||""}"><td>${l}</td><td class="num amt${o.neg?" neg":""}">${v}</td></tr>`;
   const sold=days.reduce((a,d)=>a+(d.sold||0),0), mort=last?last.mTot:0, alive=last?last.bRem:flock.placed;
   const wk=weekRows(hist).filter(r=>r.fcr!=null).pop();
-  $("mnFlock").innerHTML="<tbody>"+row("Shed",'<span class="urf">'+esc($("shedName").textContent)+"</span>")+row("Flock Start",dateFor(1))+row("Day",last?F(last.day):dot)+row("Chicks Placed",F(flock.placed))+
+  $("mnFlock").innerHTML="<tbody>"+row("Shed",'<span class="urf">'+esc($("shedName").textContent)+"</span>")+row("Flock Start",dateFor(1))+row("Day",last?F(last.day):dot)+row("Chicks Placed",F(flock.placed))+ckRows()+
     row("Total Mortality",F(mort)+(flock.placed?" ("+(mort/flock.placed*100).toFixed(2)+"%)":""))+row("Birds Sold",F(sold))+row("Birds Alive",F(alive),{c:"tot"})+(()=>{if(!(alive>0)||(wExtra&&wExtra.finalEnd)||todayDay()<=28)return "";const w=costKg(alive,0);const e=typeof oldView!=="undefined"&&oldView?null:estW();return row("Live Weight",w.kg?F(w.kg)+" kg"+`<div class="lwsub">avg ${F(w.g)} g · ${esc(w.src)}</div>`:"...")+(e?row("Today Weight (estimate)",F(Math.round(e.g*alive/1000))+" kg"+`<div class="lwsub">avg ${F(e.g)} g · day ${e.day} · +${F(e.gain)} g/day</div>`,{c:"tot"}):"")})()+
     row("FCR"+(wk?" (week "+wk.w+")":""),wk?wk.fcr.toFixed(2):dot)+"</tbody>";
   const fIn=r2(flock.openFeed+days.reduce((a,d)=>a+(d.in||0),0)), fOut=r2(days.reduce((a,d)=>a+(d.out||0),0));
@@ -2671,7 +2675,7 @@ function watchFlock(id){
   unFlock=ref.onSnapshot(s=>{
     if(!s.exists)return;
     const d=s.data(); flock={start:d.start,placed:d.placed,openFeed:d.openFeed,bagKg:d.bagKg||50,raw:d};
-    if(document.activeElement!==$("fiNo")&&document.activeElement!==$("fiCo")){$("fiNo").value=d.no||"";$("fiCo").value=d.company||"";$("fiBr").value=d.breed||""}
+    if(document.activeElement!==$("fiNo")&&document.activeElement!==$("fiCo")){$("fiNo").value=d.no||"";$("fiCo").value=d.company||"";$("fiBr").value=d.breed||"";if(document.activeElement!==$("fiDow"))$("fiDow").value=d.dow??"";ckSet("fiGr",d.grade||"")}ckBox();
     setStatus(""); showMain(); loadEntry(); render();
   },e=>setStatus("ریکارڈ لوڈ نہیں ہو سکا۔ صفحہ دوبارہ کھولیں۔",true));
   unDays=ref.collection("days").onSnapshot(s=>{
@@ -2696,21 +2700,21 @@ async function write(ref,data){
 }
 
 $("sGo").addEventListener("click",async()=>{
-  const start=$("sStart").value, placed=iNum($("sPlaced").value), openFeed=fNum($("sFeed").value), no=iNum($("sNo").value)||null, company=$("sCo").value.trim(); const breed=$("sBr").value;
+  const start=$("sStart").value, placed=iNum($("sPlaced").value), openFeed=fNum($("sFeed").value), no=iNum($("sNo").value)||null, company=$("sCo").value.trim(); const breed=$("sBr").value, dow=ckNum($("sDow").value), grade=$("sGr").dataset.v||"";
   if(!start||!placed){toast("sToast","تاریخ اور آئے چوزوں کی تعداد لازمی ہے۔",true);return}
   if(!db){toast("sToast","ڈیٹا محفوظ کرنے کی سہولت دستیاب نہیں۔",true);return}
   $("sGo").disabled=true;
   const id="f"+start.replace(/-/g,"")+"-"+Date.now().toString(36);
-  const ok=await write(db.doc("flocks/"+id),{start,placed,openFeed,bagKg:50,shed:"1",no,company,breed,createdAt:new Date().toISOString()})
+  const ok=await write(db.doc("flocks/"+id),{start,placed,openFeed,bagKg:50,shed:"1",no,company,breed,dow,grade,ckBy:(company||breed||dow||grade)?"farm":"",createdAt:new Date().toISOString()})
         && await write(db.doc("config/app"),{currentFlock:id,legacyFlock:legacyFlock||liveFlock||id});
   $("sGo").disabled=false;
   if(!ok){toast("sToast","محفوظ نہیں ہو سکا، دوبارہ کوشش کریں۔",true);return}
-  toast("sToast","");$("sPlaced").value="";$("sFeed").value="";$("sNo").value="";$("sCo").value="";
+  toast("sToast","");$("sPlaced").value="";$("sFeed").value="";$("sNo").value="";$("sCo").value="";$("sDow").value="";ckSet("sGr","");
 });
 $("fiSave").addEventListener("click",async()=>{
   if(!flockId||!db)return;
   const no=iNum($("fiNo").value)||null, company=$("fiCo").value.trim();
-  if(!flock||!flock.raw)return;const breed=$("fiBr").value;const ok=await write(db.doc("flocks/"+flockId),{...flock.raw,no,company,breed});
+  if(!flock||!flock.raw)return;const breed=$("fiBr").value,dow=ckNum($("fiDow").value),grade=$("fiGr").dataset.v||"",R=flock.raw;const ch=(R.company||"")!==company||(R.breed||"")!==breed||(R.dow??null)!==dow||(R.grade||"")!==grade;const ok=await write(db.doc("flocks/"+flockId),{...R,no,company,breed,dow,grade,ckBy:ch?"farm":(R.ckBy||"")});
   toast("fiToast",ok?"محفوظ ہو گیا۔":"محفوظ نہیں ہو سکا۔",!ok);
 });
 $("sCancel").addEventListener("click",()=>{if(flock)showMain()});
@@ -3295,7 +3299,7 @@ $("copyMed").addEventListener("click",()=>{
 $("tFeed").addEventListener("click",()=>setTab("feed"));$("tBird").addEventListener("click",()=>setTab("bird"));
 $("newFlock").addEventListener("click",()=>{$("confirmBox").hidden=false;$("newFlock").hidden=true});
 $("confirmNo").addEventListener("click",()=>{$("confirmBox").hidden=true;$("newFlock").hidden=false});
-$("confirmNew").addEventListener("click",()=>{$("confirmBox").hidden=true;$("newFlock").hidden=false;$("sStart").value="";const pn=flock&&flock.raw&&+flock.raw.no;$("sNo").value=pn?pn+1:"";$("sCo").value="";$("sBr").value=flock&&flock.raw&&flock.raw.breed||"";showSetup(true)});
+$("confirmNew").addEventListener("click",()=>{$("confirmBox").hidden=true;$("newFlock").hidden=false;$("sStart").value="";const pn=flock&&flock.raw&&+flock.raw.no;$("sNo").value=pn?pn+1:"";$("sCo").value="";$("sBr").value=flock&&flock.raw&&flock.raw.breed||"";$("sDow").value="";ckSet("sGr","");showSetup(true)});
 
 try{const v=localStorage.getItem("hpg-view");if(["spend","daily","feed","med","main","sale"].includes(v))view=v}catch(e){}
 if(HPMODE==="sup")view="daily";
@@ -5315,6 +5319,64 @@ $m("muWipe").addEventListener("click",async()=>{const b=$m("muWipe");if(!muWipeS
   $m("muWMsg").textContent=ok?"✓ سارا ٹیسٹ ڈیٹا مٹ گیا۔":"کچھ ڈیٹا نہیں مٹ سکا، دوبارہ دبائیں۔";goDay(muDayN)});
 })();
 </script>
+
+<script>
+/* ---------- v1.29: chick info (company, breed, day-old weight, A Grade / Starter) ---------- */
+const CKGR={a:"A Grade",s:"Starter"};
+function ckNum(v){const n=parseFloat(String(v||"").replace(/,/g,""));return n>0?Math.round(n*10)/10:null}
+function ckSet(id,v){const e=$(id);if(!e)return;e.dataset.v=v||"";e.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===v))}
+document.addEventListener("click",e=>{const b=e.target.closest(".ckseg button");if(!b)return;const g=b.parentElement;ckSet(g.id,g.dataset.v===b.dataset.v?"":b.dataset.v)});
+let ckOpen=false;
+function ckRows(){const R=flock&&flock.raw||{},B=BREEDS[R.breed],g=CKGR[R.grade],d=R.dow!=null&&R.dow!==""?+R.dow:null,dash="—";
+  const sum=[g,d!=null?F(d)+" g":""].filter(Boolean).join(" · ")||(B?B.n:"")||(R.company?esc(R.company):"")||dash;
+  const sub=(l,v)=>`<tr class="cksub"><td>${l}</td><td class="num amt">${v}</td></tr>`;
+  return `<tr class="ckrow"><td><span class="ckhd">Chick Info</span><span class="ckar"> ${ckOpen?"▾":"▸"}</span></td><td class="num amt">${sum}</td></tr>`+
+    sub("Chick Company",R.company?esc(R.company):dash)+sub("Breed",B?B.n:dash)+sub("Chick Type",g||dash)+
+    sub("Day-old Weight",d!=null?F(d)+" g"+`<div class="lwsub">7-day target ${F(Math.round(d*4.5))} g</div>`:dash)+
+    (R.ckBy?sub("Written by",R.ckBy==="sup"?"Supervisor":"Farm"):"")}
+document.addEventListener("click",e=>{const r=e.target.closest("#mnFlock tr.ckrow");if(!r)return;ckOpen=!ckOpen;$("mnFlock").classList.toggle("ckopen",ckOpen);const a=r.querySelector(".ckar");if(a)a.textContent=" "+(ckOpen?"▾":"▸")});
+/* company suggestions: names used in earlier flocks */
+function ckCos(list){sugData.ckCo=[...new Set(list.map(x=>(x.company||"").trim()).filter(Boolean))].sort()}
+sugData.ckCo=[];
+["sCo","fiCo"].forEach(id=>{const i=$(id);if(!i)return;const w=document.createElement("span");w.className="sugw";i.parentNode.insertBefore(w,i);w.appendChild(i);const b=document.createElement("span");b.className="sug";b.setAttribute("role","listbox");b.hidden=true;w.appendChild(b);i.setAttribute("autocomplete","off");attachSug(i,b,"ckCo")});
+setInterval(()=>{if(HPMODE!=="sup"&&allFlocks.length)ckCos(allFlocks)},3000);
+/* supervisor: first screen of a new flock until chick info is written (only the empty fields) */
+let ckSupCos=false;
+function ckMissing(){const R=flock&&flock.raw;if(!R)return [];const m=[];if(!(R.company||"").trim())m.push("co");if(!R.breed)m.push("br");if(R.dow==null||R.dow==="")m.push("dow");if(!R.grade)m.push("gr");return m}
+function ckBox(){if(HPMODE!=="sup")return;let b=$("ckBox");const m=typeof oldView!=="undefined"&&oldView?[]:ckMissing();
+  if(!b){b=document.createElement("div");b.id="ckBox";b.hidden=true;document.body.appendChild(b);b.addEventListener("click",ckSave)}
+  const on=m.length>0;b.hidden=!on;document.body.classList.toggle("ckneed",on);if(!on){b.dataset.k="";return}
+  if(b.dataset.k===m.join()+flockId)return;b.dataset.k=m.join()+flockId;
+  if(!ckSupCos&&db){ckSupCos=true;try{db.collection("ckco").onSnapshot(s=>ckCos(s.docs.map(d=>d.data())),()=>{})}catch(e){}}
+  const opt=Object.entries(BREEDS).map(([k,v])=>`<option value="${k}">${esc(v.n)}</option>`).join("");
+  b.innerHTML=`<div class="ckc" dir="rtl"><div class="ckt">${esc($("shedName").textContent)}</div><h2>چوزے کی معلومات</h2>
+   ${m.includes("co")?`<label>چوزوں کی کمپنی<span class="sugw"><input id="ckCo" class="txt" maxlength="40" autocomplete="off"><span class="sug" role="listbox" hidden></span></span></label>`:""}
+   ${m.includes("br")?`<label>نسل (چوزہ)<select id="ckBr"><option value="">—</option>${opt}</select></label>`:""}
+   ${m.includes("dow")?`<label>اوسط وزن (گرام)<input id="ckDow" inputmode="decimal"></label>`:""}
+   ${m.includes("gr")?`<label class="ckl">قسم${'<span class="ckseg en" id="ckGr" data-v=""><button type="button" data-v="a">A Grade</button><button type="button" data-v="s">Starter</button></span>'}</label>`:""}
+   <button type="button" class="save" data-ck="save">محفوظ کریں</button><div class="toast" id="ckToast" role="status"></div></div>`;
+  const ci=$("ckCo");if(ci)attachSug(ci,ci.nextElementSibling,"ckCo")}
+async function ckSave(e){if(!e.target.closest("[data-ck]")||!flock||!db)return;const m=ckMissing(),R=flock.raw,o={};
+  if(m.includes("co")){o.company=$("ckCo").value.trim();if(!o.company){toast("ckToast","کمپنی کا نام لکھیں۔",true);return}}
+  if(m.includes("br")){o.breed=$("ckBr").value;if(!o.breed){toast("ckToast","نسل چنیں۔",true);return}}
+  if(m.includes("dow")){o.dow=ckNum($("ckDow").value);if(!o.dow||o.dow>100){toast("ckToast","اوسط وزن درست لکھیں۔",true);return}}
+  if(m.includes("gr")){o.grade=$("ckGr").dataset.v;if(!o.grade){toast("ckToast","قسم چنیں۔",true);return}}
+  o.ckBy="sup";const ok=await write(db.doc("flocks/"+flockId),{...R,...o});
+  if(!ok){toast("ckToast","محفوظ نہیں ہو سکا، دوبارہ کوشش کریں۔",true);return}
+  flock.raw={...R,...o};ckBox();if(view==="main")renderMain()}
+</script>
+<style>
+.ckl{grid-column:1/-1}.ckseg{display:flex;gap:8px;margin-top:4px}.ckseg button{flex:1;padding:9px 6px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--fg,#0f1d2b);font:700 15px "Segoe UI",Roboto,Arial,sans-serif;cursor:pointer}
+.ckseg button.on{background:var(--accent,#1c5d93);color:#fff;border-color:var(--accent,#1c5d93)}
+#mnFlock tr.ckrow{cursor:pointer}#mnFlock tr.ckrow .ckhd{color:#1c5d93;font-weight:700}#mnFlock tr.cksub{display:none}#mnFlock.ckopen tr.cksub{display:table-row}
+tr.cksub td:first-child{padding-left:22px!important;color:#4a5d70}.ckar{display:none}#mnFlock .ckar{display:inline;color:#1c5d93}
+#ckBox{position:fixed;inset:0;z-index:9000;background:var(--bg,#eef3f8);overflow:auto;padding:16px;box-sizing:border-box}#ckBox[hidden]{display:none}
+#ckBox .ckc{max-width:520px;margin:20px auto;background:#fff;border-radius:16px;box-shadow:0 2px 10px #0f1d2b14;padding:16px;display:flex;flex-direction:column;gap:10px}
+#ckBox .ckt{background:#c2410c;color:#fff;border-radius:10px;padding:6px 10px;text-align:center;font:400 18px "Jameel Noori",serif}
+#ckBox h2{margin:4px 0;font:400 24px "Jameel Noori",serif}#ckBox label{display:block;text-align:right;font:400 17px "Jameel Noori",serif}
+#ckBox input,#ckBox select{width:100%;box-sizing:border-box;margin-top:2px}#ckBox .save{width:100%}
+body.ckneed #smNav{display:none!important}
+</style>
 
 </body>
 </html>
