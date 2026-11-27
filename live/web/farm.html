@@ -75,7 +75,7 @@ body.nobar .hppend:not([hidden]){display:block}
   --bad:#b23a2e; --bad-soft:#f8e3e0;
   --f-display:"Jameel Noori","Noto Nastaliq Urdu",serif;
   --f-body:"Jameel Noori","Segoe UI",Tahoma,sans-serif;
-  --f-num:ui-monospace,"Roboto Mono",monospace;
+  --f-num:"Segoe UI",Roboto,Arial,sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#121815; --surface:#1b231f; --fg:#e6ece8; --muted:#9aa8a1; --line:#2d3833;
@@ -307,7 +307,7 @@ tr.tot td,table.fdt tr.tot td,#spTable tr.tot td{background:var(--accent-soft);f
 .fcalc{background:var(--accent-soft);border:2px solid var(--accent);border-radius:10px;padding:10px 12px;font-family:"IBM Plex Sans","Segoe UI",Arial,sans-serif;font-size:14.5px;line-height:1.7;direction:ltr;color:var(--fg)}
 .fcalc b{font-size:17px}
 .pdfbtn{background:var(--head);color:#fff}
-.lefttag{display:block;color:var(--bad);font-size:11px;font-weight:700}
+.lefttag{display:inline;color:var(--bad);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
 table.fdt tr.left td{background:var(--feed-soft)}
 .salebox{border:2px solid var(--accent);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;background:var(--accent-soft)}
 .sline{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--surface);border-radius:8px;padding:6px 10px;font-size:15px}
@@ -431,7 +431,7 @@ body.supview #hpLogoBtn{display:none}
 #flBtn:active{transform:scale(.92)}
 #flBtn::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:linear-gradient(90deg,#1f7a4d,#2fa36b)}
 #flBtn svg{width:20px;height:20px;margin-top:3px}
-#flBtn span{font-size:13px;font-weight:700;line-height:1.1;white-space:nowrap}#flBtn b{font-size:15px;line-height:1;font-family:ui-monospace,"Roboto Mono",monospace}
+#flBtn span{font-size:13px;font-weight:700;line-height:1.1;white-space:nowrap}#flBtn b{font-size:15px;line-height:1;font-family:"Segoe UI",Roboto,Arial,sans-serif}
 </style>
 
 <div class="wrap">
@@ -458,6 +458,7 @@ body.supview #hpLogoBtn{display:none}
       <label for="sFeed">سٹور میں فیڈ (بیگ)<input id="sFeed" inputmode="decimal" placeholder="مثلاً 100"></label>
       <label for="sNo">فلاک نمبر<input id="sNo" inputmode="numeric" placeholder="مثلاً 2"></label>
       <label for="sCo">چوزوں کی کمپنی<input id="sCo" class="txt" maxlength="40" placeholder="مثلاً Sultan"></label>
+      <label for="sBr">نسل (چوزہ)<select id="sBr"><option value="">—</option><option value="ross">Ross 308</option><option value="cobb">Cobb 500</option></select></label>
     </div>
     <div class="row">
       <button class="save" id="sGo" type="button">فلاک شروع کریں</button>
@@ -753,7 +754,10 @@ body.supview #hpLogoBtn{display:none}
       </section>
       <section style="display:flex;flex-direction:column;gap:8px" aria-label="Salary record">
         <h2 class="en">Salary Record</h2>
+        <div class="row spbar sqbar" id="sqBar"><input id="sqQ" class="txt" type="search" autocomplete="off" placeholder="Worker name"><span class="sqdr"><small>From</small><input id="sqD1" type="date"><small>To</small><input id="sqD2" type="date"></span></div>
         <div class="tablewrap"><table id="saTable" class="fdt"></table></div>
+        <button class="save" id="sqPdf" type="button" hidden>⬇ Download PDF</button>
+        <div class="toast pdftoast" id="sqToast" role="status"></div>
         <div class="legend">Double-tap a row to edit or delete it.</div>
       </section>
       <section class="card" aria-label="Labour charges">
@@ -803,7 +807,7 @@ body.supview #hpLogoBtn{display:none}
       <section class="card"><div class="dayhead"><h2 class="en">2. Feed Summary (bags)</h2></div><div class="tablewrap"><table class="fdt mntab" id="mnFeed"></table></div></section>
       <section class="card" id="mnSaleCard"><div class="dayhead"><h2 class="en">3. Income (Sale)</h2></div><div class="tablewrap"><table class="fdt mntab" id="mnSale"></table></div></section>
       <section class="card"><div class="dayhead"><h2 class="en" id="mnExpH">4. Expenses</h2><span class="daybadge num" id="mnGrand"></span></div><div class="tablewrap"><table class="fdt mntab" id="mnExp"></table></div><div class="legend">Tap a line to open its section.</div></section>
-      <section class="card" id="mnResCard"><div class="dayhead"><h2 class="en">5. Result</h2></div><div class="ccrow"><button type="button" id="ccBtn" class="save">Check Cost</button><button type="button" id="plBtn" class="save">Calculate Profit</button></div><label for="mnAvgW">Average Weight (g) · optional<input id="mnAvgW" class="txt" inputmode="decimal" placeholder="Empty = newest weight (Sale or FCR)"></label><div class="row"><button class="ghost" id="mnAvgSave" type="button">Save Weight</button></div><div class="toast" id="mnAvgToast" role="status"></div><div class="tablewrap"><table class="fdt mntab" id="mnRes"></table></div></section>
+      <section class="card" id="mnResCard"><div class="dayhead"><h2 class="en">5. Result</h2></div><div class="ccrow"><button type="button" id="ccBtn" class="save">Check Cost</button><button type="button" id="plBtn" class="save">Calculate Profit</button><button type="button" id="fcBtn" class="save" hidden>📊 Flock Comparison</button></div><label for="mnAvgW">Average Weight (g) · optional<input id="mnAvgW" class="txt" inputmode="decimal" placeholder="Empty = newest weight (Sale or FCR)"></label><div class="row"><button class="ghost" id="mnAvgSave" type="button">Save Weight</button></div><div class="toast" id="mnAvgToast" role="status"></div><div class="tablewrap"><table class="fdt mntab" id="mnRes"></table></div></section>
     </div>
     <div id="vSale" dir="ltr" class="spend" style="display:none">
       <nav class="tabs" role="tablist" aria-label="Sale parts">
@@ -1094,8 +1098,9 @@ body.supview #hpLogoBtn{display:none}
       <div class="grid" id="fiBox">
         <label for="fiNo">فلاک نمبر<input id="fiNo" inputmode="numeric"></label>
         <label for="fiCo">چوزوں کی کمپنی<input id="fiCo" class="txt" maxlength="40"></label>
+        <label for="fiBr">نسل (چوزہ)<select id="fiBr"><option value="">—</option><option value="ross">Ross 308</option><option value="cobb">Cobb 500</option></select></label>
       </div>
-      <div class="row"><button class="ghost" id="fiSave" type="button">فلاک نمبر / کمپنی محفوظ کریں</button></div>
+      <div class="row"><button class="ghost" id="fiSave" type="button">فلاک نمبر / کمپنی / نسل محفوظ کریں</button></div>
       <div class="toast" id="fiToast" role="status"></div>
       <div class="legend">فلاک مکمل ہو گیا؟ نیا فلاک شروع کرنے سے پرانا ریکارڈ محفوظ رہتا ہے۔</div>
       <button class="ghost" id="newFlock" type="button">نیا فلاک شروع کریں</button>
@@ -1347,6 +1352,9 @@ async function finalPoster(toast){
   finally{host.remove()}
 }
 
+// v1.29: official breed standards, as-hatched body weight (g) by day 0-56. Ross 308: Aviagen Broiler Performance Objectives 2022. Cobb 500: Cobb500 Broiler Performance & Nutrition Supplement 2022.
+const BREEDS={ross:{n:"Ross 308",w:[44,62,81,102,125,151,181,213,249,288,330,376,425,477,533,592,655,720,789,860,935,1012,1092,1174,1258,1345,1434,1524,1616,1710,1805,1901,1999,2097,2196,2296,2396,2496,2597,2697,2798,2898,2998,3097,3197,3295,3393,3490,3586,3681,3776,3869,3961,4052,4142,4230,4318]},cobb:{n:"Cobb 500",w:[42,55,71,90,112,138,168,202,240,283,330,382,440,503,570,639,711,786,864,945,1029,1116,1205,1296,1390,1486,1583,1682,1783,1886,1989,2094,2200,2306,2413,2521,2629,2738,2846,2954,3062,3170,3278,3384,3490,3595,3699,3801,3902,4001,4099,4195,4289,4380,4470,4557,4641]}};
+const breedOf=()=>flock&&flock.raw&&BREEDS[flock.raw.breed]||null;
 function weekRows(hist){
   const bag=flock.bagKg||50, out=[];let adj=0;
   const maxW=hist.length?Math.ceil(hist[hist.length-1].day/7):0;
@@ -1368,10 +1376,11 @@ function weekRows(hist){
 // v1.22: FCR table html (farm FCR section and the supervisor data page)
 function fcrHtml(rows,supSet){
   const d=x=>x==null?"—":F(x);
-  let h="<thead><tr><th>ہفتہ</th><th>Total Bird</th><th>Weekly Feed</th><th>Total Feed</th><th>Weekly Mortality</th><th>Total Mortality</th><th>Remaining Bird</th><th>Weekly Weight (گرام)</th><th>Total Weight (کلو)</th><th>FCR</th></tr></thead><tbody>";
-  h+=rows.map(r=>`<tr data-week="${r.w}" class="${r.full?"":"part"}"><td class="num">${r.w}${r.full?"":"*"}</td><td class="num">${F(r.placed)}</td><td class="num calc">${F(r.wFeed)}</td><td class="num calc">${F(r.tFeed)}${r.man?`<span class="sale" style="color:var(--feed)">خود لکھی</span>`:""}</td><td class="num calc">${F(r.wMort)}${r.mMan?`<span class="sale" style="color:var(--feed)">خود لکھی</span>`:""}</td><td class="num calc">${F(r.tMort)}</td><td class="num calc">${F(r.rem)}</td><td class="num">${d(r.wt)}${supSet&&supSet.has(r.w)?`<span class="sale" style="color:var(--feed)">سپروائزر</span>`:""}</td><td class="num calc">${d(r.totW)}</td><td class="num calc fcrv">${r.fcr==null?"—":r.fcr.toFixed(2)}</td></tr>`).join("");
-  if(!rows.length)h+=`<tr><td colspan="10" class="empty">روز کا اندراج شروع ہوتے ہی یہاں ہفتے بنتے جائیں گے۔</td></tr>`;
-  else if(rows.some(r=>!r.full))h+=`<tr><td colspan="10" class="empty" style="text-align:right">* یہ ہفتہ ابھی پورا نہیں ہوا، نمبر اب تک کے ہیں۔ فیڈ کالم بیگ میں ہیں۔</td></tr>`;
+  const B=breedOf(),sd=r=>B?B.w[Math.min(r.full?r.w*7:r.to,B.w.length-1)]:null;
+  let h=`<thead><tr><th>ہفتہ</th><th>Total Bird</th><th>Weekly Feed</th><th>Total Feed</th><th>Weekly Mortality</th><th>Total Mortality</th><th>Remaining Bird</th><th>Weekly Weight (گرام)</th>${B?`<th>${B.n} (گرام)</th><th>فرق</th>`:""}<th>Total Weight (کلو)</th><th>FCR</th></tr></thead><tbody>`;
+  h+=rows.map(r=>`<tr data-week="${r.w}" class="${r.full?"":"part"}"><td class="num">${r.w}${r.full?"":"*"}</td><td class="num">${F(r.placed)}</td><td class="num calc">${F(r.wFeed)}</td><td class="num calc">${F(r.tFeed)}${r.man?`<span class="sale" style="color:var(--feed)">خود لکھی</span>`:""}</td><td class="num calc">${F(r.wMort)}${r.mMan?`<span class="sale" style="color:var(--feed)">خود لکھی</span>`:""}</td><td class="num calc">${F(r.tMort)}</td><td class="num calc">${F(r.rem)}</td><td class="num">${d(r.wt)}${supSet&&supSet.has(r.w)?`<span class="sale" style="color:var(--feed)">سپروائزر</span>`:""}</td>${B?(()=>{const st=sd(r),df=r.wt&&st?Math.round((r.wt-st)/st*100):null;return `<td class="num calc">${F(st)}</td><td class="num calc" style="font-weight:700;color:${df==null?"inherit":df<0?"#c0392b":"#1f7a4d"}">${df==null?"—":(df>0?"+":"")+df+"%"}</td>`})():""}<td class="num calc">${d(r.totW)}</td><td class="num calc fcrv">${r.fcr==null?"—":r.fcr.toFixed(2)}</td></tr>`).join("");
+  if(!rows.length)h+=`<tr><td colspan="${B?12:10}" class="empty">روز کا اندراج شروع ہوتے ہی یہاں ہفتے بنتے جائیں گے۔</td></tr>`;
+  else if(rows.some(r=>!r.full))h+=`<tr><td colspan="${B?12:10}" class="empty" style="text-align:right">* یہ ہفتہ ابھی پورا نہیں ہوا، نمبر اب تک کے ہیں۔ فیڈ کالم بیگ میں ہیں۔</td></tr>`;
   return h+"</tbody>";
 }
 const supWk=w=>supw[flockId+"_w"+String(w).padStart(2,"0")]||null;
@@ -1702,17 +1711,17 @@ async function fcrPdf(toast){
   return rptPdf(inner,(fin&&wk?"FCR Report with Final - ":fin?"Final FCR Report - ":"FCR Report - ")+dmy(todayISO()).replace(/\//g,"-"),dl,toast);
 }
 /* v1.26.43: full report graphs - daily mortality, daily feed eaten, weekly average weight */
-function rptBars(title,unit,pts,color,line){if(!pts.length)return "";const W=720,H=190,L=46,B=26,T=16,mx=Math.max(...pts.map(p=>p.v),1),n=pts.length,bw=(W-L-8)/n,y=v=>T+(H-T-B)*(1-v/mx);
+function rptBars(title,unit,pts,color,line,cw){if(!pts.length)return "";const W=cw||720,H=190,L=46,B=26,T=16,mx=Math.max(...pts.map(p=>p.v),1),n=pts.length,bw=(W-L-8)/n,y=v=>T+(H-T-B)*(1-v/mx);
   let g=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;margin:4px 0 10px">`;
   [0,.5,1].forEach(f=>{const v=mx*f,yy=y(v);g+=`<line x1="${L}" x2="${W-4}" y1="${yy}" y2="${yy}" stroke="#e3e9ef"/><text x="${L-6}" y="${yy+4}" font-size="11" text-anchor="end" fill="#6b7b8b">${F(Math.round(v))}</text>`});
-  if(line){let d="";pts.forEach((p,i)=>{const cx=L+bw*i+bw/2;d+=(i?"L":"M")+cx.toFixed(1)+" "+y(p.v).toFixed(1);g+=`<circle cx="${cx.toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="4" fill="${color}"/><text x="${cx.toFixed(1)}" y="${(y(p.v)-8).toFixed(1)}" font-size="11" text-anchor="middle" fill="#173f66">${F(p.v)}</text>`});g+=`<path d="${d}" fill="none" stroke="${color}" stroke-width="2.5"/>`}
+  if(line){let d="";const ls=Math.max(1,Math.ceil(n/16)),rr=n>16?2.6:4;pts.forEach((p,i)=>{const cx=L+bw*i+bw/2;d+=(i?"L":"M")+cx.toFixed(1)+" "+y(p.v).toFixed(1);g+=`<circle cx="${cx.toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="${rr}" fill="${color}"/>`;if(i%ls&&i!==n-1&&i!==pts.findIndex(q=>q.v===mx))return;g+=`<text x="${cx.toFixed(1)}" y="${(y(p.v)-8).toFixed(1)}" font-size="11" text-anchor="middle" fill="#173f66">${F(p.v)}</text>`});g+=`<path d="${d}" fill="none" stroke="${color}" stroke-width="2.5"/>`}
   else pts.forEach((p,i)=>{const x=L+bw*i+bw*.12,h=Math.max(0,H-B-y(p.v));g+=`<rect x="${x.toFixed(1)}" y="${y(p.v).toFixed(1)}" width="${(bw*.76).toFixed(1)}" height="${h.toFixed(1)}" fill="${color}" rx="1.5"/>`});
   const st=Math.max(1,Math.ceil(n/16));pts.forEach((p,i)=>{if(i%st&&i!==n-1)return;g+=`<text x="${(L+bw*i+bw/2).toFixed(1)}" y="${H-8}" font-size="11" text-anchor="middle" fill="#6b7b8b">${esc(p.l)}</text>`});
-  const tot=line?"":` · Total ${F(r2(pts.reduce((a,p)=>a+p.v,0)))} ${unit}`;
+  const tot=unit==="g"?"":` · Total ${F(r2(pts.reduce((a,p)=>a+p.v,0)))} ${unit}`;
   return `<h4 style="font-size:15px;color:#173f66">Graph · ${esc(title)}${tot}</h4>`+g+"</svg>"}
 function rptCharts(){const h=compute(days);const m=h.map(r=>({l:String(r.day),v:r.m24||0})),f=h.map(r=>({l:String(r.day),v:r2(r.f24||0)}));
   const w=Object.values(weeks).filter(x=>x.weight>0&&x.week).sort((a,b)=>a.week-b.week).map(x=>({l:"Week "+x.week,v:x.weight}));
-  const out=rptBars("Daily Mortality (birds) · by day","birds",m,"#d64545")+rptBars("Daily Feed Eaten (bags) · by day","bags",f,"#1c5d93")+rptBars("Average Weight (g) · by week","g",w,"#2e8b57",1);
+  const out=rptBars("Daily Mortality (birds) · by day","birds",m,"#d64545",1)+rptBars("Daily Feed Eaten (bags) · by day","bags",f,"#1c5d93",1)+rptBars("Average Weight (g) · by week","g",w,"#2e8b57",1);
   return out}
 async function fullReport(withMoney,toast){
   const dl=window.claude?.use?await window.claude.use("downloads"):null;
@@ -1729,12 +1738,12 @@ async function fullReport(withMoney,toast){
   if(!withMoney){const d=document.createElement("div");d.innerHTML=res;d.querySelectorAll("tr").forEach(r=>{const k=(r.cells[0]||{}).textContent||"";if(!/^(Grand Total Expenses|Cost per Bird|Average Weight|Birds \(chicks|Total Weight|Cost per kg$)/.test(k))r.remove()});res=d.innerHTML}
   const secs=(sel)=>[...document.querySelectorAll(sel)].map(el=>{const t=el.querySelector("table").cloneNode(true);t.querySelectorAll(".drvc").forEach(c=>c.remove());t.querySelectorAll(".dcs").forEach(c=>c.colSpan-=1);return `<h4>${esc(el.querySelector(".mbdname").textContent)} · ${esc(el.querySelector(".mbdtot").textContent)}</h4><table class="${t.className}">${t.innerHTML}</table>`}).join("");
   const inner=`<div class="rh"><span class="rlogo"><img src="img/logo-1024.png" alt=""><b>HUSSAIN PROTEIN GROUP</b></span><div><div class="u">${esc(shedNm)}</div><small>Flock start ${dateFor(1)} · Report ${dmy(todayISO()).replace(/\//g,"-")}</small></div></div>
-    <style>.rsum table{width:auto!important;min-width:380px;max-width:520px}.rsum td:first-child{padding-right:24px}</style>
-    <h3>Main Summary</h3><div class="rsum">${T("mnFlock")}</div>
-    <h3>Feed Summary (bags)</h3><div class="rsum">${T("mnFeed")}</div>
-    ${withMoney?`<h3>Income (Sale)</h3><div class="rsum">${T("mnSale")}</div>`:""}
-    <h3>Expenses · ${esc($("mnGrand").textContent)}</h3><div class="rsum">${T("mnExp")}</div>
-    <h3>Result</h3><div class="rsum">${res}</div>
+    <style>.rsum{width:520px;margin:0 auto}.rsum table{width:100%!important}.rsum td:first-child{padding-right:24px}</style>
+    <div class="rsum"><h3>Main Summary</h3>${T("mnFlock")}</div>
+    <div class="rsum"><h3>Feed Summary (bags)</h3>${T("mnFeed")}</div>
+    ${withMoney?`<div class="rsum"><h3>Income (Sale)</h3>${T("mnSale")}</div>`:""}
+    <div class="rsum"><h3>Expenses · ${esc($("mnGrand").textContent)}</h3>${T("mnExp")}</div>
+    <div class="rsum"><h3>Result</h3>${res}</div>
     ${rptCharts()}
     <h3 class="ur">روزانہ رپورٹ: فیڈ (بیگ)</h3><div class="rtl">${hFeed}</div>
     <h3 class="ur">روزانہ رپورٹ: برڈ</h3><div class="rtl">${hBird}</div>
@@ -1749,6 +1758,44 @@ async function fullReport(withMoney,toast){
     ${withMoney?`<h3>Sale · ${esc($("slAll").textContent)}</h3>${secs("#slDealers .slsec")||"<p>No sale yet.</p>"}${kvehs.length?`<h3>Kanda Sale · ${esc($("kdAll").textContent)}</h3>${secs("#kdDealers .kdsec")}`:""}${gsales.length?`<h3>General Sale · ${esc($("gsAll").textContent)}</h3>${T("gsTable")}`:""}`:""}
     <div class="rfoot">Hussain Protein · Report made on ${dmy(todayISO())}</div>`;
   return rptPdf(inner,"Hussain Protein Report - "+dmy(todayISO()).replace(/\//g,"-"),dl,toast);
+}
+// v1.29: Flock Comparison PDF (all flocks side by side). Opens each flock in turn (same maths as Main), then comes back.
+async function flockCmpData(prog){
+  const back=flockId,money=moneyOK(),wait=ms=>new Promise(r=>setTimeout(r,ms));
+  const val=(id,re)=>{const t=$(id);if(!t)return "";const r=[...t.querySelectorAll("tr")].find(r=>r.cells.length>1&&re.test((r.cells[0].textContent||"").trim()));return r?(r.cells[1].textContent||"").trim():""};
+  const num=x=>{const m=String(x||"").replace(/,/g,"").match(/-?\d+(\.\d+)?/);return m?+m[0]:null};
+  const res=[];
+  try{
+    for(let i=0;i<allFlocks.length;i++){const f=allFlocks[i];
+      prog(i+1,allFlocks.length);
+      if(flockId!==f.id)openFlock(f.id);
+      for(let k=0;k<60&&!(flock&&flockId===f.id&&(days.length||k>25));k++)await wait(100);
+      await wait(900);renderMain();
+      const h=compute(days),last=h[h.length-1]||null,placed=flock.placed||0,mort=last?last.mTot:0,wk=weekRows(h).filter(r=>r.fcr!=null).pop(),M=window.__mn||{},C=costKg(M.fb||0,M.grand||0);
+      res.push({no:f.no||(i+1),live:f.id===liveFlock,start:f.start,end:last?dateFor(last.day):"",day:last?last.day:0,placed,mort,mp:placed?mort/placed*100:0,
+        sold:days.reduce((a,d)=>a+(d.sold||0),0),eat:last?r2(last.fTot):0,wt:C.g||null,fcr:wk?wk.fcr:null,kg:num(val("mnSale",/^Weight Sold/)),sale:M.sRs||0,grand:M.grand||0,ck:C.cost||null});
+    }
+  }finally{if(flockId!==back)openFlock(back);await wait(400);try{renderMain()}catch(e){}}
+  return res}
+function flockCmpHtml(res,cw){const money=moneyOK();
+  const cols=(a,n)=>{const o=[];for(let i=0;i<a.length;i+=n)o.push(a.slice(i,i+n));return o};
+  const rowsDef=[["Flock Start",r=>dmy(r.start).replace(/\//g,"-")],["Last Day",r=>r.end?r.end+" · Day "+r.day:"..."],["Chicks Placed",r=>F(r.placed)],["Total Mortality",r=>F(r.mort)],["Mortality %",r=>r.mp.toFixed(2)+"%"],["Birds Sold",r=>F(r.sold)],["Feed Eaten (bags)",r=>F(r.eat)],["Average Weight (g)",r=>r.wt?F(r.wt):"..."],["FCR",r=>r.fcr==null?"...":r.fcr.toFixed(2)]]
+    .concat(money?[["Weight Sold (kg)",r=>r.kg?F(r.kg):"..."],["Total Sale (Rs)",r=>F(r.sale)],["Total Expenses (Rs)",r=>F(r.grand)],["Cost per kg",r=>r.ck?F(r.ck):"..."],["Profit / Loss (Rs)",r=>{const p=Math.round(r.sale-r.grand);return (p<0?"− ":"")+F(Math.abs(p))},1]]:[["Total Expenses (Rs)",r=>F(r.grand)],["Cost per kg",r=>r.ck?F(r.ck):"..."]]);
+  const tbl=g=>`<table class="fdt"><thead><tr><th></th>${g.map(r=>`<th class="num">Flock ${esc(String(r.no))}${r.live?" (running)":""}</th>`).join("")}</tr></thead><tbody>${rowsDef.map(([l,fn,t])=>`<tr${t?' class="tot"':""}><td>${l}</td>${g.map(r=>`<td class="num">${fn(r)}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+  const L=r=>"Flock "+r.no;
+  const charts=rptBars("Mortality % · by flock","%",res.map(r=>({l:L(r),v:r2(r.mp)})),"#d64545",1,cw)+rptBars("FCR · by flock","",res.filter(r=>r.fcr!=null).map(r=>({l:L(r),v:r2(r.fcr)})),"#1c5d93",1,cw)+
+    (money?rptBars("Profit / Loss (Rs thousand) · by flock","",res.map(r=>({l:L(r),v:Math.round((r.sale-r.grand)/1000)})),"#2e8b57",1,cw):"");
+  return {tables:cols(res,5).map(tbl).join("<div style='height:10px'></div>"),charts}}
+async function flockCmpPdf(toast){
+  const dl=window.claude?.use?await window.claude.use("downloads"):null;
+  if(!dl){toast("PDF download is not available here.",true);return}
+  if(!allFlocks.length){toast("No flock yet.",true);return}
+  try{await pdfLibs()}catch(e){toast("Could not load the PDF maker. Please close and open the app again.",true);return}
+  const res=await flockCmpData((i,n)=>toast("Flock "+i+" of "+n+"…")),H=flockCmpHtml(res);
+  const inner=`<div class="rh"><span class="rlogo"><img src="img/logo-1024.png" alt=""><b>HUSSAIN PROTEIN GROUP</b></span><div><div class="u">${esc(shedNm)}</div><small>Flock Comparison · ${res.length} flocks · Report ${dmy(todayISO()).replace(/\//g,"-")}</small></div></div>
+    <h3>Flock Comparison</h3>${H.tables}${H.charts}
+    <div class="rfoot">Hussain Protein · Report made on ${dmy(todayISO())}</div>`;
+  return rptPdf(inner,"Flock Comparison - "+dmy(todayISO()).replace(/\//g,"-"),dl,toast);
 }
 async function rptPdf(inner,file,dl,toast){
   const W=794,H=1123,PX=34,PY=32, box=document.createElement("div");
@@ -1856,7 +1903,7 @@ function salaryPdf(toast){
   const X=saX(), C=saFeedCalc(), till=saPayDate()||todayISO(), tSal=r2(people.reduce((a,x)=>a+saTotal(x),0));
   const adv=Math.round(sups.filter(x=>x.type!=="break").reduce((a,x)=>a+(x.amount||0),0)), cach=X.caching||0, bird=X.birdfee||0, gross=Math.round(tSal+cach+C.amt+bird);
   let h=`<thead><tr><th>Sr</th><th>Name &amp; Work</th><th>Joining Date</th><th class="r">Salary</th><th class="r">Days (till ${dmy(till).slice(0,5)})</th><th class="r">Extra</th><th class="r">Total Salary</th></tr></thead><tbody>`;
-  h+=people.map((x,i)=>{const d=saDays(x);return `<tr><td>${i+1}</td><td>${esc(x.name)}${x.leave?"<br><b>Left "+dmy(x.leave)+"</b>":""}</td><td>${x.join?dmy(x.join).slice(0,5):"..."}</td><td class="r">${F(x.salary)}</td><td class="r">${d==null?"...":F(d)}</td><td class="r">${saEx(x)}</td><td class="r">${d==null&&!x.extra?"...":F(saTotal(x))}</td></tr>`}).join("");
+  h+=people.map((x,i)=>{const d=saDays(x);return `<tr><td>${i+1}</td><td>${esc(x.name)}${x.leave?" <b>(Left "+dmy(x.leave).slice(0,5)+")</b>":""}</td><td>${x.join?dmy(x.join).slice(0,5):"..."}</td><td class="r">${F(x.salary)}</td><td class="r">${d==null?"...":F(d)}</td><td class="r">${saEx(x)}</td><td class="r">${d==null&&!x.extra?"...":F(saTotal(x))}</td></tr>`}).join("");
   h+=`<tr class="bt"><td colspan="6">Total Salaries (Rs)</td><td class="r">${F(tSal)}</td></tr>`;
   return billPdf({title:"Salary",info:[["Salary",saPayDate()?"Made with Salary Date "+dmy(saPayDate()):"Not made yet (counted till "+dmy(till)+")"],["Report Date",dmy(todayISO())]],
     table:h+"</tbody>",sum:[["Total Salaries",F(tSal)],["Caching",F(cach)],["Feed"+(C.rate!=null?" ("+F(C.bags)+" bags × "+F(C.rate)+")":""),F(C.amt)],["Bird Fee",F(bird)],["Total",F(gross)],["Less: Advance (Supervisor)","− "+F(adv)],["Net Salary","Rs "+F(Math.round(gross-adv))]],
@@ -2010,7 +2057,7 @@ function renderMain(){
   const pb=$("plBtn");if(pb){pb.textContent=showPL?"Hide Profit":"Calculate Profit";pb.className=showPL?"ghost":"save"}
   mnTiles();
   // v1.22: the farm login sees Sale and Profit on Main only when the main login allows it (per farm)
-  const mo=moneyOK();$("mnSaleCard").hidden=$("mnResCard").hidden=!mo;$("mnExpH").textContent=(mo?"4":"3")+". Expenses";
+  const mo=moneyOK();$("mnSaleCard").hidden=$("mnResCard").hidden=!mo;if($("fcBtn"))$("fcBtn").hidden=allFlocks.length<2;$("mnExpH").textContent=(mo?"4":"3")+". Expenses";
 }
 // cost per kg of live weight: average weight typed in Main, else the last weekly weight of the FCR section
 /* v1.26.43: today's average weight estimate from the growth between the last two weekly weights */
@@ -2316,14 +2363,27 @@ function saFeedShow(){
 }
 const saPayDate=()=>saX().payDate||"";
 // a person who left the job is counted only till the Leaving Date
-const saDays=(x,pay=saPayDate()||todayISO())=>{const end=x.leave&&x.leave<pay?x.leave:pay;return x.join&&end&&end>=x.join?Math.round((Date.parse(end)-Date.parse(x.join))/864e5)+1:null};
-const saLeftTag=x=>x.leave?`<span class="lefttag">Left ${dmy(x.leave)}</span>`:"";
+// v1.29: leaving day is NOT counted; the salary date (or To date) IS counted
+const saDaysR=(x,from,to)=>{if(!x.join||!to)return null;const st=from&&from>x.join?from:x.join;const dd=(a,b)=>Math.round((Date.parse(b)-Date.parse(a))/864e5);if(x.leave&&x.leave<=to)return x.leave>st?dd(st,x.leave):0;return to>=st?dd(st,to)+1:0};
+const saDays=(x,pay=saPayDate()||todayISO())=>{const d=saDaysR(x,null,pay);return d==null?null:(d===0&&!(x.leave&&x.leave<=pay)?null:d)};
+const saLeftTag=x=>x.leave?` <span class="lefttag" role="button" tabindex="0" data-id="${esc(x.id)}" data-d="${dmy(x.leave).slice(0,5)}">${saLeftOpen.has(x.id)?"(Left "+dmy(x.leave).slice(0,5)+")":"(Left)"}</span>`:"";const saLeftOpen=new Set();
 const saTotal=(x,pay)=>{const d=saDays(x,pay);return (d==null?0:Math.round((x.salary||0)/30*d))+Math.round(x.extra||0)};
 const saEx=x=>x.extra?F(Math.round(x.extra)):"";
 let saDay=todayISO();setInterval(()=>{if(todayISO()!==saDay){saDay=todayISO();try{renderSal();if(view==="main")renderMain()}catch(e){}}},60000);
 /* v1.25: a Main with the "Set sale rates" right may also write the labour Feed Rate and Make / Clear Salary */
 const salRW=()=>HPMODE==="ro"&&!!window.hpRates&&!oldView&&!!flockId;
 const saX=()=>sals.find(x=>x.kind==="extras"&&x.flock===flockId)||{};
+function saQ(){const q=($("sqQ").value||"").trim(),a=$("sqD1").value,b=$("sqD2").value;if(!q&&!a&&!b)return null;
+  const from=a||"",to=b||saPayDate()||todayISO(),ql=q.toLowerCase();
+  const people=sals.filter(x=>x.kind==="person"&&(!q||String(x.name||"").toLowerCase().includes(ql))).sort((x,y)=>(x.seq||0)-(y.seq||0)||(x.createdAt||"").localeCompare(y.createdAt||""));
+  const rows=people.map(x=>{const d=saDaysR(x,from,to);return {x,d,t:d==null?0:Math.round((x.salary||0)/30*d)}});
+  const lab=(from?dmy(from):"Joining")+" to "+dmy(to);const sal=rows.reduce((a,r)=>a+r.t,0),X=saX(),ch=q?null:{c:X.caching||0,f:saFeedCalc().amt||0,b:X.birdfee||0};return {q,from,to,rows,sal,ch,tot:sal+(ch?Math.round(ch.c+ch.f+ch.b):0),lab,file:(q?q+" - ":"All Labour - ")+lab.replace(/\//g,"-")}}
+function saQHtml(f){let h=`<thead><tr><th>Name &amp; Work</th><th>Joining Date</th><th class="amt">Salary</th><th class="amt">Days<br><small style="font-weight:400">${f.from?dmy(f.from).slice(0,5)+" – ":"till "}${dmy(f.to).slice(0,5)}</small></th><th class="amt">Total Salary</th></tr></thead><tbody>`;
+  h+=f.rows.map(r=>`<tr data-sa="${esc(r.x.id)}"${r.x.leave?' class="left"':""}><td class="w"><div>${esc(r.x.name)}${saLeftTag(r.x)}</div></td><td class="num">${r.x.join?dmy(r.x.join).slice(0,5):"..."}</td><td class="num amt">${F(r.x.salary)}</td><td class="num amt">${r.d==null?"...":F(r.d)}</td><td class="num amt">${F(r.t)}</td></tr>`).join("");
+  return h+(f.rows.length?`<tr class="tot"><td colspan="4">Total Salaries (Rs)</td><td class="num amt">${F(f.sal)}</td></tr>`+(f.ch?`<tr><td colspan="4">Caching</td><td class="num amt">${F(f.ch.c)}</td></tr><tr><td colspan="4">Feed</td><td class="num amt">${F(f.ch.f)}</td></tr><tr><td colspan="4">Bird Fee</td><td class="num amt">${F(f.ch.b)}</td></tr><tr class="tot"><td colspan="4">Total (Rs)</td><td class="num amt">${F(f.tot)}</td></tr>`:""):`<tr><td colspan="5" class="empty">No worker with this name.</td></tr>`)+"</tbody>"}
+function saQPdf(pt){const t=typeof pt==="function"?pt:(m,e)=>toast("sqToast",m,e),f=saQ();if(!f){t("Write a name or pick dates first.",true);return}if(!f.rows.length){t("No worker with this name.",true);return}
+  let h=`<thead><tr><th>Sr</th><th>Name &amp; Work</th><th>Joining Date</th><th class="r">Salary</th><th class="r">Days</th><th class="r">Total Salary</th></tr></thead><tbody>`+f.rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.x.name)}${r.x.leave?" <b>(Left "+dmy(r.x.leave).slice(0,5)+")</b>":""}</td><td>${r.x.join?dmy(r.x.join).slice(0,5):"..."}</td><td class="r">${F(r.x.salary)}</td><td class="r">${r.d==null?"...":F(r.d)}</td><td class="r">${F(r.t)}</td></tr>`).join("")+`<tr class="bt"><td colspan="5">Total Salaries (Rs)</td><td class="r">${F(f.sal)}</td></tr>`;
+  return billPdf({title:"Salary"+(f.q?" · "+f.q:" · All Labour"),info:[["Dates",f.lab],["Report Date",dmy(todayISO())]],table:h+"</tbody>",sum:f.ch?[["Workers",F(f.rows.length)],["Total Salaries",F(f.sal)],["Caching",F(f.ch.c)],["Feed",F(f.ch.f)],["Bird Fee",F(f.ch.b)],["Total","Rs "+F(f.tot)]]:[["Workers",F(f.rows.length)],["Total Salaries","Rs "+F(f.sal)]],file:"Salary - "+f.file,fit:1},t)}
 function renderSal(){
   const people=sals.filter(x=>x.kind==="person").sort((a,b)=>(a.seq||0)-(b.seq||0)||(a.createdAt||"").localeCompare(b.createdAt||""));
   const tSal=r2(people.reduce((a,x)=>a+saTotal(x),0)), adv=Math.round(sups.filter(x=>x.type!=="break").reduce((a,x)=>a+(x.amount||0),0));
@@ -2334,7 +2394,7 @@ function renderSal(){
   const till=saPayDate()||todayISO();h=h.replace("<th class=\"amt\">Days</th>","<th class=\"amt\">Days<br><small style=\"font-weight:400\">till "+dmy(till).slice(0,5)+"</small></th>");
   h+=people.map(x=>`<tr data-sa="${esc(x.id)}"${x.leave?' class="left"':""}><td class="w"><div>${esc(x.name)}${saLeftTag(x)}</div></td><td class="num">${x.join?dmy(x.join).slice(0,5):"..."}</td><td class="num amt">${F(x.salary)}</td><td class="num amt d1">${d1(x)?F(d1(x)):"..."}</td><td class="num amt">${saDays(x)==null?"...":F(saDays(x))}</td><td class="num amt">${saEx(x)}</td><td class="num amt">${saDays(x)==null&&!x.extra?"...":F(saTotal(x))}</td></tr>`).join("");
   h+=people.length?`<tr class="tot"><td colspan="3">Total Salaries (Rs)</td><td class="num amt d1" title="All working staff, one day">${F(d1T)}</td><td colspan="2"></td><td class="num amt">${F(tSal)}</td></tr>`:`<tr><td colspan="7" class="empty">No salaries yet. Add the first person above.</td></tr>`;
-  $("saTable").innerHTML=h+"</tbody>";
+  const sqf=saQ();$("saTable").innerHTML=sqf?saQHtml(sqf):h+"</tbody>";$("sqPdf").hidden=!sqf;
   const row=(l,v,c)=>`<tr${c?` class="${c}"`:""}><td>${l}</td><td class="num amt">${v}</td></tr>`;
   $("saFinal").innerHTML=`<thead><tr><th>Item</th><th class="amt">Rs</th></tr></thead><tbody>`+row("Total Salaries",F(tSal))+row("Caching",F(cach))+row("Feed",F(feed))+row("Bird Fee",F(bird))+row("Total",F(gross),"tot")+row("Less: Advance (Supervisor)","− "+F(adv))+row("Net Salary",F(net),"tot")+"</tbody>";
   if(document.activeElement===null||!["saCach","saFRate","saBird","saFHand"].includes(document.activeElement.id)){$("saCach").value=X.caching??"";$("saFRate").value=X.feedrate??"";$("saBird").value=X.birdfee??"";$("saFHand").value=X.feedManual?(X.feed??""):""}
@@ -2611,7 +2671,7 @@ function watchFlock(id){
   unFlock=ref.onSnapshot(s=>{
     if(!s.exists)return;
     const d=s.data(); flock={start:d.start,placed:d.placed,openFeed:d.openFeed,bagKg:d.bagKg||50,raw:d};
-    if(document.activeElement!==$("fiNo")&&document.activeElement!==$("fiCo")){$("fiNo").value=d.no||"";$("fiCo").value=d.company||""}
+    if(document.activeElement!==$("fiNo")&&document.activeElement!==$("fiCo")){$("fiNo").value=d.no||"";$("fiCo").value=d.company||"";$("fiBr").value=d.breed||""}
     setStatus(""); showMain(); loadEntry(); render();
   },e=>setStatus("ریکارڈ لوڈ نہیں ہو سکا۔ صفحہ دوبارہ کھولیں۔",true));
   unDays=ref.collection("days").onSnapshot(s=>{
@@ -2636,12 +2696,12 @@ async function write(ref,data){
 }
 
 $("sGo").addEventListener("click",async()=>{
-  const start=$("sStart").value, placed=iNum($("sPlaced").value), openFeed=fNum($("sFeed").value), no=iNum($("sNo").value)||null, company=$("sCo").value.trim();
+  const start=$("sStart").value, placed=iNum($("sPlaced").value), openFeed=fNum($("sFeed").value), no=iNum($("sNo").value)||null, company=$("sCo").value.trim(); const breed=$("sBr").value;
   if(!start||!placed){toast("sToast","تاریخ اور آئے چوزوں کی تعداد لازمی ہے۔",true);return}
   if(!db){toast("sToast","ڈیٹا محفوظ کرنے کی سہولت دستیاب نہیں۔",true);return}
   $("sGo").disabled=true;
   const id="f"+start.replace(/-/g,"")+"-"+Date.now().toString(36);
-  const ok=await write(db.doc("flocks/"+id),{start,placed,openFeed,bagKg:50,shed:"1",no,company,createdAt:new Date().toISOString()})
+  const ok=await write(db.doc("flocks/"+id),{start,placed,openFeed,bagKg:50,shed:"1",no,company,breed,createdAt:new Date().toISOString()})
         && await write(db.doc("config/app"),{currentFlock:id,legacyFlock:legacyFlock||liveFlock||id});
   $("sGo").disabled=false;
   if(!ok){toast("sToast","محفوظ نہیں ہو سکا، دوبارہ کوشش کریں۔",true);return}
@@ -2650,7 +2710,7 @@ $("sGo").addEventListener("click",async()=>{
 $("fiSave").addEventListener("click",async()=>{
   if(!flockId||!db)return;
   const no=iNum($("fiNo").value)||null, company=$("fiCo").value.trim();
-  if(!flock||!flock.raw)return;const ok=await write(db.doc("flocks/"+flockId),{...flock.raw,no,company});
+  if(!flock||!flock.raw)return;const breed=$("fiBr").value;const ok=await write(db.doc("flocks/"+flockId),{...flock.raw,no,company,breed});
   toast("fiToast",ok?"محفوظ ہو گیا۔":"محفوظ نہیں ہو سکا۔",!ok);
 });
 $("sCancel").addEventListener("click",()=>{if(flock)showMain()});
@@ -2691,7 +2751,7 @@ $("shedSave").addEventListener("click",async()=>{
 $("navDaily").addEventListener("click",()=>setView("daily"));
 $("navMain").addEventListener("click",()=>setView("main"));
 $("spQ").addEventListener("input",()=>renderSpend());
-$("suQ").addEventListener("input",()=>renderSup());$("suQPdf").addEventListener("click",suSearchPdf);
+$("suQ").addEventListener("input",()=>renderSup());$("sqQ").addEventListener("input",()=>renderSal());document.addEventListener("click",e=>{const t=e.target.closest&&e.target.closest(".lefttag");if(!t)return;e.stopPropagation();const id=t.dataset.id;saLeftOpen.has(id)?saLeftOpen.delete(id):saLeftOpen.add(id);document.querySelectorAll(".lefttag").forEach(g=>{if(g.dataset.id===id)g.textContent=saLeftOpen.has(id)?"(Left "+g.dataset.d+")":"(Left)"})},true);document.addEventListener("dblclick",e=>{if(e.target.closest&&e.target.closest(".lefttag"))e.stopPropagation()},true);["sqD1","sqD2"].forEach(i=>$(i).addEventListener("change",()=>renderSal()));$("sqPdf").addEventListener("click",()=>saQPdf());$("suQPdf").addEventListener("click",suSearchPdf);
 $("suCal").addEventListener("click",()=>{suDateOn=!suDateOn;const b=$("suCal");b.setAttribute("aria-pressed",suDateOn);b.classList.toggle("on",suDateOn);$("suQ").hidden=suDateOn;$("suDR").hidden=!suDateOn;
   if(suDateOn&&!$("suD1").value&&!$("suD2").value){const t=todayISO();$("suD1").value=t.slice(0,8)+"01";$("suD2").value=t}renderSup()});
 ["suD1","suD2"].forEach(i=>$(i).addEventListener("change",()=>renderSup()));
@@ -2806,6 +2866,7 @@ const PNAME={main:"Main",daily:"روزانہ رپورٹ",spend:"Spendings",feed:
 function pdfItems(){
   const L=[],it=(k,c,t,sub,run,o={})=>L.push({k,c,t,sub,run,...o}),txt=(e,s)=>{const x=e&&e.querySelector(s);return x?x.textContent.trim():""};
   if(view==="main")it("r","#1c5d93","Full Report PDF","اس فارم کا مکمل ریکارڈ ایک PDF میں",pt=>fullReport(moneyOK(),pt));
+  if(view==="main"&&allFlocks.length>1)it("c","#173f66","Flock Comparison","سب فلاکوں کا موازنہ · ایک PDF",pt=>flockCmpPdf(pt));
   if(view==="daily"){
     it("d","#1c5d93","روزانہ رپورٹ","فیڈ، برڈ، میڈیسن، FCR",pt=>dailyPdf(pt));
     it("b","#1f7a4d","برڈ سیل","بیچے گئے برڈز کی لسٹ",birdSalePdf);
@@ -2817,6 +2878,7 @@ function pdfItems(){
     const sf=spFilter(),q=sf?(sf.q||sf.lab):"";if(q)it("q","#0f6b73","Spendings · "+q,sf.q?"تلاش والی لسٹ کی PDF":"ان تاریخوں کے اخراجات کی PDF",spSearchPdf);
     it("s","#1c5d93","Spendings","اوپر تلاش میں نام لکھیں (مثلاً Petrol)، پھر یہاں اس کی PDF",null,{hint:1,hide:!!q});
     it("u","#8a5a12","Supervisor Advance","سپروائزر کو دی گئی رقم",supPdf);
+    {const f=spPart==="sal"&&saQ();if(f)it("q","#0f6b73","Salary · "+(f.q||"All Labour"),"تلاش والی تنخواہ کی PDF · "+f.lab,saQPdf)}
     it("u","#1f7a4d","Salary","تنخواہ کی پوری شیٹ",salaryPdf);
   }
   if(view==="med"){
@@ -3233,7 +3295,7 @@ $("copyMed").addEventListener("click",()=>{
 $("tFeed").addEventListener("click",()=>setTab("feed"));$("tBird").addEventListener("click",()=>setTab("bird"));
 $("newFlock").addEventListener("click",()=>{$("confirmBox").hidden=false;$("newFlock").hidden=true});
 $("confirmNo").addEventListener("click",()=>{$("confirmBox").hidden=true;$("newFlock").hidden=false});
-$("confirmNew").addEventListener("click",()=>{$("confirmBox").hidden=true;$("newFlock").hidden=false;$("sStart").value="";const pn=flock&&flock.raw&&+flock.raw.no;$("sNo").value=pn?pn+1:"";$("sCo").value="";showSetup(true)});
+$("confirmNew").addEventListener("click",()=>{$("confirmBox").hidden=true;$("newFlock").hidden=false;$("sStart").value="";const pn=flock&&flock.raw&&+flock.raw.no;$("sNo").value=pn?pn+1:"";$("sCo").value="";$("sBr").value=flock&&flock.raw&&flock.raw.breed||"";showSetup(true)});
 
 try{const v=localStorage.getItem("hpg-view");if(["spend","daily","feed","med","main","sale"].includes(v))view=v}catch(e){}
 if(HPMODE==="sup")view="daily";
@@ -3519,6 +3581,7 @@ function sync(){for(const [f] of forms())heads(f).forEach(([h,pre])=>{let ch=h.q
 setInterval(()=>{sync();if(!mq.matches)return;document.querySelectorAll(".tablewrap").forEach(w=>{const t=w.querySelector("table");if(!t||!w.getClientRects().length)return;const wide=t.scrollWidth>w.clientWidth+1;if(wide!==w.classList.contains("hpwide"))w.classList.toggle("hpwide",wide)})},700);
 function setup(){for(const [f,h] of forms()){if(f.dataset.hpf)continue;f.dataset.hpf=1;
  const s=strip(h);f.before(s);s.onclick=()=>{fold(f,false);const i=f.querySelector("input:not([type=date]),textarea");if(i)i.focus()};
+ const bx=document.createElement("button");bx.type="button";bx.className="hpbotx";bx.textContent="▲ اینٹری بند کریں";bx.onclick=()=>{fold(f,true);const h=(heads(f)[0]||[])[0]||f.previousElementSibling;if(h)setTimeout(()=>{const r=h.getBoundingClientRect();if(r.top<0||r.top>innerHeight)h.scrollIntoView({behavior:"smooth",block:"center"})},60)};f.appendChild(bx);
  const x=document.createElement("button");x.type="button";x.className="hpfoldx";x.textContent="چھپائیں ⇥";x.onclick=()=>fold(f,true);
  const hd=f.querySelector(":scope>.dayhead");if(hd)hd.appendChild(x);else{const r=document.createElement("div");r.className="hpfxrow";r.appendChild(x);f.prepend(r)}
  fold(f,(mq.matches||f.id!=="entryCard")&&!supOn(f));
@@ -3767,7 +3830,7 @@ new MutationObserver(()=>{clearTimeout(up.t);up.t=setTimeout(up,60)}).observe(do
 #hpDay .sp{position:absolute;left:0;right:0;bottom:0;margin:0 auto;max-width:460px;max-height:80vh;overflow:auto;background:#f4f7fa;border-radius:26px 26px 0 0;padding:12px 14px calc(22px + env(safe-area-inset-bottom));box-shadow:0 -4px 22px rgba(0,0,0,.22);direction:rtl;animation:hpUp .26s cubic-bezier(.2,.9,.3,1.1)}
 #hpDay .sp::before{content:"";display:block;width:46px;height:5px;border-radius:9px;background:#c5d1dd;margin:0 auto 10px}
 #hpDay .hd{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#173f66,#1c5d93);color:#fff;border-radius:20px;padding:10px 12px;margin-bottom:12px}
-#hpDay .hd .t{flex:1;text-align:center}#hpDay .hd b{display:block;font-size:19px}#hpDay .hd small{font-family:ui-monospace,"Roboto Mono",monospace;font-size:13px;opacity:.85}
+#hpDay .hd .t{flex:1;text-align:center}#hpDay .hd b{display:block;font-size:19px}#hpDay .hd small{font-family:"Segoe UI",Roboto,Arial,sans-serif;font-size:13px;opacity:.85}
 #hpDay .hd button{width:40px;height:40px;border-radius:12px;border:0;background:rgba(255,255,255,.16);color:#fff;font-size:18px;cursor:pointer}
 #hpDay .hd button:disabled{opacity:.3;cursor:default}
 #hpDay .ln{display:flex;align-items:flex-start;gap:12px;background:#fff;border-radius:16px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 4px rgba(23,63,102,.08);animation:hpIn .25s ease both}
@@ -3776,14 +3839,14 @@ new MutationObserver(()=>{clearTimeout(up.t);up.t=setTimeout(up,60)}).observe(do
 #hpDay .ln div{flex:1;min-width:0}#hpDay .ln small{display:block;color:#5b6b7b;font-size:13.5px}
 #hpDay .ln b{font-size:17px;color:#173f66;font-family:"Segoe UI",Roboto,sans-serif}
 #hpDay .ln ul{margin:4px 0 0;padding:0;list-style:none}#hpDay .ln li{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-top:1px dashed #e1e8ef;font-size:15px;color:#173f66}#hpDay .ln li:first-child{border-top:0}
-#hpDay .ln li span:last-child{font-family:ui-monospace,"Roboto Mono",monospace;color:#1f7a4d;white-space:nowrap;direction:ltr}
+#hpDay .ln li span:last-child{font-family:"Segoe UI",Roboto,Arial,sans-serif;color:#1f7a4d;white-space:nowrap;direction:ltr}
 #hpDay .none{text-align:center;color:#6b7b8b;padding:22px 10px;background:#fff;border-radius:16px;font-size:15px}
 #hpDay .cl{display:block;width:100%;margin-top:6px;border:0;border-radius:14px;padding:11px;background:#e3ebf3;color:#173f66;font:inherit;font-size:15px;cursor:pointer}
 .hpdaytap{cursor:pointer}
 #hpDayM{display:flex;gap:4px;background:#e3ebf3;border-radius:14px;padding:4px;margin:0 auto 12px;max-width:240px}
 #hpDayM button{flex:1;border:0;border-radius:11px;padding:8px;background:transparent;color:#173f66;font:inherit;font-size:16px;cursor:pointer}
 #hpDayM button[aria-pressed=true]{background:#fff;box-shadow:0 1px 4px rgba(23,63,102,.18);font-weight:700}
-#hpDay .hd small .rg{display:block;font-size:12.5px;opacity:.9;margin-top:2px}#hpDay .ln small.dd{display:inline}#hpDay .cnt{color:#8a99a8;font-size:12.5px;margin-inline-start:6px}#hpDay .dd{color:#8a99a8;font-family:ui-monospace,monospace;font-size:12px;margin-inline-end:4px}
+#hpDay .hd small .rg{display:block;font-size:12.5px;opacity:.9;margin-top:2px}#hpDay .ln small.dd{display:inline}#hpDay .cnt{color:#8a99a8;font-size:12.5px;margin-inline-start:6px}#hpDay .dd{color:#8a99a8;font-family:"Segoe UI",Roboto,Arial,sans-serif;font-size:12px;margin-inline-end:4px}
 #hpDay .ln.go{cursor:pointer;align-items:center}#hpDay .ln.go:hover{box-shadow:0 2px 10px rgba(23,63,102,.16)}#hpDay .ln .ar{font-style:normal;color:#9aa9b8;font-size:22px;align-self:center}
 #hpDay li.go{cursor:pointer;border-radius:8px;padding-inline:6px;margin-inline:-6px}#hpDay li.go:hover,#hpDay li.go:active{background:#eef5f0}
 #hpDay li.go em{font-style:normal;color:#9aa9b8;font-size:16px}
@@ -3873,9 +3936,9 @@ setInterval(plan,30000);document.addEventListener("visibilitychange",()=>{if(doc
 #hpChart .gt{display:flex;align-items:center;justify-content:space-between;font-size:14px;color:#173f66;margin:8px 0 2px}#hpChart .gt b{font-size:15px;font-weight:600;color:#5b6b7b;font-weight:600}
 #hpChart svg{display:block;width:100%;height:auto;direction:ltr}
 #hpChart .bar{fill:#9cb8d3;cursor:pointer}#hpChart .bar.hi{fill:#d64545}#hpChart .bar:hover{fill:#1c5d93}#hpChart .bar.hi:hover{fill:#a82b2b}
-#hpChart .ax{font:10px ui-monospace,monospace;fill:#8a99a8}#hpChart .gl{stroke:#eef2f6}
+#hpChart .ax{font:10px "Segoe UI",Roboto,Arial,sans-serif;fill:#8a99a8}#hpChart .gl{stroke:#eef2f6}
 #hpChart .fl{fill:none;stroke:#e08a1e;stroke-width:2.2}#hpChart .fpart{stroke-dasharray:5 4;opacity:.6}#hpChart .fa{fill:rgba(224,138,30,.12)}#hpChart .dot{fill:#e08a1e;cursor:pointer}
-#hpChartInfo{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;background:#f1f6fb;border:1px solid #d6e3ef;border-radius:12px;padding:8px 12px;margin:8px 0 2px;font-size:15px;color:#173f66}#hpChartInfo b{font-family:"Segoe UI",Roboto,sans-serif}#hpChartInfo .dt{font-family:ui-monospace,monospace;font-size:12.5px;color:#6b7b8b}#hpChartInfo small{color:#6b7b8b;font-size:12.5px}
+#hpChartInfo{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;background:#f1f6fb;border:1px solid #d6e3ef;border-radius:12px;padding:8px 12px;margin:8px 0 2px;font-size:15px;color:#173f66}#hpChartInfo b{font-family:"Segoe UI",Roboto,sans-serif}#hpChartInfo .dt{font-family:"Segoe UI",Roboto,Arial,sans-serif;font-size:12.5px;color:#6b7b8b}#hpChartInfo small{color:#6b7b8b;font-size:12.5px}
 #hpChart .bar.sel{fill:#1c5d93}#hpChart .bar.hi.sel{fill:#a82b2b}#hpChart .dot.sel{r:5;fill:#b8650a}
 #hpChart .lg{display:flex;gap:14px;font-size:12.5px;color:#5b6b7b;margin-top:4px}#hpChart .lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:5px;vertical-align:-1px}
 .hpFeedWarn{font-family:"Jameel Noori","Segoe UI",sans-serif;display:flex;align-items:center;gap:12px;border-radius:16px;padding:12px 14px;margin:10px 0;direction:rtl;background:#fff4e0;border:1px solid #f3c27a;color:#7a4a00;font-size:15.5px;line-height:1.5;box-shadow:0 2px 8px rgba(224,138,30,.15)}
@@ -3915,10 +3978,10 @@ function chartHTML(h){if(h.length<2)return "";
  h.forEach((r,i)=>{f+=`<circle class="dot" data-day="${r.day}" cx="${pts[i][0]}" cy="${pts[i][1]}" r="${n>30?2.2:3}"><title>دن ${r.day}: ${N(r.f24)} بیگ</title></circle>${lab(i)}`});f+="</svg>";
  const last=h[h.length-1];
  return `<h3>روز کا حال</h3><div class="sub">کسی دن پر ٹیپ کریں تو اس دن کی تفصیل نیچے آئے گی</div>
- <div class="gt"><span>روز کی مورٹیلٹی</span><b>آخری دن: <span style="font-family:ui-monospace,monospace">${N(last.m24)}</span></b></div>${m}
+ <div class="gt"><span>روز کی مورٹیلٹی</span><b>آخری دن: <span style="font-family:"Segoe UI",Roboto,Arial,sans-serif">${N(last.m24)}</span></b></div>${m}
  <div class="lg"><span><i style="background:#9cb8d3"></i>عام دن</span><span><i style="background:#d64545"></i>عام سے بہت زیادہ</span></div>
  <div id="hpChartInfo" hidden></div>
- <div class="gt"><span>روز کی کھائی گئی فیڈ (بیگ)</span><b>${(()=>{const c=h.filter(r=>r.fd>0&&r.fn>0),lc=c[c.length-1];return lc&&lc!==last?`آخری مکمل دن (${lc.day}): <span style="font-family:ui-monospace,monospace">${N(lc.f24)}</span>`:`آخری دن: <span style="font-family:ui-monospace,monospace">${N(last.f24)}</span>`})()}</b></div>${f}${h.length>1&&!(last.fd>0&&last.fn>0)?`<div class="lg"><span><i style="background:none;border-top:2px dashed #e08a1e;height:0;margin-top:4px"></i>دن ${last.day} ابھی ادھورا (رات کی فیڈ باقی)</span></div>`:""}`}
+ <div class="gt"><span>روز کی کھائی گئی فیڈ (بیگ)</span><b>${(()=>{const c=h.filter(r=>r.fd>0&&r.fn>0),lc=c[c.length-1];return lc&&lc!==last?`آخری مکمل دن (${lc.day}): <span style="font-family:"Segoe UI",Roboto,Arial,sans-serif">${N(lc.f24)}</span>`:`آخری دن: <span style="font-family:"Segoe UI",Roboto,Arial,sans-serif">${N(last.f24)}</span>`})()}</b></div>${f}${h.length>1&&!(last.fd>0&&last.fn>0)?`<div class="lg"><span><i style="background:none;border-top:2px dashed #e08a1e;height:0;margin-top:4px"></i>دن ${last.day} ابھی ادھورا (رات کی فیڈ باقی)</span></div>`:""}`}
 function up(){try{
  if(typeof flock==="undefined"||!flock||!Array.isArray(days))return;
  const h=rows(),k=[flockId,oldView,h.length,h.length?h[h.length-1].fRem+"|"+h[h.length-1].m24+"|"+h[h.length-1].f24:""].join("~");if(k===key)return;key=k;
@@ -4453,6 +4516,7 @@ fcRender();
 #ccSheet tr.mut td{color:#777}
 html body #ccSheet th{position:static!important;top:auto!important}
 </style>
+<style>#fcSheet{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:flex-end;justify-content:center}#fcSheet[hidden]{display:none}#fcSheet .ccp{background:#fff;width:100%;max-width:900px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:16px;box-sizing:border-box}@media (min-width:1000px){#fcSheet{align-items:center}#fcSheet .ccp{border-radius:20px}}#fcSheet .cchd{display:flex;align-items:center}#fcSheet h2{margin:0;font-size:22px}#fcX{margin-inline-start:auto;border:0;background:#eef3f8;border-radius:10px;padding:6px 12px;font-size:18px;cursor:pointer}#fcSheet svg{width:100%;height:auto}#fcSheet h4{margin:14px 0 2px}html body #fcSheet th{position:static!important;top:auto!important}#fcWait{color:#555;padding:18px 0;text-align:center}</style><style>#fcTop{display:none}@media (min-width:1000px){#vMain{position:relative}#vMain>#fcTop:not([hidden]){display:flex;align-items:center;gap:8px;position:absolute;top:0;right:0;margin:0!important;z-index:4;height:58px;padding:0 18px;border:0;border-radius:18px;background:#fff;color:#173f66;font-weight:700;font-size:16px;box-shadow:0 3px 10px rgba(23,63,102,.22);cursor:pointer}#vMain>#fcTop:not([hidden]):active{transform:scale(.95)}#vMain:has(>#fcTop:not([hidden]))>#hpFWMain{margin-inline-end:var(--fcw,200px)!important}#vMain#vMain:has(>#fcTop:not([hidden])):not(:has(>#hpFWMain:not([hidden])))>#mnTiles{margin-inline-end:var(--fcw,200px)!important}}</style><style>@media (min-width:1280px){html:not(.hpro) .wrap:has(#vDaily[style*="contents"]):has(#entryCard:not(.hpfolded)) #entryCard{grid-row:span 2!important}html:not(.hpro) .wrap:has(#vDaily[style*="contents"]):has(#entryCard:not(.hpfolded)) #flockEnd{grid-column:1!important;align-self:start}html:not(.hpro) .wrap:has(#vDaily[style*="contents"]):has(#entryCard:not(.hpfolded)){grid-auto-flow:row dense}}</style><style>.hpbotx{display:flex;margin:14px auto 2px!important;width:auto!important;min-width:0!important;border:0;cursor:pointer;font:400 17px/1.5 "Jameel Noori","Segoe UI",sans-serif!important;color:#173f66!important;background:#eef3f8!important;border-radius:10px;padding:4px 16px!important;box-shadow:none!important}.hpfolded>.hpbotx,html.hpro .hpbotx,body.supview #entryCard>.hpbotx{display:none!important}#entryCard:not(.hpfolded)>.hpbotx{grid-column:1/-1}</style><style>#sqBar{display:flex;flex-wrap:nowrap!important;gap:6px;align-items:center;padding:4px 6px!important;margin:0!important}#sqBar>#sqQ{flex:0 0 30%;min-width:0;padding-block:6px!important;min-height:0!important}#sqBar .sqdr{display:flex;flex:1;gap:4px;align-items:center;min-width:0}#sqBar .sqdr input{flex:1;min-width:0;padding:6px 4px!important;min-height:0!important}#sqBar small{font-size:12px;white-space:nowrap}#sqPdf[hidden]{display:none!important}@media (max-width:999px){#sqBar .sqdr input{font-size:12px!important}#sqBar small{font-size:11px}}</style><div id="fcSheet" hidden dir="ltr"><div class="ccp" role="dialog" aria-label="Flock Comparison"><div class="cchd"><h2 class="en">Flock Comparison</h2><button type="button" id="fcX" aria-label="Close">✕</button></div><div id="fcBody"></div></div></div>
 <div id="ccSheet" hidden dir="ltr"><div class="ccp" role="dialog" aria-label="Check Cost"><div class="cchd"><h2 class="en">Check Cost</h2><button type="button" id="ccX" aria-label="Close">✕</button></div>
 <div class="ur" style="color:#555;margin:6px 0">ہر قسم کی بقایا بوریاں لکھیں۔ یہ صرف چیک ہے، ریکارڈ نہیں بدلے گا۔</div><div id="ccBody"></div></div></div>
 <script>
@@ -4478,6 +4542,12 @@ function apply(){const o={};document.querySelectorAll("#ccBody input.ccl").forEa
 function lab(){const b=$("ccBtn");if(!b)return;const on=!!ccGet()&&!wExtra.feedLeftDone;b.textContent=on?"Clear Cost":"Check Cost";b.classList.toggle("ccon",on);b.hidden=!!wExtra.feedLeftDone}
 const _rmn=renderMain;renderMain=function(){const x=_rmn.apply(this,arguments);try{lab()}catch(e){}return x};
 $("ccBtn").addEventListener("click",e=>{e.stopPropagation();if(!flock)return;if(ccGet()){try{localStorage.removeItem(ccKey())}catch(x){}renderMain();return}draw();$("ccSheet").hidden=false});
+(()=>{const v=$("vMain");if(!v)return;const t=document.createElement("button");t.type="button";t.id="fcTop";t.hidden=true;t.className="en";t.textContent="📊 Flock Comparison";v.prepend(t);t.addEventListener("click",()=>$("fcBtn").click());const sync=()=>{t.hidden=$("fcBtn").hidden||document.body.classList.contains("oldview");if(!t.hidden&&t.offsetWidth)v.style.setProperty("--fcw",(t.offsetWidth+14)+"px")};new MutationObserver(sync).observe($("fcBtn"),{attributes:true,attributeFilter:["hidden"]});new MutationObserver(sync).observe(document.body,{attributes:true,attributeFilter:["class"]});addEventListener("resize",sync);sync()})();
+$("fcX").addEventListener("click",()=>{$("fcSheet").hidden=true});
+$("fcSheet").addEventListener("click",e=>{if(e.target.id==="fcSheet")$("fcSheet").hidden=true});
+$("fcBtn").addEventListener("click",async()=>{const b=$("fcBtn"),bd=$("fcBody");if(b.disabled)return;b.disabled=true;$("fcSheet").hidden=false;bd.innerHTML='<div id="fcWait">Flock …</div>';
+  try{const res=await flockCmpData((i,n)=>{const w=$("fcWait");if(w)w.textContent="Flock "+i+" of "+n+"…"});const H=flockCmpHtml(res,Math.max(320,Math.min(860,bd.clientWidth)));bd.innerHTML='<div class="tablewrap">'+H.tables+"</div>"+H.charts}
+  catch(e){bd.innerHTML='<div id="fcWait">Could not make the comparison. Please try again.</div>'}finally{b.disabled=false}});
 $("ccX").addEventListener("click",()=>{$("ccSheet").hidden=true});
 $("ccSheet").addEventListener("click",e=>{if(e.target.id==="ccSheet")$("ccSheet").hidden=true});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")$("ccSheet").hidden=true});
